@@ -77,7 +77,7 @@ export function PaymentEntryForm() {
     // Misalnya, jika backend mengirim flag 'has_scholarship' atau sejenisnya.
     // Di sini saya hardcode simulasi: Jika nama mengandung 'A', dia dapat diskon.
     // Nanti ganti dengan: const isDiscount = student?.payment_type === 'DISCOUNT'
-    const isDiscount = student?.full_name?.includes("a") || false 
+    const isDiscount = student?.name?.includes("a") || false
     
     const basePrice = 500000 // Harga Normal
     const discountPrice = 350000 // Harga Diskon
@@ -169,9 +169,9 @@ export function PaymentEntryForm() {
                           <SelectContent>
                             {students?.map((student: any) => (
                               <SelectItem key={student.id} value={student.id}>
-                                {student.full_name || "Tanpa Nama"} 
+                                {student.name || "Tanpa Nama"}
                                 <span className="text-muted-foreground ml-2 text-xs">
-                                  ({student.grade || "Kelas ?"})
+                                  ({student.class_year || "Kelas ?"})
                                 </span>
                               </SelectItem>
                             ))}
