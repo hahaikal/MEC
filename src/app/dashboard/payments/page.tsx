@@ -240,16 +240,16 @@ export default function PaymentsPage() {
         <CardContent className="pt-4">
           <div className="overflow-x-auto -mx-6">
             <div className="px-6">
-              <Table className="w-full">
-              <TableHeader className="bg-slate-50">
+              <Table className="w-full text-sm">
+                <TableHeader className="bg-slate-50/50">
                 <TableRow>
-                  <TableHead className="px-6 font-semibold">Siswa</TableHead>
-                  <TableHead className="font-semibold">Bulan</TableHead>
-                  <TableHead className="text-right font-semibold">Nominal</TableHead>
-                  <TableHead className="font-semibold">Metode</TableHead>
-                  <TableHead className="font-semibold">Tanggal</TableHead>
-                  <TableHead className="font-semibold">Status</TableHead>
-                  <TableHead className="text-right pr-6 font-semibold">Aksi</TableHead>
+                  <TableHead className="w-40 font-semibold">Siswa</TableHead>
+                  <TableHead className="w-32 font-semibold">Bulan</TableHead>
+                  <TableHead className="text-right w-28 font-semibold">Nominal</TableHead>
+                  <TableHead className="w-28 font-semibold">Metode</TableHead>
+                  <TableHead className="w-24 font-semibold">Tanggal</TableHead>
+                  <TableHead className="w-24 font-semibold">Status</TableHead>
+                  <TableHead className="text-right w-20 font-semibold">Aksi</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

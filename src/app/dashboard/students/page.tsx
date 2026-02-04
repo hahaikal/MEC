@@ -11,7 +11,25 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { PlusCircle, Users, Wallet, AlertTriangle, TrendingUp } from "lucide-react"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+} from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
+import { Input } from "@/components/ui/input"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { PlusCircle, Users, Wallet, AlertTriangle, TrendingUp, Loader2 } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { TuitionMatrixTable } from "@/components/finance/tuition-matrix-table"
 import { toast } from "@/lib/hooks/use-toast"
@@ -20,6 +38,56 @@ import { formatRupiah, MONTHS_LIST } from "@/lib/utils"
 export default function StudentsPage() {
   const { data: students, isLoading: isLoadingStudents, refetch: refetchStudents } = useStudents()
   const { data: payments, isLoading: isLoadingPayments } = usePayments()
+  const [openAddStudent, setOpenAddStudent] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    class_year: '2024',
+    base_fee: '',
+  })
+
+  // Handler untuk tambah siswa baru
+  const handleAddStudent = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    if (!formData.name || !formData.email || !formData.base_fee) {
+      toast({
+        title: "Error",
+        description: "Semua field harus diisi",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setIsSubmitting(true)
+    try {
+      // TODO: Integrasi dengan API untuk tambah siswa
+      console.log("Adding student:", formData)
+      
+      toast({
+        title: "Sukses",
+        description: `Siswa ${formData.name} berhasil ditambahkan`,
+      })
+      
+      setFormData({
+        name: '',
+        email: '',
+        class_year: '2024',
+        base_fee: '',
+      })
+      setOpenAddStudent(false)
+      refetchStudents()
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Gagal menambahkan siswa",
+        variant: "destructive",
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
   
   // Handler untuk aksi dari Matrix Table
   const handleEditStudent = (student: any) => {
@@ -45,7 +113,7 @@ export default function StudentsPage() {
 
   if (isLoadingStudents || isLoadingPayments) {
     return (
-      <div className="flex flex-col gap-6 p-4 md:p-8 animate-pulse">
+      <div className="flex flex-col gap-6 animate-pulse">
         <Skeleton className="h-12 w-64" />
         <div className="grid gap-4 md:grid-cols-3">
           {[...Array(3)].map((_, i) => (
@@ -89,10 +157,99 @@ export default function StudentsPage() {
 
       {/* Action Button */}
       <div className="flex gap-2">
-        <Button className="gap-2">
-          <PlusCircle className="h-4 w-4" />
-          Tambah Siswa Baru
-        </Button>
+        <Dialog open={openAddStudent} onOpenChange={setOpenAddStudent}>
+          <DialogTrigger asChild>
+            <Button className="gap-2">
+              <PlusCircle className="h-4 w-4" />
+              Tambah Siswa Baru
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Tambah Siswa Baru</DialogTitle>
+              <DialogDescription>
+                Masukkan data siswa baru ke dalam sistem
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleAddStudent} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Nama Siswa</Label>
+                <Input
+                  id="name"
+                  placeholder="Masukkan nama siswa"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  disabled={isSubmitting}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="siswa@example.com"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  disabled={isSubmitting}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="class_year">Angkatan</Label>
+                  <Select value={formData.class_year} onValueChange={(value) => setFormData({ ...formData, class_year: value })}>
+                    <SelectTrigger id="class_year" disabled={isSubmitting}>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="2022">2022</SelectItem>
+                      <SelectItem value="2023">2023</SelectItem>
+                      <SelectItem value="2024">2024</SelectItem>
+                      <SelectItem value="2025">2025</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="base_fee">SPP Bulanan</Label>
+                  <Input
+                    id="base_fee"
+                    type="number"
+                    placeholder="500000"
+                    value={formData.base_fee}
+                    onChange={(e) => setFormData({ ...formData, base_fee: e.target.value })}
+                    disabled={isSubmitting}
+                  />
+                </div>
+              </div>
+
+              <DialogFooter>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setOpenAddStudent(false)}
+                  disabled={isSubmitting}
+                >
+                  Batal
+                </Button>
+                <Button type="submit" disabled={isSubmitting} className="gap-2">
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Menyimpan...
+                    </>
+                  ) : (
+                    <>
+                      <PlusCircle className="h-4 w-4" />
+                      Tambah
+                    </>
+                  )}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {/* Stats Cards Grid */}

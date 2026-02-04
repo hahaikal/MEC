@@ -178,15 +178,15 @@ export default function ReportsPage() {
         <CardContent>
           <div className="overflow-x-auto -mx-6">
             <div className="px-6">
-              <Table className="w-full">
-              <TableHeader className="bg-slate-50">
+              <Table className="w-full text-sm">
+              <TableHeader className="bg-slate-50/50">
                 <TableRow>
-                  <TableHead className="w-[150px]">Bulan</TableHead>
-                  <TableHead className="text-right w-[150px]">Pendapatan</TableHead>
-                  <TableHead className="text-right w-[150px]">Pengeluaran</TableHead>
-                  <TableHead className="text-right w-[150px]">Keuntungan</TableHead>
-                  <TableHead className="text-right w-[120px]">Margin</TableHead>
-                  <TableHead className="text-right w-[100px]">Siswa Aktif</TableHead>
+                  <TableHead className="w-40">Bulan</TableHead>
+                  <TableHead className="text-right w-32">Pendapatan</TableHead>
+                  <TableHead className="text-right w-32">Pengeluaran</TableHead>
+                  <TableHead className="text-right w-32">Keuntungan</TableHead>
+                  <TableHead className="text-right w-24">Margin</TableHead>
+                  <TableHead className="text-right w-24">Siswa Aktif</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -228,13 +228,13 @@ export default function ReportsPage() {
         <CardContent>
           <div className="overflow-x-auto -mx-6">
             <div className="px-6">
-              <Table className="w-full">
-              <TableHeader className="bg-slate-50">
+              <Table className="w-full text-sm">
+              <TableHeader className="bg-slate-50/50">
                 <TableRow>
-                  <TableHead className="w-[200px]">Kategori</TableHead>
-                  <TableHead className="text-right w-[150px]">Total Pengeluaran</TableHead>
-                  <TableHead className="text-right w-[100px]">Persentase</TableHead>
-                  <TableHead className="w-[200px]">Visualisasi</TableHead>
+                  <TableHead className="w-48">Kategori</TableHead>
+                  <TableHead className="text-right w-32">Total Pengeluaran</TableHead>
+                  <TableHead className="text-right w-24">Persentase</TableHead>
+                  <TableHead className="w-48">Visualisasi</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -277,13 +277,13 @@ export default function ReportsPage() {
         <CardContent>
           <div className="overflow-x-auto -mx-6">
             <div className="px-6">
-              <Table className="w-full">
-              <TableHeader className="bg-slate-50">
+              <Table className="w-full text-sm">
+              <TableHeader className="bg-slate-50/50">
                 <TableRow>
-                  <TableHead className="w-[200px]">Sumber Pendapatan</TableHead>
-                  <TableHead className="text-right w-[150px]">Total Pendapatan</TableHead>
-                  <TableHead className="text-right w-[100px]">Persentase</TableHead>
-                  <TableHead className="w-[200px]">Visualisasi</TableHead>
+                  <TableHead className="w-48">Sumber Pendapatan</TableHead>
+                  <TableHead className="text-right w-32">Total Pendapatan</TableHead>
+                  <TableHead className="text-right w-24">Persentase</TableHead>
+                  <TableHead className="w-48">Visualisasi</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

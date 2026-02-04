@@ -96,11 +96,11 @@ export function TuitionMatrixTable({
     <Table className="w-full">
           <TableHeader>
             <TableRow className="bg-gradient-to-r from-muted/50 to-muted/25 hover:bg-gradient-to-r hover:from-muted/50 hover:to-muted/25">
-              <TableHead className="sticky left-0 bg-gradient-to-r from-muted/50 to-muted/25 z-10 min-w-[220px] border-r font-bold">Data Siswa</TableHead>
+              <TableHead className="sticky left-0 bg-gradient-to-r from-muted/50 to-muted/25 z-10 w-48 border-r font-bold">Data Siswa</TableHead>
               {MONTHS_LIST.map((month) => (
-                <TableHead key={month} className="text-center min-w-[100px] font-semibold">{month.substring(0, 3)}</TableHead>
+                <TableHead key={month} className="text-center w-20 font-semibold text-xs">{month.substring(0, 3)}</TableHead>
               ))}
-              <TableHead className="text-right sticky right-0 bg-gradient-to-r from-muted/25 to-muted/50 z-10 border-l font-bold">Aksi</TableHead>
+              <TableHead className="text-center sticky right-0 bg-gradient-to-r from-muted/25 to-muted/50 z-10 w-16 border-l font-bold">Aksi</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -136,10 +136,10 @@ export function TuitionMatrixTable({
                   {MONTHS_LIST.map((month, idx) => {
                     const status = getPaymentStatus(student.id, month, idx)
                     return (
-                      <TableCell key={month} className="text-center p-0">
+                      <TableCell key={month} className="text-center p-1 w-20">
                         <button 
                           onClick={() => status !== "PAID" && onAddPayment(student.id, month)}
-                          className="w-full h-14 flex items-center justify-center transition-all duration-200 hover:bg-muted/50 active:scale-95"
+                          className="w-full h-12 flex items-center justify-center transition-all duration-200 hover:bg-muted/50 active:scale-95"
                           title={`${month}: ${status}`}
                           disabled={status === "PAID"}
                         >
@@ -164,7 +164,7 @@ export function TuitionMatrixTable({
                     )
                   })}
 
-                  <TableCell className="text-right sticky right-0 bg-background group-hover:bg-muted/20 border-l shadow-[-2px_0_5px_-2px_rgba(0,0,0,0.1)] z-10">
+                  <TableCell className="text-center sticky right-0 bg-background group-hover:bg-muted/20 border-l shadow-[-2px_0_5px_-2px_rgba(0,0,0,0.1)] z-10 w-16">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-muted/50">

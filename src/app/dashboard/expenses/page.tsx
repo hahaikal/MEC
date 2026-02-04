@@ -205,15 +205,15 @@ export default function ExpensesPage() {
         <CardContent>
           <div className="overflow-x-auto -mx-6">
             <div className="px-6">
-              <Table className="w-full">
-                <TableHeader className="bg-slate-50">
+              <Table className="w-full text-sm">
+                <TableHeader className="bg-slate-50/50">
                 <TableRow>
-                  <TableHead className="w-[200px]">Deskripsi</TableHead>
-                  <TableHead className="w-[120px]">Kategori</TableHead>
-                  <TableHead className="text-right w-[150px]">Nominal</TableHead>
-                  <TableHead className="w-[120px]">Tanggal</TableHead>
-                  <TableHead className="w-[100px]">Status</TableHead>
-                  <TableHead className="text-right w-[100px]">Aksi</TableHead>
+                  <TableHead className="w-48">Deskripsi</TableHead>
+                  <TableHead className="w-28">Kategori</TableHead>
+                  <TableHead className="text-right w-32">Nominal</TableHead>
+                  <TableHead className="w-28">Tanggal</TableHead>
+                  <TableHead className="w-24">Status</TableHead>
+                  <TableHead className="text-right w-24">Aksi</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
