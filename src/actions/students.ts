@@ -1,167 +1,103 @@
-"use server"
+"use server";
 
-import { createClient } from "@/lib/supabase/server"
-import { studentSchema, type StudentFormValues } from "@/lib/validators/student"
-import { revalidatePath } from "next/cache"
+import { createClient } from "@/lib/supabase/server";
+import { studentSchema, StudentFormValues } from "@/lib/validators/student";
+import { revalidatePath } from "next/cache";
 
-export type ActionResponse<T = null> = {
-  success: boolean
-  message: string
-  data?: T
-  errors?: Record<string, string[]>
-}
-
-export async function getStudents(
-  page = 1,
-  limit = 10,
-  query = ""
-): Promise<ActionResponse<any>> {
-  const supabase = await createClient()
+export async function getStudents() {
+  const supabase = await createClient();
   
-  try {
-    const from = (page - 1) * limit
-    const to = from + limit - 1
+  // Join dengan table classes untuk mendapatkan nama kelas (jika ada)
+  const { data, error } = await supabase
+    .from("students")
+    .select(`
+      *,
+      classes (
+        name
+      )
+    `)
+    .order("created_at", { ascending: false });
 
-    let dbQuery = supabase
-      .from("students")
-      .select("*", { count: "exact" })
-      .order("created_at", { ascending: false })
-      .range(from, to)
-
-    if (query) {
-      dbQuery = dbQuery.or(`name.ilike.%${query}%,nis.ilike.%${query}%`)
-    }
-
-    const { data, error, count } = await dbQuery
-
-    if (error) throw error
-
-    return {
-      success: true,
-      message: "Data siswa berhasil diambil",
-      data: {
-        students: data,
-        metadata: {
-          total: count,
-          page,
-          limit,
-          totalPages: count ? Math.ceil(count / limit) : 0
-        }
-      }
-    }
-  } catch (error: any) {
-    console.error("Get Students Error:", error)
-    return {
-      success: false,
-      message: "Gagal mengambil data siswa",
-    }
+  if (error) {
+    console.error("Error fetching students:", error);
+    throw new Error("Gagal mengambil data siswa");
   }
+
+  return data;
 }
 
-export async function createStudent(data: StudentFormValues): Promise<ActionResponse> {
-  const supabase = await createClient()
+export async function createStudent(data: StudentFormValues) {
+  const supabase = await createClient();
+  const validData = studentSchema.parse(data);
+
+  // Ambil user yang sedang login untuk field created_by
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error("Unauthorized");
+  }
+
+  // --- LOGIC SEDERHANA ---
+  // Kita asumsikan Trigger SQL sudah bekerja.
+  // Jika masih gagal FK constraint, berarti SQL trigger belum dijalankan.
   
-  const validatedFields = studentSchema.safeParse(data)
+  const { error } = await supabase.from("students").insert({
+    ...validData,
+    created_by: user.id,
+    date_of_birth: validData.date_of_birth ? validData.date_of_birth.toISOString() : null,
+    enrollment_date: validData.enrollment_date ? validData.enrollment_date.toISOString() : new Date().toISOString(),
+  });
 
-  if (!validatedFields.success) {
-    return {
-      success: false,
-      message: "Validasi gagal",
-      errors: validatedFields.error.flatten().fieldErrors
-    }
-  }
-
-  try {
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-        return { success: false, message: "Unauthorized" }
-    }
-
-    const { error } = await supabase.from("students").insert({
-        ...validatedFields.data,
-        created_by: user.id,
-        // created_at and updated_at are handled by DB defaults
-    })
-
-    if (error) throw error
-
-    revalidatePath("/dashboard/students")
-    return { success: true, message: "Siswa berhasil ditambahkan" }
-
-  } catch (error: any) {
-      console.error("Create Student Error:", error)
-      return {
-          success: false,
-          message: error.message || "Gagal menambahkan siswa"
-      }
-  }
-}
-
-export async function updateStudent(id: string, data: StudentFormValues): Promise<ActionResponse> {
-    const supabase = await createClient()
-    const validatedFields = studentSchema.safeParse(data)
-
-    if (!validatedFields.success) {
-        return {
-            success: false,
-            message: "Validasi gagal",
-            errors: validatedFields.error.flatten().fieldErrors
-        }
-    }
-
-    try {
-        const { data: { user } } = await supabase.auth.getUser()
+  if (error) {
+    console.error("Error creating student:", error);
     
-        if (!user) {
-            return { success: false, message: "Unauthorized" }
-        }
-
-        const { error } = await supabase
-        .from("students")
-        .update({
-            ...validatedFields.data,
-            updated_at: new Date().toISOString(),
-        })
-        .eq("id", id)
-
-        if (error) throw error
-
-        revalidatePath("/dashboard/students")
-        return { success: true, message: "Data siswa berhasil diperbarui." }
-    } catch (error: any) {
-        console.error("Update Student Error:", error)
-        return {
-        success: false,
-        message: error.message || "Gagal memperbarui data siswa.",
-        }
+    // Pesan error yang lebih membantu jika lupa menjalankan SQL
+    if (error.code === '23503') { // Foreign Key Violation
+        throw new Error("Akun pengguna anda belum terdaftar di sistem. Mohon jalankan script '05-fix-user-sync.sql' di Supabase.");
     }
+
+    throw new Error(error.message || "Gagal membuat data siswa");
+  }
+
+  revalidatePath("/dashboard/students");
+  return { success: true };
 }
 
-export async function deleteStudent(id: string): Promise<ActionResponse> {
-  const supabase = await createClient()
+export async function updateStudent(id: string, data: StudentFormValues) {
+  const supabase = await createClient();
+  const validData = studentSchema.parse(data);
 
-  try {
-    const {
-        data: { user },
-      } = await supabase.auth.getUser()
-  
-    if (!user) {
-        return { success: false, message: "Unauthorized" }
-    }
+  const { error } = await supabase
+    .from("students")
+    .update({
+      ...validData,
+      updated_at: new Date().toISOString(),
+      date_of_birth: validData.date_of_birth ? validData.date_of_birth.toISOString() : null,
+      enrollment_date: validData.enrollment_date ? validData.enrollment_date.toISOString() : null,
+    })
+    .eq("id", id);
 
-    // Soft delete logic bisa diimplementasikan di sini jika tidak ingin hard delete
-    const { error } = await supabase.from("students").delete().eq("id", id)
-
-    if (error) throw error
-
-    revalidatePath("/dashboard/students")
-    return { success: true, message: "Data siswa berhasil dihapus" }
-  } catch (error: any) {
-      console.error("Delete Student Error:", error)
-      return {
-          success: false,
-          message: "Gagal menghapus siswa"
-      }
+  if (error) {
+    console.error("Error updating student:", error);
+    throw new Error(error.message || "Gagal mengupdate data siswa");
   }
+
+  revalidatePath("/dashboard/students");
+  return { success: true };
+}
+
+export async function deleteStudent(id: string) {
+  const supabase = await createClient();
+
+  const { error } = await supabase.from("students").delete().eq("id", id);
+
+  if (error) {
+    console.error("Error deleting student:", error);
+    throw new Error("Gagal menghapus data siswa");
+  }
+
+  revalidatePath("/dashboard/students");
+  return { success: true };
 }

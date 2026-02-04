@@ -12,6 +12,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
+import { useState } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { StudentForm } from "./student-form";
+import { useUpdateStudent, useDeleteStudent } from "@/lib/hooks/use-students";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,85 +25,51 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { useState } from "react";
-import { useToast } from "@/components/ui/use-toast";
-import { deleteStudent } from "@/actions/students"; // Integrasi Server Action
 
-// Update Tipe Data sesuai Schema Backend terbaru
+// Definisikan tipe data untuk kolom agar sesuai dengan return dari getStudents
 export type Student = {
   id: string;
   nis: string;
-  name: string; // Changed from full_name
+  name: string;
+  status: string;
+  parent_name: string;
+  parent_phone: string;
+  base_fee: number;
   email?: string | null;
   phone_number?: string | null;
-  status: "ACTIVE" | "GRADUATED" | "DROPOUT" | "ON_LEAVE";
-  base_fee: number;
-  created_at: string;
+  address?: string | null;
+  date_of_birth?: string | null; // Supabase returns dates as strings
+  classes?: {
+    name: string;
+  } | null;
+  billing_cycle_date?: number | null;
+  enrollment_date?: string | null;
+  class_year?: string | null;
+  class_id?: string | null;
 };
 
 const ActionCell = ({ student }: { student: Student }) => {
-  const [openAlert, setOpenAlert] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const { toast } = useToast();
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const { mutateAsync: updateStudent, isPending: isUpdating } = useUpdateStudent();
+  const { mutateAsync: deleteStudent, isPending: isDeleting } = useDeleteStudent();
+
+  const handleUpdate = async (values: any) => {
+    // Convert date string back to Date object for the form if needed,
+    // but the form handles date objects. The validator expects dates.
+    // values coming from form are already correct.
+    await updateStudent({ id: student.id, data: values });
+    setShowEditDialog(false);
+  };
 
   const handleDelete = async () => {
-    setIsDeleting(true);
-    try {
-      const result = await deleteStudent(student.id);
-      
-      if (result.success) {
-        toast({
-            title: "Data Dihapus",
-            description: result.message,
-            variant: "default",
-        });
-      } else {
-        toast({
-            title: "Gagal Menghapus",
-            description: result.message,
-            variant: "destructive",
-        });
-      }
-    } catch (error) {
-        toast({
-            title: "Error",
-            description: "Terjadi kesalahan sistem.",
-            variant: "destructive",
-        });
-    } finally {
-        setIsDeleting(false);
-        setOpenAlert(false);
-    }
+    await deleteStudent(student.id);
+    setShowDeleteDialog(false);
   };
 
   return (
     <>
-      <AlertDialog open={openAlert} onOpenChange={setOpenAlert}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Apakah anda yakin?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Menghapus siswa <strong>{student.name}</strong> akan menghapus riwayat pembayaran mereka secara permanen. Tindakan ini tidak dapat dibatalkan.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>Batal</AlertDialogCancel>
-            <AlertDialogAction 
-                onClick={(e) => {
-                    e.preventDefault();
-                    handleDelete();
-                }} 
-                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                disabled={isDeleting}
-            >
-              {isDeleting ? "Menghapus..." : "Hapus Permanen"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="h-8 w-8 p-0">
@@ -109,23 +79,61 @@ const ActionCell = ({ student }: { student: Student }) => {
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>Aksi</DropdownMenuLabel>
-          <DropdownMenuItem
-            onClick={() => navigator.clipboard.writeText(student.nis)}
-          >
-            Copy NIS
+          <DropdownMenuItem onClick={() => navigator.clipboard.writeText(student.nis)}>
+            Salin NIS
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem>
+          <DropdownMenuItem onClick={() => setShowEditDialog(true)}>
             <Pencil className="mr-2 h-4 w-4" /> Edit Data
           </DropdownMenuItem>
-          <DropdownMenuItem 
-            className="text-destructive focus:text-destructive"
-            onClick={() => setOpenAlert(true)}
-          >
-            <Trash2 className="mr-2 h-4 w-4" /> Hapus Siswa
+          <DropdownMenuItem onClick={() => setShowDeleteDialog(true)} className="text-red-600">
+            <Trash2 className="mr-2 h-4 w-4" /> Hapus
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+
+      {/* Edit Dialog */}
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Siswa: {student.name}</DialogTitle>
+          </DialogHeader>
+          <StudentForm
+            defaultValues={{
+              ...student,
+              email: student.email || "",
+              phone_number: student.phone_number || "",
+              address: student.address || "",
+              date_of_birth: student.date_of_birth ? new Date(student.date_of_birth) : undefined,
+              enrollment_date: student.enrollment_date ? new Date(student.enrollment_date) : undefined,
+              billing_cycle_date: student.billing_cycle_date || 10,
+              base_fee: Number(student.base_fee),
+              status: student.status as any,
+              class_year: student.class_year ?? undefined,
+            }}
+            onSubmit={handleUpdate}
+            isLoading={isUpdating}
+          />
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Alert */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Apakah anda yakin?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tindakan ini tidak dapat dibatalkan. Data siswa <strong>{student.name}</strong> dan riwayat pembayarannya mungkin akan terpengaruh.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Batal</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700" disabled={isDeleting}>
+              {isDeleting ? "Menghapus..." : "Hapus"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 };
@@ -142,57 +150,56 @@ export const columns: ColumnDef<Student>[] = [
           NIS
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
-      );
+      )
     },
   },
   {
-    accessorKey: "name", // Updated from full_name
+    accessorKey: "name",
     header: ({ column }) => {
       return (
         <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
-          Nama Lengkap
+          Nama
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
-      );
+      )
     },
   },
   {
-    accessorKey: "base_fee",
-    header: "Tagihan Dasar",
+    accessorKey: "classes.name",
+    header: "Kelas",
     cell: ({ row }) => {
-      const amount = parseFloat(row.getValue("base_fee"));
-      const formatted = new Intl.NumberFormat("id-ID", {
-        style: "currency",
-        currency: "IDR",
-        minimumFractionDigits: 0,
-      }).format(amount);
-      return <div className="font-medium">{formatted}</div>;
-    },
+        const className = row.original.classes?.name;
+        return className || "-";
+    }
+  },
+  {
+    accessorKey: "parent_name",
+    header: "Orang Tua",
+  },
+  {
+    accessorKey: "parent_phone",
+    header: "HP Ortu",
   },
   {
     accessorKey: "status",
     header: "Status",
     cell: ({ row }) => {
       const status = row.getValue("status") as string;
-      let variant: "default" | "secondary" | "destructive" | "outline" = "default";
+      const variants: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
+        ACTIVE: "default", // Hijau/Hitam
+        GRADUATED: "secondary", // Abu/Biru muda
+        DROPOUT: "destructive", // Merah
+        ON_LEAVE: "outline", // Border
+      };
       
-      // Map colors based on new ENUM
-      switch(status) {
-        case "ACTIVE": variant = "default"; break;
-        case "ON_LEAVE": variant = "secondary"; break;
-        case "GRADUATED": variant = "outline"; break;
-        case "DROPOUT": variant = "destructive"; break;
-        default: variant = "outline";
-      }
-      
-      return <Badge variant={variant}>{status}</Badge>;
+      return <Badge variant={variants[status] || "outline"}>{status}</Badge>;
     },
   },
   {
     id: "actions",
-    cell: ({ row }) => <ActionCell student={row.original} />
+    cell: ({ row }) => <ActionCell student={row.original} />,
   },
 ];

@@ -1,56 +1,57 @@
-import { useQuery } from '@tanstack/react-query'
-import { createClient } from '@/lib/supabase/client'
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { getStudents, createStudent, updateStudent, deleteStudent } from "@/actions/students";
+import { StudentFormValues } from "@/lib/validators/student";
+import { toast } from "sonner";
 
 export function useStudents() {
-  const supabase = createClient()
-
   return useQuery({
-    queryKey: ['students'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('students')
-        .select('*')
-        .order('created_at', { ascending: false })
-
-      if (error) throw error
-      return data
-    },
-  })
+    queryKey: ["students"],
+    queryFn: () => getStudents(),
+  });
 }
 
-export function useStudentById(studentId: string) {
-  const supabase = createClient()
+export function useCreateStudent() {
+  const queryClient = useQueryClient();
 
-  return useQuery({
-    queryKey: ['student', studentId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('students')
-        .select('*')
-        .eq('id', studentId)
-        .single()
-
-      if (error) throw error
-      return data
+  return useMutation({
+    mutationFn: (data: StudentFormValues) => createStudent(data),
+    onSuccess: () => {
+      toast.success("Siswa berhasil ditambahkan");
+      queryClient.invalidateQueries({ queryKey: ["students"] });
     },
-    enabled: !!studentId,
-  })
+    onError: (error: Error) => {
+      toast.error(error.message);
+    },
+  });
 }
 
-export function useClasses() {
-  const supabase = createClient()
+export function useUpdateStudent() {
+  const queryClient = useQueryClient();
 
-  return useQuery({
-    queryKey: ['classes'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('programs')
-        .select('*')
-        .eq('is_active', true)
-        .order('name')
-
-      if (error) throw error
-      return data
+  return useMutation({
+    mutationFn: ({ id, data }: { id: string; data: StudentFormValues }) =>
+      updateStudent(id, data),
+    onSuccess: () => {
+      toast.success("Data siswa berhasil diperbarui");
+      queryClient.invalidateQueries({ queryKey: ["students"] });
     },
-  })
+    onError: (error: Error) => {
+      toast.error(error.message);
+    },
+  });
+}
+
+export function useDeleteStudent() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => deleteStudent(id),
+    onSuccess: () => {
+      toast.success("Siswa berhasil dihapus");
+      queryClient.invalidateQueries({ queryKey: ["students"] });
+    },
+    onError: (error: Error) => {
+      toast.error(error.message);
+    },
+  });
 }
