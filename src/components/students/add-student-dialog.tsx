@@ -1,14 +1,13 @@
-'use client'
+"use client";
 
-import React, { useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { Loader2, UserPlus } from 'lucide-react'
-import { useQueryClient } from '@tanstack/react-query'
-
-// Menggunakan relative paths untuk keamanan impor
-import { studentSchema, type StudentFormValues } from '../../lib/validators/student'
-import { createClient } from '../../lib/supabase/client'
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader2, Plus } from "lucide-react";
+// Import Schema yang baru
+import { studentSchema, StudentFormValues } from "@/lib/validators/student";
+import { createStudent } from "@/actions/students"; // Import Server Action
+import { useToast } from "@/components/ui/use-toast";
 
 import {
   Dialog,
@@ -18,7 +17,7 @@ import {
   DialogTitle,
   DialogTrigger,
   DialogFooter,
-} from '../ui/dialog'
+} from "@/components/ui/dialog";
 import {
   Form,
   FormControl,
@@ -26,155 +25,207 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '../ui/form'
-import { Input } from '../ui/input'
-import { Button } from '../ui/button'
-import { toast } from '../ui/use-toast'
+  FormDescription,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export function AddStudentDialog() {
-  const [open, setOpen] = useState(false)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const queryClient = useQueryClient()
-  const supabase = createClient()
+  const [open, setOpen] = useState(false);
+  const { toast } = useToast();
 
   const form = useForm<StudentFormValues>({
     resolver: zodResolver(studentSchema),
     defaultValues: {
-      name: '',
-      email: '',
-      phone_number: '',
+      name: "",
+      nis: "",
+      email: "",
+      phone_number: "",
       base_fee: 0,
-      class_year: new Date().getFullYear().toString(),
-      status: 'active',
+      status: "ACTIVE",
     },
-  })
+  });
 
-  async function onSubmit(values: StudentFormValues) {
-    setIsSubmitting(true)
+  const isPending = form.formState.isSubmitting;
+
+  const onSubmit = async (data: StudentFormValues) => {
     try {
-      // Mengambil user ID untuk kolom created_by (Audit Trail)
-      const { data: { user } } = await supabase.auth.getUser()
-      
-      if (!user) throw new Error("Sesi berakhir. Silakan login kembali.")
+      const result = await createStudent(data);
 
-      // Perbaikan: Masukkan data sebagai objek tunggal dan tambahkan created_by
-      const { error } = await supabase.from('students').insert({
-        name: values.name,
-        email: values.email || null,
-        phone_number: values.phone_number || null,
-        base_fee: values.base_fee,
-        class_year: values.class_year || null,
-        status: values.status,
-        address: values.address || null,
-        date_of_birth: values.date_of_birth || null,
-        created_by: user.id // Menambahkan field wajib sesuai error TS
-      })
+      if (result.success) {
+        toast({
+            title: "Berhasil",
+            description: result.message,
+            variant: "default",
+        });
+        setOpen(false);
+        form.reset();
+      } else {
+         // Handle validasi error dari server jika ada
+         if (result.errors) {
+            Object.keys(result.errors).forEach((key) => {
+                form.setError(key as keyof StudentFormValues, {
+                    message: result.errors?.[key]?.[0]
+                });
+            });
+         }
+         
+         toast({
+            title: "Gagal Menyimpan",
+            description: result.message,
+            variant: "destructive",
+         });
+      }
 
-      if (error) throw error
-
+    } catch (error) {
       toast({
-        title: "Siswa Berhasil Ditambahkan",
-        description: `${values.name} telah terdaftar dalam sistem.`,
-      })
-      
-      queryClient.invalidateQueries({ queryKey: ['students'] })
-      setOpen(false)
-      form.reset()
-    } catch (error: any) {
-      toast({
+        title: "Error Sistem",
+        description: "Terjadi kesalahan yang tidak terduga.",
         variant: "destructive",
-        title: "Gagal Menambah Siswa",
-        description: error.message,
-      })
-    } finally {
-      setIsSubmitting(false)
+      });
     }
-  }
+  };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button>
-          <UserPlus className="mr-2 h-4 w-4" />
-          Tambah Siswa Baru
+          <Plus className="mr-2 h-4 w-4" /> Tambah Siswa
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px] overflow-y-auto max-h-[90vh]">
         <DialogHeader>
-          <DialogTitle>Registrasi Siswa Baru</DialogTitle>
+          <DialogTitle>Tambah Siswa Baru</DialogTitle>
           <DialogDescription>
-            Lengkapi data di bawah untuk mendaftarkan siswa ke sistem keuangan.
+            Masukkan data siswa sesuai dokumen pendaftaran.
           </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            
             <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem className="col-span-2">
-                    <FormLabel>Nama Lengkap</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Contoh: Ahmad Fauzi" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="class_year"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Angkatan</FormLabel>
-                    <FormControl>
-                      <Input placeholder="2024" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="base_fee"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>SPP Dasar (IDR)</FormLabel>
-                    <FormControl>
-                      <Input type="number" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                 <FormField
+                    control={form.control}
+                    name="nis"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>NIS</FormLabel>
+                        <FormControl>
+                          <Input placeholder="2024001" {...field} disabled={isPending} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                 <FormField
+                    control={form.control}
+                    name="status"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Status Akademik</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isPending}>
+                            <FormControl>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Pilih Status" />
+                            </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                            <SelectItem value="ACTIVE">Aktif</SelectItem>
+                            <SelectItem value="ON_LEAVE">Cuti</SelectItem>
+                            <SelectItem value="GRADUATED">Lulus</SelectItem>
+                            <SelectItem value="DROPOUT">Keluar / DO</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                />
             </div>
 
             <FormField
               control={form.control}
-              name="email"
+              name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email (Opsional)</FormLabel>
+                  <FormLabel>Nama Lengkap</FormLabel>
                   <FormControl>
-                    <Input placeholder="siswa@email.com" {...field} />
+                    <Input placeholder="Nama siswa..." {...field} disabled={isPending} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
+            <div className="grid grid-cols-2 gap-4">
+                 <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email (Opsional)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="email@contoh.com" {...field} disabled={isPending} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="phone_number"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>No. HP (Opsional)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="0812..." {...field} disabled={isPending} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+            </div>
+
+            <FormField
+                control={form.control}
+                name="base_fee"
+                render={({ field }) => (
+                <FormItem>
+                    <FormLabel>Biaya SPP Dasar</FormLabel>
+                    <FormControl>
+                    <Input 
+                        type="number" 
+                        placeholder="0" 
+                        {...field} 
+                        onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                        disabled={isPending} 
+                    />
+                    </FormControl>
+                    <FormDescription>
+                        Nominal tagihan bulanan default untuk siswa ini.
+                    </FormDescription>
+                    <FormMessage />
+                </FormItem>
+                )}
+            />
+
             <DialogFooter className="pt-4">
-              <Button type="button" variant="outline" onClick={() => setOpen(false)}>Batal</Button>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                Simpan Data
+              <Button type="submit" disabled={isPending} className="w-full sm:w-auto">
+                {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {isPending ? "Menyimpan..." : "Simpan Data"}
               </Button>
             </DialogFooter>
           </form>
         </Form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
