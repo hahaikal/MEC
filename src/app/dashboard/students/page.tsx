@@ -146,220 +146,220 @@ export default function StudentsPage() {
   const completionRate = totalStudents > 0 ? Math.round((paidThisMonth / totalStudents) * 100) : 0
 
   return (
-    <div className="flex flex-col gap-6">
-      {/* Header Section */}
-      <div className="flex flex-col gap-1">
-        <h1 className="text-4xl font-bold tracking-tight text-balance">Manajemen Siswa & SPP</h1>
-        <p className="text-muted-foreground text-balance">
-          Monitor status pembayaran real-time dan kelola data murid sekolah Anda dengan efisien
-        </p>
-      </div>
-
-      {/* Action Button */}
-      <div className="flex gap-2">
-        <Dialog open={openAddStudent} onOpenChange={setOpenAddStudent}>
-          <DialogTrigger asChild>
-            <Button className="gap-2">
-              <PlusCircle className="h-4 w-4" />
-              Tambah Siswa Baru
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle>Tambah Siswa Baru</DialogTitle>
-              <DialogDescription>
-                Masukkan data siswa baru ke dalam sistem
-              </DialogDescription>
-            </DialogHeader>
-            <form onSubmit={handleAddStudent} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Nama Siswa</Label>
-                <Input
-                  id="name"
-                  placeholder="Masukkan nama siswa"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  disabled={isSubmitting}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="siswa@example.com"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  disabled={isSubmitting}
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
+    <div className="flex flex-col gap-8">
+      {/* Header Section - Sleek and Modern */}
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-1">
+          <h1 className="text-3xl lg:text-4xl font-bold tracking-tight">Manajemen Siswa</h1>
+          <p className="text-sm lg:text-base text-muted-foreground max-w-2xl">
+            Kelola seluruh data siswa, monitor pembayaran SPP bulanan, dan lacak status finansial setiap siswa dengan mudah
+          </p>
+        </div>
+        <div className="flex items-center gap-3 pt-2">
+          <Dialog open={openAddStudent} onOpenChange={setOpenAddStudent}>
+            <DialogTrigger asChild>
+              <Button size="sm" className="gap-2">
+                <PlusCircle className="h-4 w-4" />
+                Tambah Siswa
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Tambah Siswa Baru</DialogTitle>
+                <DialogDescription>
+                  Masukkan informasi lengkap siswa baru ke dalam sistem
+                </DialogDescription>
+              </DialogHeader>
+              <form onSubmit={handleAddStudent} className="space-y-5">
                 <div className="space-y-2">
-                  <Label htmlFor="class_year">Angkatan</Label>
-                  <Select value={formData.class_year} onValueChange={(value) => setFormData({ ...formData, class_year: value })}>
-                    <SelectTrigger id="class_year" disabled={isSubmitting}>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="2022">2022</SelectItem>
-                      <SelectItem value="2023">2023</SelectItem>
-                      <SelectItem value="2024">2024</SelectItem>
-                      <SelectItem value="2025">2025</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="base_fee">SPP Bulanan</Label>
+                  <Label htmlFor="name" className="text-sm font-medium">Nama Lengkap</Label>
                   <Input
-                    id="base_fee"
-                    type="number"
-                    placeholder="500000"
-                    value={formData.base_fee}
-                    onChange={(e) => setFormData({ ...formData, base_fee: e.target.value })}
+                    id="name"
+                    placeholder="Masukkan nama siswa"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     disabled={isSubmitting}
+                    className="h-9"
                   />
                 </div>
-              </div>
 
-              <DialogFooter>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setOpenAddStudent(false)}
-                  disabled={isSubmitting}
-                >
-                  Batal
-                </Button>
-                <Button type="submit" disabled={isSubmitting} className="gap-2">
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      Menyimpan...
-                    </>
-                  ) : (
-                    <>
-                      <PlusCircle className="h-4 w-4" />
-                      Tambah
-                    </>
-                  )}
-                </Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="text-sm font-medium">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="siswa@sekolah.com"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    disabled={isSubmitting}
+                    className="h-9"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="class_year" className="text-sm font-medium">Angkatan</Label>
+                    <Select value={formData.class_year} onValueChange={(value) => setFormData({ ...formData, class_year: value })}>
+                      <SelectTrigger id="class_year" disabled={isSubmitting} className="h-9">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="2022">2022</SelectItem>
+                        <SelectItem value="2023">2023</SelectItem>
+                        <SelectItem value="2024">2024</SelectItem>
+                        <SelectItem value="2025">2025</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="base_fee" className="text-sm font-medium">SPP Bulanan (Rp)</Label>
+                    <Input
+                      id="base_fee"
+                      type="number"
+                      placeholder="500000"
+                      value={formData.base_fee}
+                      onChange={(e) => setFormData({ ...formData, base_fee: e.target.value })}
+                      disabled={isSubmitting}
+                      className="h-9"
+                    />
+                  </div>
+                </div>
+
+                <DialogFooter className="gap-2 pt-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setOpenAddStudent(false)}
+                    disabled={isSubmitting}
+                    size="sm"
+                  >
+                    Batal
+                  </Button>
+                  <Button type="submit" disabled={isSubmitting} size="sm" className="gap-2">
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Menyimpan
+                      </>
+                    ) : (
+                      <>
+                        <PlusCircle className="h-4 w-4" />
+                        Tambah
+                      </>
+                    )}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
-      {/* Stats Cards Grid */}
+      {/* Key Metrics - Clean and Minimal */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {/* Total Siswa Card */}
-        <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950/50 dark:to-blue-900/30 shadow-sm">
-          <div className="absolute inset-0 opacity-10">
-            <Users className="absolute -top-4 -right-4 h-32 w-32 text-blue-600" />
-          </div>
-          <CardHeader className="pb-2 relative z-10">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-medium text-blue-900 dark:text-blue-100">Total Siswa Aktif</CardTitle>
-              <div className="p-2 bg-blue-600/20 rounded-lg">
+        {/* Total Siswa */}
+        <Card className="border border-border/50 hover:border-border transition-colors">
+          <CardHeader className="pb-3">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <CardDescription className="text-xs font-medium mb-1">Total Siswa</CardDescription>
+                <CardTitle className="text-2xl lg:text-3xl">{totalStudents}</CardTitle>
+              </div>
+              <div className="p-2 bg-blue-100 dark:bg-blue-950 rounded-lg">
                 <Users className="h-4 w-4 text-blue-600 dark:text-blue-400" />
               </div>
             </div>
           </CardHeader>
-          <CardContent className="relative z-10">
-            <div className="text-3xl font-bold text-blue-900 dark:text-blue-100">{totalStudents}</div>
-            <p className="text-xs text-blue-700/70 dark:text-blue-300/70 mt-1">Siswa terdaftar</p>
+          <CardContent>
+            <p className="text-xs text-muted-foreground">Siswa aktif terdaftar</p>
           </CardContent>
         </Card>
 
-        {/* Paid This Month Card */}
-        <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-950/50 dark:to-emerald-900/30 shadow-sm">
-          <div className="absolute inset-0 opacity-10">
-            <Wallet className="absolute -top-4 -right-4 h-32 w-32 text-emerald-600" />
-          </div>
-          <CardHeader className="pb-2 relative z-10">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-medium text-emerald-900 dark:text-emerald-100">Lunas</CardTitle>
-              <div className="p-2 bg-emerald-600/20 rounded-lg">
+        {/* Lunas */}
+        <Card className="border border-border/50 hover:border-border transition-colors">
+          <CardHeader className="pb-3">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <CardDescription className="text-xs font-medium mb-1">Lunas Bulan Ini</CardDescription>
+                <CardTitle className="text-2xl lg:text-3xl">{paidThisMonth}</CardTitle>
+              </div>
+              <div className="p-2 bg-emerald-100 dark:bg-emerald-950 rounded-lg">
                 <Wallet className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
               </div>
             </div>
           </CardHeader>
-          <CardContent className="relative z-10">
-            <div className="text-3xl font-bold text-emerald-900 dark:text-emerald-100">{paidThisMonth}</div>
-            <p className="text-xs text-emerald-700/70 dark:text-emerald-300/70 mt-1">{currentMonthName}</p>
+          <CardContent>
+            <p className="text-xs text-muted-foreground">{currentMonthName}</p>
           </CardContent>
         </Card>
 
-        {/* Overdue Card */}
-        <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-red-50 to-red-100 dark:from-red-950/50 dark:to-red-900/30 shadow-sm">
-          <div className="absolute inset-0 opacity-10">
-            <AlertTriangle className="absolute -top-4 -right-4 h-32 w-32 text-red-600" />
-          </div>
-          <CardHeader className="pb-2 relative z-10">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-medium text-red-900 dark:text-red-100">Menunggak</CardTitle>
-              <div className="p-2 bg-red-600/20 rounded-lg">
+        {/* Menunggak */}
+        <Card className="border border-border/50 hover:border-border transition-colors">
+          <CardHeader className="pb-3">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <CardDescription className="text-xs font-medium mb-1">Menunggak</CardDescription>
+                <CardTitle className="text-2xl lg:text-3xl text-red-600">{overdueCount}</CardTitle>
+              </div>
+              <div className="p-2 bg-red-100 dark:bg-red-950 rounded-lg">
                 <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400" />
               </div>
             </div>
           </CardHeader>
-          <CardContent className="relative z-10">
-            <div className="text-3xl font-bold text-red-900 dark:text-red-100">{overdueCount}</div>
-            <p className="text-xs text-red-700/70 dark:text-red-300/70 mt-1">Belum bayar tgl 10+</p>
+          <CardContent>
+            <p className="text-xs text-muted-foreground">Belum bayar setelah tgl 10</p>
           </CardContent>
         </Card>
 
-        {/* Completion Rate Card */}
-        <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950/50 dark:to-purple-900/30 shadow-sm">
-          <div className="absolute inset-0 opacity-10">
-            <TrendingUp className="absolute -top-4 -right-4 h-32 w-32 text-purple-600" />
-          </div>
-          <CardHeader className="pb-2 relative z-10">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-medium text-purple-900 dark:text-purple-100">Tingkat Penyelesaian</CardTitle>
-              <div className="p-2 bg-purple-600/20 rounded-lg">
+        {/* Persentase */}
+        <Card className="border border-border/50 hover:border-border transition-colors">
+          <CardHeader className="pb-3">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <CardDescription className="text-xs font-medium mb-1">Tingkat Pembayaran</CardDescription>
+                <CardTitle className="text-2xl lg:text-3xl">{completionRate}%</CardTitle>
+              </div>
+              <div className="p-2 bg-purple-100 dark:bg-purple-950 rounded-lg">
                 <TrendingUp className="h-4 w-4 text-purple-600 dark:text-purple-400" />
               </div>
             </div>
           </CardHeader>
-          <CardContent className="relative z-10">
-            <div className="text-3xl font-bold text-purple-900 dark:text-purple-100">{completionRate}%</div>
-            <p className="text-xs text-purple-700/70 dark:text-purple-300/70 mt-1">Bulan ini</p>
+          <CardContent>
+            <p className="text-xs text-muted-foreground">Siswa yang sudah membayar</p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Matrix Table Section */}
-      <Card className="border-0 shadow-sm">
-        <CardHeader className="pb-4 border-b">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      {/* Payment Matrix Table */}
+      <Card className="border border-border/50">
+        <CardHeader className="pb-4 border-b border-border/50">
+          <div className="flex flex-col gap-4">
             <div>
-              <CardTitle className="text-xl">Matriks Pembayaran SPP</CardTitle>
+              <CardTitle className="text-lg">Matriks Pembayaran SPP</CardTitle>
               <CardDescription className="mt-1">
-                Visualisasi pembayaran bulanan per siswa. Klik icon untuk input pembayaran.
+                Kelola dan monitor status pembayaran setiap siswa per bulan
               </CardDescription>
             </div>
-            <div className="flex flex-wrap items-center gap-3 text-xs font-medium">
-              <div className="flex items-center gap-2 bg-emerald-100 dark:bg-emerald-950/50 px-3 py-1.5 rounded-full">
+            <div className="flex flex-wrap gap-3">
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-950/30 rounded-lg border border-emerald-200 dark:border-emerald-800">
                 <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                <span className="text-emerald-900 dark:text-emerald-100">Lunas</span>
+                <span className="text-xs font-medium text-emerald-700 dark:text-emerald-300">Lunas</span>
               </div>
-              <div className="flex items-center gap-2 bg-red-100 dark:bg-red-950/50 px-3 py-1.5 rounded-full">
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-red-50 dark:bg-red-950/30 rounded-lg border border-red-200 dark:border-red-800">
                 <div className="w-2 h-2 rounded-full bg-red-500" />
-                <span className="text-red-900 dark:text-red-100">Menunggak</span>
+                <span className="text-xs font-medium text-red-700 dark:text-red-300">Menunggak</span>
               </div>
-              <div className="flex items-center gap-2 bg-gray-100 dark:bg-gray-800 px-3 py-1.5 rounded-full">
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
                 <div className="w-2 h-2 rounded-full bg-gray-400" />
-                <span className="text-gray-700 dark:text-gray-300">Pending</span>
+                <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Pending</span>
               </div>
             </div>
           </div>
         </CardHeader>
-        <CardContent className="pt-4">
+        <CardContent className="pt-0">
           <div className="overflow-x-auto -mx-6">
-            <div className="px-6">
+            <div className="px-6 py-4">
               <TuitionMatrixTable
                 students={(students || []) as any}
                 payments={transformedPayments as any}
@@ -367,7 +367,6 @@ export default function StudentsPage() {
                 onDelete={handleDeleteStudent}
                 onAddPayment={handleAddPayment}
               />
-            </div>
             </div>
           </div>
         </CardContent>
