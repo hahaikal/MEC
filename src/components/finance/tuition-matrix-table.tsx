@@ -93,9 +93,7 @@ export function TuitionMatrixTable({
   }
 
   return (
-    <div className="relative">
-      <div className="overflow-x-auto">
-        <Table className="min-w-[1200px]">
+    <Table className="w-full">
           <TableHeader>
             <TableRow className="bg-gradient-to-r from-muted/50 to-muted/25 hover:bg-gradient-to-r hover:from-muted/50 hover:to-muted/25">
               <TableHead className="sticky left-0 bg-gradient-to-r from-muted/50 to-muted/25 z-10 min-w-[220px] border-r font-bold">Data Siswa</TableHead>
@@ -213,7 +211,5 @@ export function TuitionMatrixTable({
             )}
           </TableBody>
         </Table>
-      </div>
-    </div>
   )
 }

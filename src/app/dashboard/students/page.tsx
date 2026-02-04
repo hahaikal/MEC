@@ -78,7 +78,7 @@ export default function StudentsPage() {
   const completionRate = totalStudents > 0 ? Math.round((paidThisMonth / totalStudents) * 100) : 0
 
   return (
-    <div className="flex flex-col gap-6 p-4 md:p-8">
+    <div className="flex flex-col gap-6">
       {/* Header Section */}
       <div className="flex flex-col gap-1">
         <h1 className="text-4xl font-bold tracking-tight text-balance">Manajemen Siswa & SPP</h1>
@@ -201,8 +201,8 @@ export default function StudentsPage() {
           </div>
         </CardHeader>
         <CardContent className="pt-4">
-          <div className="overflow-x-auto rounded-lg border border-border/50">
-            <div className="min-w-[1200px]">
+          <div className="overflow-x-auto -mx-6">
+            <div className="px-6">
               <TuitionMatrixTable
                 students={(students || []) as any}
                 payments={transformedPayments as any}
@@ -210,6 +210,7 @@ export default function StudentsPage() {
                 onDelete={handleDeleteStudent}
                 onAddPayment={handleAddPayment}
               />
+            </div>
             </div>
           </div>
         </CardContent>

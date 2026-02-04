@@ -105,7 +105,7 @@ export default function ReportsPage() {
   const currentMonth = mockMonthlyReports[mockMonthlyReports.length - 1]
 
   return (
-    <div className="flex flex-col gap-6 p-4 md:p-8">
+    <div className="flex flex-col gap-6">
       {/* Header Section */}
       <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
         <div>
@@ -176,8 +176,9 @@ export default function ReportsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
-            <Table className="min-w-[1200px]">
+          <div className="overflow-x-auto -mx-6">
+            <div className="px-6">
+              <Table className="w-full">
               <TableHeader className="bg-slate-50">
                 <TableRow>
                   <TableHead className="w-[150px]">Bulan</TableHead>
@@ -211,7 +212,8 @@ export default function ReportsPage() {
                 ))}
               </TableBody>
             </Table>
-          </div>
+            </div>
+            </div>
         </CardContent>
       </Card>
 
@@ -224,8 +226,9 @@ export default function ReportsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
-            <Table className="min-w-[1000px]">
+          <div className="overflow-x-auto -mx-6">
+            <div className="px-6">
+              <Table className="w-full">
               <TableHeader className="bg-slate-50">
                 <TableRow>
                   <TableHead className="w-[200px]">Kategori</TableHead>
@@ -258,7 +261,8 @@ export default function ReportsPage() {
                 ))}
               </TableBody>
             </Table>
-          </div>
+            </div>
+            </div>
         </CardContent>
       </Card>
 
@@ -271,8 +275,9 @@ export default function ReportsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
-            <Table className="min-w-[1000px]">
+          <div className="overflow-x-auto -mx-6">
+            <div className="px-6">
+              <Table className="w-full">
               <TableHeader className="bg-slate-50">
                 <TableRow>
                   <TableHead className="w-[200px]">Sumber Pendapatan</TableHead>
@@ -305,7 +310,8 @@ export default function ReportsPage() {
                 ))}
               </TableBody>
             </Table>
-          </div>
+            </div>
+            </div>
         </CardContent>
       </Card>
     </div>
