@@ -22,6 +22,7 @@ const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard', href: '/dashboard' },
   { icon: Users, label: 'Students', href: '/dashboard/students' },
   { icon: CreditCard, label: 'Payments', href: '/dashboard/payments' },
+  { icon: CreditCard, label: 'Expenses', href: '/dashboard/expenses' },
   { icon: BarChart3, label: 'Reports', href: '/dashboard/reports' },
   { icon: Settings, label: 'Settings', href: '/dashboard/settings' },
 ]
