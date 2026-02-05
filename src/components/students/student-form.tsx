@@ -72,24 +72,24 @@ function DatePickerWithYearNav({ date, onSelect }: DatePickerWithYearNavProps) {
   const yearOptions = Array.from({ length: 80 }, (_, i) => currentYear - 80 + i).reverse();
 
   return (
-    <div className="p-4 space-y-4 w-96">
-      {/* Year Navigator */}
-      <div className="space-y-2">
-        <label className="text-sm font-medium">Tahun</label>
-        <div className="flex items-center gap-2">
+    <div className="p-3 space-y-2 w-80">
+      {/* Year Navigator - Compact */}
+      <div className="space-y-1">
+        <label className="text-xs font-medium">Tahun</label>
+        <div className="flex items-center gap-1">
           <Button
             variant="outline"
             size="sm"
             onClick={() => setSelectedYear(selectedYear - 10)}
-            className="h-8 w-8 p-0"
+            className="h-7 w-7 p-0"
           >
-            <ChevronLeft className="h-4 w-4" />
+            <ChevronLeft className="h-3 w-3" />
           </Button>
           <Select value={selectedYear.toString()} onValueChange={(v) => handleYearChange(parseInt(v))}>
-            <SelectTrigger className="w-full">
+            <SelectTrigger className="w-full h-8 text-xs">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent className="h-64">
+            <SelectContent className="h-48">
               {yearOptions.map((year) => (
                 <SelectItem key={year} value={year.toString()}>
                   {year}
@@ -101,24 +101,24 @@ function DatePickerWithYearNav({ date, onSelect }: DatePickerWithYearNavProps) {
             variant="outline"
             size="sm"
             onClick={() => setSelectedYear(selectedYear + 10)}
-            className="h-8 w-8 p-0"
+            className="h-7 w-7 p-0"
           >
-            <ChevronRight className="h-4 w-4" />
+            <ChevronRight className="h-3 w-3" />
           </Button>
         </div>
       </div>
 
-      {/* Month Navigator */}
-      <div className="space-y-2">
-        <label className="text-sm font-medium">Bulan</label>
-        <div className="grid grid-cols-3 gap-2">
+      {/* Month Navigator - Compact */}
+      <div className="space-y-1">
+        <label className="text-xs font-medium">Bulan</label>
+        <div className="grid grid-cols-4 gap-1">
           {monthNames.map((month, index) => (
             <Button
               key={month}
               variant={selectedMonth === index ? "default" : "outline"}
               size="sm"
               onClick={() => setSelectedMonth(index)}
-              className="text-xs"
+              className="text-xs h-7 p-1"
             >
               {month.slice(0, 3)}
             </Button>
@@ -126,15 +126,15 @@ function DatePickerWithYearNav({ date, onSelect }: DatePickerWithYearNavProps) {
         </div>
       </div>
 
-      {/* Calendar */}
-      <div className="space-y-2">
-        <label className="text-sm font-medium">
+      {/* Calendar - Compact */}
+      <div className="space-y-1">
+        <label className="text-xs font-medium">
           {monthNames[selectedMonth]} {selectedYear}
         </label>
-        <div className="grid grid-cols-7 gap-1">
+        <div className="grid grid-cols-7 gap-0.5">
           {["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"].map((day) => (
-            <div key={day} className="text-center text-xs font-medium h-8 flex items-center justify-center">
-              {day}
+            <div key={day} className="text-center text-xs font-medium h-6 flex items-center justify-center">
+              {day.slice(0, 1)}
             </div>
           ))}
           {days.map((day, index) => (
@@ -143,7 +143,7 @@ function DatePickerWithYearNav({ date, onSelect }: DatePickerWithYearNavProps) {
               onClick={() => day && handleMonthSelect(day)}
               disabled={!day}
               className={cn(
-                "h-8 w-8 rounded text-sm transition-colors",
+                "h-6 w-6 rounded text-xs transition-colors",
                 !day && "invisible",
                 day && "hover:bg-accent cursor-pointer",
                 date && date.getDate() === day && date.getMonth() === selectedMonth && date.getFullYear() === selectedYear
