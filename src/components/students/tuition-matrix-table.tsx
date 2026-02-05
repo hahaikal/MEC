@@ -183,9 +183,9 @@ export function TuitionMatrixTable() {
       </div>
 
       {/* Matrix Table with Native Scroll */}
-      <div className="flex-1 overflow-hidden relative rounded-md border m-4 mt-0">
-         <div className="h-full w-full overflow-auto">
-            <Table className="min-w-[1200px] border-collapse text-sm">
+      <div className="flex-1 overflow-hidden">
+         <div className="h-full w-full overflow-x-auto overflow-y-auto">
+            <Table className="w-full border-collapse text-sm">
               <TableHeader className="sticky top-0 z-20 bg-background shadow-sm">
                 <TableRow className="hover:bg-transparent">
                   {/* Sticky Corner Header */}

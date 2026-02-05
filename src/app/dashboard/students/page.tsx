@@ -18,7 +18,7 @@ export default function StudentsPage() {
         </div>
       </div>
       <Separator className="mb-6" />
-      <div className="flex-1 min-h-0 rounded-md border bg-card shadow-sm">
+      <div className="flex-1 min-h-0 overflow-hidden rounded-md border bg-card shadow-sm">
         <TuitionMatrixTable />
       </div>
     </div>
