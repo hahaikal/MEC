@@ -1,8 +1,6 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { createClient } from '@/lib/supabase/client'
+import * as React from "react";
 import {
   Table,
   TableBody,
@@ -10,327 +8,275 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+} from "@/components/ui/table";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
-import { Plus } from 'lucide-react'
-import { useToast } from '@/lib/hooks/use-toast'
+} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { CalendarDays, CheckCircle2, Search, FilterX, Loader2, AlertCircle } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
+import { PaymentActionDialog } from "./payment-action-dialog";
+import { cn } from "@/lib/utils";
+import { format } from "date-fns";
+
+// --- Types ---
+type Student = {
+  id: string;
+  name: string;
+  status: string;
+  nis: string | null;
+  class_year: string | null;
+};
+
+type Payment = {
+  id: string;
+  student_id: string;
+  amount: number;
+  payment_date: string;
+  payment_for_month: string; // e.g., "January", "February"
+  payment_status: string;
+  invoice_number: string | null;
+};
 
 const MONTHS = [
-  { value: 1, label: 'Jan', short: 'Jan' },
-  { value: 2, label: 'Feb', short: 'Feb' },
-  { value: 3, label: 'Mar', short: 'Mar' },
-  { value: 4, label: 'Apr', short: 'Apr' },
-  { value: 5, label: 'May', short: 'May' },
-  { value: 6, label: 'Jun', short: 'Jun' },
-  { value: 7, label: 'Jul', short: 'Jul' },
-  { value: 8, label: 'Aug', short: 'Aug' },
-  { value: 9, label: 'Sep', short: 'Sep' },
-  { value: 10, label: 'Oct', short: 'Oct' },
-  { value: 11, label: 'Nov', short: 'Nov' },
-  { value: 12, label: 'Dec', short: 'Dec' },
-]
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December"
+];
 
-interface PaymentRecord {
-  student_id: string
-  month: number
-  year: number
-  payment_date: string
-  payment_method: string
-  amount: number
-}
+const SHORT_MONTHS = [
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+];
 
-interface StudentData {
-  id: string
-  name: string
-  program_name?: string
-  program_price?: number
-  program_id?: string
-}
+export function TuitionMatrixTable() {
+  const [searchTerm, setSearchTerm] = React.useState("");
+  const [selectedYear, setSelectedYear] = React.useState<string>(new Date().getFullYear().toString());
+  const [students, setStudents] = React.useState<Student[]>([]);
+  const [payments, setPayments] = React.useState<Payment[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [dialogOpen, setDialogOpen] = React.useState(false);
+  const [selectedCell, setSelectedCell] = React.useState<{
+    student: Student;
+    month: string;
+    existingPayment?: Payment;
+  } | null>(null);
 
-interface TuitionMatrixTableProps {
-  students?: StudentData[]
-  isLoading?: boolean
-}
+  const supabase = createClient();
 
-export function TuitionMatrixTable({
-  students = [],
-  isLoading = false,
-}: TuitionMatrixTableProps) {
-  const supabase = createClient()
-  const queryClient = useQueryClient()
-  const { toast } = useToast()
-  const [paymentDialog, setPaymentDialog] = useState<{
-    open: boolean
-    studentId?: string
-    studentName?: string
-    month?: number
-    amount?: number
-  }>({ open: false })
-  const [paymentForm, setPaymentForm] = useState({
-    amount: '',
-    method: 'transfer',
-  })
+  // --- Data Fetching ---
+  const fetchData = React.useCallback(async () => {
+    setLoading(true);
+    try {
+      // 1. Fetch Students (Active only usually, but let's get all for history)
+      const { data: studentsData, error: studentsError } = await supabase
+        .from("students")
+        .select("id, name, status, nis, class_year")
+        .order("name");
 
-  const currentYear = new Date().getFullYear()
+      if (studentsError) throw studentsError;
 
-  // Fetch all payments for this year
-  const { data: payments = [] } = useQuery({
-    queryKey: ['payments', currentYear],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('payments')
-        .select('*')
-        .gte('payment_date', `${currentYear}-01-01`)
-        .lte('payment_date', `${currentYear}-12-31`)
+      // 2. Fetch Payments for the selected year
+      // Note: We need to filter payments by date range of the selected year
+      const startOfYear = `${selectedYear}-01-01`;
+      const endOfYear = `${selectedYear}-12-31`;
 
-      if (error) throw error
-      return (data || []).filter(p => p.payment_date).map((p) => ({
-        student_id: p.student_id,
-        month: new Date(p.payment_date!).getMonth() + 1,
-        year: new Date(p.payment_date!).getFullYear(),
-        payment_date: p.payment_date!,
-        payment_method: p.payment_method,
-        amount: p.amount,
-      }))
-    },
-  })
+      const { data: paymentsData, error: paymentsError } = await supabase
+        .from("payments")
+        .select("id, student_id, amount, payment_date, payment_for_month, payment_status, invoice_number")
+        .eq("category", "tuition") // Only fetch Tuition payments for the matrix
+        .gte("payment_date", startOfYear)
+        .lte("payment_date", endOfYear);
 
-  // Record payment mutation
-  const { mutate: recordPayment, isPending } = useMutation({
-    mutationFn: async () => {
-      if (!paymentDialog.studentId || !paymentDialog.month || !paymentForm.amount) {
-        throw new Error('Missing required fields')
-      }
+      if (paymentsError) throw paymentsError;
 
-      const amount = parseFloat(paymentForm.amount)
-      if (isNaN(amount) || amount <= 0) {
-        throw new Error('Invalid payment amount')
-      }
-
-      const paymentDate = new Date(
-        currentYear,
-        paymentDialog.month - 1,
-        1
-      ).toISOString().split('T')[0]
-
-      const { error } = await supabase.from('payments').insert([
-        {
-          student_id: paymentDialog.studentId,
-          amount: amount,
-          payment_date: paymentDate,
-          payment_method: paymentForm.method,
-          payment_status: 'completed',
-        },
-      ])
-
-      if (error) throw error
-    },
-    onSuccess: () => {
-      toast({
-        title: 'Sukses',
-        description: 'Pembayaran berhasil dicatat',
-      })
-      queryClient.invalidateQueries({ queryKey: ['payments'] })
-      setPaymentDialog({ open: false })
-      setPaymentForm({ amount: '', method: 'transfer' })
-    },
-    onError: (error) => {
-      console.error('Error recording payment:', error)
-      toast({
-        title: 'Error',
-        description: 'Gagal mencatat pembayaran',
-        variant: 'destructive',
-      })
-    },
-  })
-
-  const getPaymentBadge = (studentId: string, month: number) => {
-    const payment = payments.find(
-      (p) => p.student_id === studentId && p.month === month
-    )
-
-    if (payment) {
-      const date = new Date(payment.payment_date!)
-      const dateStr = `${date.getDate()} ${MONTHS[month - 1].short}`
-      return (
-        <Badge className="bg-emerald-500 hover:bg-emerald-600 text-white font-medium px-2.5 py-1">
-          ✓ {dateStr}
-        </Badge>
-      )
+      setStudents(studentsData || []);
+      // Cast the result to Payment[] to resolve the type mismatch with Supabase generated types
+      setPayments((paymentsData as unknown as Payment[]) || []);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      // In a real app, use toast here
+    } finally {
+      setLoading(false);
     }
+  }, [supabase, selectedYear]);
 
-    return (
-      <Button
-        variant="ghost"
-        size="sm"
-        className="h-9 w-9 p-0 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
-        onClick={() =>
-          setPaymentDialog({
-            open: true,
-            studentId,
-            studentName: students.find((s) => s.id === studentId)?.name,
-            month,
-            amount: students.find((s) => s.id === studentId)?.program_price,
-          })
-        }
-        title="Catat pembayaran"
-      >
-        <Plus className="h-4 w-4" />
-      </Button>
-    )
-  }
+  React.useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
-  if (isLoading) {
-    return (
-      <div className="text-center py-16">
-        <div className="inline-block text-muted-foreground">Memuat data...</div>
-      </div>
-    )
-  }
+  // --- Filtering ---
+  const filteredStudents = React.useMemo(() => {
+    return students.filter((student) =>
+      student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (student.nis && student.nis.includes(searchTerm))
+    );
+  }, [students, searchTerm]);
 
-  if (students.length === 0) {
-    return (
-      <div className="text-center py-16 text-muted-foreground">
-        <p className="text-base">Belum ada siswa. Silakan tambah siswa terlebih dahulu.</p>
-      </div>
-    )
-  }
+  // --- Helpers ---
+  const getPaymentForCell = (studentId: string, monthIndex: number) => {
+    const monthName = MONTHS[monthIndex];
+    // Find payment for this student, this month (case insensitive check usually safer)
+    return payments.find(
+      (p) =>
+        p.student_id === studentId &&
+        p.payment_for_month?.toLowerCase() === monthName.toLowerCase() &&
+        p.payment_status === 'completed'
+    );
+  };
+
+  const handleCellClick = (student: Student, monthIndex: number) => {
+    const monthName = MONTHS[monthIndex];
+    const existingPayment = getPaymentForCell(student.id, monthIndex);
+    
+    setSelectedCell({
+      student,
+      month: monthName,
+      existingPayment,
+    });
+    setDialogOpen(true);
+  };
+
+  const handlePaymentSaved = () => {
+    setDialogOpen(false);
+    fetchData(); // Refresh data to show checkmark
+  };
 
   return (
-    <>
-      <div className="border rounded-lg bg-white overflow-x-auto shadow-sm">
-        <Table>
-          <TableHeader>
-            <TableRow className="border-b bg-slate-50 hover:bg-slate-50">
-              <TableHead className="min-w-40 font-semibold text-foreground">Nama Siswa</TableHead>
-              <TableHead className="min-w-32 font-semibold text-foreground">Kelas</TableHead>
-              {MONTHS.map((month) => (
-                <TableHead
-                  key={month.value}
-                  className="min-w-20 text-center text-xs font-semibold text-foreground"
-                >
-                  {month.short}
-                </TableHead>
-              ))}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {students.map((student, idx) => (
-              <TableRow
-                key={student.id}
-                className={`hover:bg-blue-50/50 transition-colors ${
-                  idx !== students.length - 1 ? 'border-b' : ''
-                }`}
-              >
-                <TableCell className="font-semibold text-foreground">{student.name}</TableCell>
-                <TableCell className="text-sm text-muted-foreground">
-                  {student.program_name || '—'}
-                </TableCell>
-                {MONTHS.map((month) => (
-                  <TableCell
-                    key={`${student.id}-${month.value}`}
-                    className="text-center py-3"
-                  >
-                    {getPaymentBadge(student.id, month.value)}
-                  </TableCell>
-                ))}
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+    <div className="flex flex-col h-full bg-background">
+      {/* Toolbar */}
+      <div className="flex items-center justify-between p-4 border-b gap-4">
+        <div className="flex items-center gap-2 flex-1 max-w-sm">
+          <Search className="w-4 h-4 text-muted-foreground" />
+          <Input
+            placeholder="Cari siswa..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="h-9"
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <Select value={selectedYear} onValueChange={setSelectedYear}>
+            <SelectTrigger className="w-[120px] h-9">
+              <SelectValue placeholder="Tahun" />
+            </SelectTrigger>
+            <SelectContent>
+              {Array.from({ length: 5 }, (_, i) => {
+                const year = new Date().getFullYear() - 2 + i;
+                return (
+                  <SelectItem key={year} value={year.toString()}>
+                    {year}
+                  </SelectItem>
+                );
+              })}
+            </SelectContent>
+          </Select>
+          <Button variant="outline" size="sm" onClick={fetchData} disabled={loading}>
+            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Refresh"}
+          </Button>
+        </div>
       </div>
 
-      {/* Payment Dialog */}
-      <Dialog
-        open={paymentDialog.open}
-        onOpenChange={(open) => setPaymentDialog({ ...paymentDialog, open })}
-      >
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Catat Pembayaran SPP</DialogTitle>
-            <DialogDescription>
-              {paymentDialog.studentName} - {MONTHS[paymentDialog.month! - 1]?.label || ''}
-            </DialogDescription>
-          </DialogHeader>
+      {/* Matrix Table with Native Scroll */}
+      <div className="flex-1 overflow-hidden relative rounded-md border m-4 mt-0">
+         <div className="h-full w-full overflow-auto">
+            <Table className="min-w-[1200px] border-collapse text-sm">
+              <TableHeader className="sticky top-0 z-20 bg-background shadow-sm">
+                <TableRow className="hover:bg-transparent">
+                  {/* Sticky Corner Header */}
+                  <TableHead className="w-[250px] font-bold pl-4 sticky left-0 z-30 bg-background shadow-[1px_0_0_0_rgba(0,0,0,0.1)] border-b h-12">
+                    Nama Siswa
+                  </TableHead>
+                  {SHORT_MONTHS.map((month) => (
+                    <TableHead key={month} className="text-center w-[80px] font-semibold text-xs uppercase text-muted-foreground bg-muted/30 border-b h-12">
+                      {month}
+                    </TableHead>
+                  ))}
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {loading ? (
+                  <TableRow>
+                    <TableCell colSpan={13} className="h-24 text-center">
+                      <div className="flex flex-col items-center justify-center gap-2 text-muted-foreground">
+                          <Loader2 className="h-6 w-6 animate-spin" />
+                          <span className="text-xs">Memuat data pembayaran...</span>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ) : filteredStudents.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={13} className="h-24 text-center text-muted-foreground">
+                      <div className="flex flex-col items-center gap-2">
+                         <FilterX className="h-8 w-8 opacity-20" />
+                         <p>Tidak ada siswa ditemukan.</p>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredStudents.map((student) => (
+                    <TableRow key={student.id} className="group hover:bg-muted/50">
+                      {/* Sticky Student Name Column */}
+                      <TableCell className="font-medium sticky left-0 bg-background group-hover:bg-muted/50 z-10 shadow-[1px_0_0_0_rgba(0,0,0,0.1)] pl-4 py-2 border-b">
+                        <div className="flex flex-col">
+                          <span className="truncate max-w-[200px]" title={student.name}>{student.name}</span>
+                          <span className="text-[10px] text-muted-foreground">{student.nis || "No NIS"} • {student.class_year || "N/A"}</span>
+                        </div>
+                      </TableCell>
 
-          <form
-            onSubmit={(e) => {
-              e.preventDefault()
-              recordPayment()
-            }}
-            className="flex flex-col gap-4"
-          >
-            {/* Jumlah Pembayaran */}
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="amount">Jumlah Pembayaran (Rp) *</Label>
-              <Input
-                id="amount"
-                type="number"
-                placeholder="Contoh: 500000"
-                value={paymentForm.amount}
-                onChange={(e) =>
-                  setPaymentForm({ ...paymentForm, amount: e.target.value })
-                }
-                disabled={isPending}
-              />
-            </div>
+                      {/* Month Cells */}
+                      {MONTHS.map((month, index) => {
+                        const payment = getPaymentForCell(student.id, index);
+                        const isPaid = !!payment;
 
-            {/* Metode Pembayaran */}
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="method">Metode Pembayaran *</Label>
-              <Select
-                value={paymentForm.method}
-                onValueChange={(value) =>
-                  setPaymentForm({ ...paymentForm, method: value })
-                }
-                disabled={isPending}
-              >
-                <SelectTrigger id="method">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="transfer">Transfer Bank</SelectItem>
-                  <SelectItem value="cash">Tunai</SelectItem>
-                  <SelectItem value="check">Cek</SelectItem>
-                  <SelectItem value="card">Kartu Kredit</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+                        return (
+                          <TableCell key={month} className="text-center p-1 border-b">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className={cn(
+                                "h-8 w-8 p-0 rounded-full transition-all duration-200",
+                                isPaid
+                                  ? "bg-green-100 text-green-600 hover:bg-green-200 hover:text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                                  : "text-muted-foreground/20 hover:text-primary hover:bg-primary/10"
+                              )}
+                              onClick={() => handleCellClick(student, index)}
+                              title={isPaid ? `Lunas: ${month}` : `Input: ${month}`}
+                            >
+                              {isPaid ? (
+                                <CheckCircle2 className="h-4 w-4" />
+                              ) : (
+                                <CalendarDays className="h-4 w-4" />
+                              )}
+                            </Button>
+                          </TableCell>
+                        );
+                      })}
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+         </div>
+      </div>
 
-            {/* Buttons */}
-            <div className="flex gap-2 justify-end pt-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setPaymentDialog({ open: false })}
-                disabled={isPending}
-              >
-                Batal
-              </Button>
-              <Button type="submit" disabled={isPending || !paymentForm.amount}>
-                {isPending ? 'Menyimpan...' : 'Simpan Pembayaran'}
-              </Button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
-    </>
-  )
+      {/* Action Dialog */}
+      {selectedCell && (
+        <PaymentActionDialog
+          open={dialogOpen}
+          onOpenChange={setDialogOpen}
+          student={selectedCell.student}
+          month={selectedCell.month}
+          year={selectedYear}
+          existingPayment={selectedCell.existingPayment}
+          onSuccess={handlePaymentSaved}
+        />
+      )}
+    </div>
+  );
 }

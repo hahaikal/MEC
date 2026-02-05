@@ -1,43 +1,26 @@
-"use client";
+import { TuitionMatrixTable } from "@/components/students/tuition-matrix-table";
+import { Separator } from "@/components/ui/separator";
 
-import { AddStudentDialog } from "@/components/students/add-student-dialog";
-import { columns } from "@/components/students/columns";
-import { DataTable } from "@/components/students/data-table";
-import { useStudents } from "@/lib/hooks/use-students";
-import { Loader2 } from "lucide-react";
+export const metadata = {
+  title: "Data Siswa & SPP | Dashboard",
+  description: "Kelola data siswa dan status pembayaran SPP bulanan.",
+};
 
 export default function StudentsPage() {
-  const { data: students, isLoading, error } = useStudents();
-
-  if (error) {
-    return (
-      <div className="flex h-full items-center justify-center p-8 text-red-500">
-        Error loading data: {(error as Error).message}
-      </div>
-    );
-  }
-
   return (
-    <div className="flex flex-col gap-6 p-6">
+    <div className="flex flex-col h-full space-y-6 p-8">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Siswa</h1>
+        <div className="space-y-0.5">
+          <h2 className="text-2xl font-bold tracking-tight">Manajemen Siswa & SPP</h2>
           <p className="text-muted-foreground">
-            Kelola data siswa, pendaftaran, dan status akademik.
+            Pantau status pembayaran SPP bulanan siswa secara real-time.
           </p>
         </div>
-        <AddStudentDialog />
       </div>
-
-      {isLoading ? (
-        <div className="flex h-64 items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        </div>
-      ) : (
-        <div className="overflow-x-auto">
-          <DataTable columns={columns} data={students || []} />
-        </div>
-      )}
+      <Separator />
+      <div className="flex-1 overflow-hidden rounded-md border bg-card shadow-sm">
+        <TuitionMatrixTable />
+      </div>
     </div>
   );
 }
