@@ -1,24 +1,20 @@
-import { TuitionMatrixTable } from "@/components/students/tuition-matrix-table";
-import { Separator } from "@/components/ui/separator";
+"use client";
 
-export const metadata = {
-  title: "Data Siswa & SPP | Dashboard",
-  description: "Kelola data siswa dan status pembayaran SPP bulanan.",
-};
+import { TuitionMatrixTable } from "@/components/students/tuition-matrix-table";
+import { AddStudentDialog } from "@/components/students/add-student-dialog";
 
 export default function StudentsPage() {
   return (
-    <div className="flex flex-col h-full p-8">
-      <div className="flex items-center justify-between mb-6">
-        <div className="space-y-0.5">
-          <h2 className="text-2xl font-bold tracking-tight">Manajemen Siswa & SPP</h2>
-          <p className="text-muted-foreground">
-            Pantau status pembayaran SPP bulanan siswa secara real-time.
-          </p>
+    <div className="space-y-8 p-8 h-full flex flex-col">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900">Students</h1>
+          <p className="text-slate-600 mt-1">Manage student tuition payments and enrollment</p>
         </div>
+        <AddStudentDialog />
       </div>
-      <Separator className="mb-6" />
-      <div className="flex-1 min-h-0 overflow-hidden rounded-md border bg-card shadow-sm">
+
+      <div className="flex-1 min-h-0 border rounded-lg bg-white shadow-sm overflow-hidden">
         <TuitionMatrixTable />
       </div>
     </div>

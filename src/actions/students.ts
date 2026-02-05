@@ -61,7 +61,7 @@ export async function createStudent(data: StudentFormValues) {
     ...validData,
     created_by: user.id,
     date_of_birth: validData.date_of_birth ? validData.date_of_birth.toISOString() : null,
-    enrollment_date: validData.enrollment_date ? validData.enrollment_date.toISOString() : new Date().toISOString(),
+    status: "ACTIVE",
   });
 
   if (error) {
@@ -89,7 +89,6 @@ export async function updateStudent(id: string, data: StudentFormValues) {
       ...validData,
       updated_at: new Date().toISOString(),
       date_of_birth: validData.date_of_birth ? validData.date_of_birth.toISOString() : null,
-      enrollment_date: validData.enrollment_date ? validData.enrollment_date.toISOString() : null,
     })
     .eq("id", id);
 

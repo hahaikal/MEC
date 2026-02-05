@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -10,41 +11,36 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Plus } from "lucide-react";
 import { StudentForm } from "./student-form";
-import { useCreateStudent } from "@/lib/hooks/use-students";
-import { StudentFormValues } from "@/lib/validators/student";
+import { useRouter } from "next/navigation";
 
 export function AddStudentDialog() {
   const [open, setOpen] = useState(false);
-  const { mutateAsync: createStudent, isPending } = useCreateStudent();
+  const router = useRouter();
 
-  const handleSubmit = async (values: StudentFormValues) => {
-    try {
-      await createStudent(values);
-      setOpen(false);
-    } catch (error) {
-      // Error handled by mutation hook toaster
-      console.error(error);
-    }
+  const handleSuccess = () => {
+    setOpen(false);
+    router.refresh(); // Refresh data on the page (e.g. table)
   };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="lg" className="gap-2">
-          <Plus className="h-5 w-5" />
-          Tambah Siswa
+        <Button>
+          <Plus className="mr-2 h-4 w-4" />
+          Add Student
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-2xl">Tambah Siswa Baru</DialogTitle>
+          <DialogTitle>Add New Student</DialogTitle>
           <DialogDescription>
-            Lengkapi form berikut untuk mendaftarkan siswa baru. Pastikan NIS yang diinput belum terdaftar.
+            Create a new student profile and enroll them in a program.
           </DialogDescription>
         </DialogHeader>
-        <StudentForm onSubmit={handleSubmit} isLoading={isPending} />
+        <div className="py-2">
+          <StudentForm onSuccess={handleSuccess} />
+        </div>
       </DialogContent>
     </Dialog>
   );

@@ -22,6 +22,7 @@ import { Badge } from "@/components/ui/badge";
 import { CalendarDays, CheckCircle2, Search, FilterX, Loader2, AlertCircle } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { PaymentActionDialog } from "./payment-action-dialog";
+import { StudentDetailDialog } from "./StudentDetailDialog";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 
@@ -32,6 +33,15 @@ type Student = {
   status: string;
   nis: string | null;
   class_year: string | null;
+  email: string | null;
+  phone_number: string | null;
+  parent_name: string | null;
+  parent_phone: string | null;
+  base_fee: number;
+  billing_cycle_date: number;
+  address: string | null;
+  date_of_birth: string | null;
+  created_at: string;
 };
 
 type Payment = {
@@ -66,6 +76,7 @@ export function TuitionMatrixTable() {
     month: string;
     existingPayment?: Payment;
   } | null>(null);
+  const [selectedStudent, setSelectedStudent] = React.useState<Student | null>(null);
 
   const supabase = createClient();
 
@@ -76,7 +87,7 @@ export function TuitionMatrixTable() {
       // 1. Fetch Students (Active only usually, but let's get all for history)
       const { data: studentsData, error: studentsError } = await supabase
         .from("students")
-        .select("id, name, status, nis, class_year")
+        .select("id, name, status, nis, class_year, email, phone_number, parent_name, parent_phone, base_fee, billing_cycle_date, address, date_of_birth, created_at")
         .order("name");
 
       if (studentsError) throw studentsError;
@@ -224,7 +235,13 @@ export function TuitionMatrixTable() {
                       {/* Sticky Student Name Column */}
                       <TableCell className="font-medium sticky left-0 bg-background group-hover:bg-muted/50 z-10 shadow-[1px_0_0_0_rgba(0,0,0,0.1)] pl-4 py-2 border-b">
                         <div className="flex flex-col">
-                          <span className="truncate max-w-[200px]" title={student.name}>{student.name}</span>
+                          <Button
+                            variant="ghost"
+                            className="h-auto p-0 justify-start text-left font-medium"
+                            onClick={() => setSelectedStudent(student)}
+                          >
+                            <span className="truncate max-w-[200px]" title={student.name}>{student.name}</span>
+                          </Button>
                           <span className="text-[10px] text-muted-foreground">{student.nis || "No NIS"} • {student.class_year || "N/A"}</span>
                         </div>
                       </TableCell>
@@ -276,6 +293,19 @@ export function TuitionMatrixTable() {
           existingPayment={selectedCell.existingPayment}
           onSuccess={handlePaymentSaved}
         />
+      )}
+
+      {/* Student Detail Dialog */}
+      {selectedStudent && (
+        <StudentDetailDialog
+          student={selectedStudent}
+          open={!!selectedStudent}
+          onOpenChange={(open) => {
+            if (!open) setSelectedStudent(null);
+          }}
+        >
+          <div />
+        </StudentDetailDialog>
       )}
     </div>
   );
