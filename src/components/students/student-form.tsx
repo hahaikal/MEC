@@ -30,7 +30,135 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import { CalendarIcon, Loader2 } from "lucide-react";
+import { CalendarIcon, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
+import { useState } from "react";
+
+interface DatePickerWithYearNavProps {
+  date?: Date;
+  onSelect: (date: Date) => void;
+}
+
+function DatePickerWithYearNav({ date, onSelect }: DatePickerWithYearNavProps) {
+  const [selectedYear, setSelectedYear] = useState(date?.getFullYear() || new Date().getFullYear());
+  const [selectedMonth, setSelectedMonth] = useState(date?.getMonth() || new Date().getMonth());
+  
+  const handleYearChange = (year: number) => {
+    setSelectedYear(year);
+  };
+
+  const handleMonthSelect = (day: number) => {
+    const newDate = new Date(selectedYear, selectedMonth, day);
+    onSelect(newDate);
+  };
+
+  const daysInMonth = new Date(selectedYear, selectedMonth + 1, 0).getDate();
+  const firstDayOfMonth = new Date(selectedYear, selectedMonth, 1).getDay();
+  const days = [];
+  
+  for (let i = 0; i < firstDayOfMonth; i++) {
+    days.push(null);
+  }
+  
+  for (let i = 1; i <= daysInMonth; i++) {
+    days.push(i);
+  }
+
+  const monthNames = [
+    "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+    "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+  ];
+
+  const currentYear = new Date().getFullYear();
+  const yearOptions = Array.from({ length: 80 }, (_, i) => currentYear - 80 + i).reverse();
+
+  return (
+    <div className="p-4 space-y-4 w-96">
+      {/* Year Navigator */}
+      <div className="space-y-2">
+        <label className="text-sm font-medium">Tahun</label>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setSelectedYear(selectedYear - 10)}
+            className="h-8 w-8 p-0"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <Select value={selectedYear.toString()} onValueChange={(v) => handleYearChange(parseInt(v))}>
+            <SelectTrigger className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="h-64">
+              {yearOptions.map((year) => (
+                <SelectItem key={year} value={year.toString()}>
+                  {year}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setSelectedYear(selectedYear + 10)}
+            className="h-8 w-8 p-0"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+
+      {/* Month Navigator */}
+      <div className="space-y-2">
+        <label className="text-sm font-medium">Bulan</label>
+        <div className="grid grid-cols-3 gap-2">
+          {monthNames.map((month, index) => (
+            <Button
+              key={month}
+              variant={selectedMonth === index ? "default" : "outline"}
+              size="sm"
+              onClick={() => setSelectedMonth(index)}
+              className="text-xs"
+            >
+              {month.slice(0, 3)}
+            </Button>
+          ))}
+        </div>
+      </div>
+
+      {/* Calendar */}
+      <div className="space-y-2">
+        <label className="text-sm font-medium">
+          {monthNames[selectedMonth]} {selectedYear}
+        </label>
+        <div className="grid grid-cols-7 gap-1">
+          {["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"].map((day) => (
+            <div key={day} className="text-center text-xs font-medium h-8 flex items-center justify-center">
+              {day}
+            </div>
+          ))}
+          {days.map((day, index) => (
+            <button
+              key={index}
+              onClick={() => day && handleMonthSelect(day)}
+              disabled={!day}
+              className={cn(
+                "h-8 w-8 rounded text-sm transition-colors",
+                !day && "invisible",
+                day && "hover:bg-accent cursor-pointer",
+                date && date.getDate() === day && date.getMonth() === selectedMonth && date.getFullYear() === selectedYear
+                  ? "bg-primary text-primary-foreground font-semibold"
+                  : ""
+              )}
+            >
+              {day}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 interface StudentFormProps {
   defaultValues?: Partial<StudentFormValues>;
@@ -61,11 +189,13 @@ export function StudentForm({ defaultValues, onSubmit, isLoading }: StudentFormP
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Informasi Dasar */}
           <div className="space-y-4">
-            <h3 className="text-sm font-medium text-muted-foreground border-b pb-2">Data Siswa</h3>
+            <div className="border-l-4 border-primary pl-4 py-2">
+              <h3 className="text-sm font-bold uppercase tracking-wide">Data Siswa</h3>
+            </div>
             
             <FormField
               control={form.control}
@@ -136,26 +266,24 @@ export function StudentForm({ defaultValues, onSubmit, isLoading }: StudentFormP
                           )}
                         >
                           {field.value ? (
-                            format(field.value, "PPP")
+                            format(field.value, "dd MMMM yyyy")
                           ) : (
-                            <span>Pilih tanggal</span>
+                            <span>Pilih tanggal lahir</span>
                           )}
                           <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                         </Button>
                       </FormControl>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="single"
-                        selected={field.value}
+                      <DatePickerWithYearNav
+                        date={field.value}
                         onSelect={field.onChange}
-                        disabled={(date) =>
-                          date > new Date() || date < new Date("1900-01-01")
-                        }
-                        initialFocus
                       />
                     </PopoverContent>
                   </Popover>
+                  <FormDescription>
+                    Pastikan tahun lahir akurat untuk perhitungan umur yang tepat
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -164,7 +292,9 @@ export function StudentForm({ defaultValues, onSubmit, isLoading }: StudentFormP
 
           {/* Informasi Orang Tua */}
           <div className="space-y-4">
-            <h3 className="text-sm font-medium text-muted-foreground border-b pb-2">Data Orang Tua</h3>
+            <div className="border-l-4 border-primary pl-4 py-2">
+              <h3 className="text-sm font-bold uppercase tracking-wide">Data Orang Tua</h3>
+            </div>
             <FormField
               control={form.control}
               name="parent_name"
@@ -215,7 +345,9 @@ export function StudentForm({ defaultValues, onSubmit, isLoading }: StudentFormP
 
         {/* Informasi Keuangan */}
         <div className="space-y-4 pt-4">
-            <h3 className="text-sm font-medium text-muted-foreground border-b pb-2">Pengaturan Pembayaran</h3>
+            <div className="border-l-4 border-primary pl-4 py-2">
+              <h3 className="text-sm font-bold uppercase tracking-wide">Pengaturan Pembayaran</h3>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField
                 control={form.control}

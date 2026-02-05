@@ -32,16 +32,16 @@ export function AddStudentDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" />
+        <Button size="lg" className="gap-2">
+          <Plus className="h-5 w-5" />
           Tambah Siswa
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Tambah Siswa Baru</DialogTitle>
+          <DialogTitle className="text-2xl">Tambah Siswa Baru</DialogTitle>
           <DialogDescription>
-            Masukkan data siswa baru. NIS harus unik.
+            Lengkapi form berikut untuk mendaftarkan siswa baru. Pastikan NIS yang diinput belum terdaftar.
           </DialogDescription>
         </DialogHeader>
         <StudentForm onSubmit={handleSubmit} isLoading={isPending} />
