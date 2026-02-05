@@ -79,14 +79,14 @@ export function DataTable<TData, TValue>({
         </div>
       </div>
 
-      <div className="rounded-md border">
+      <div className="rounded-md border overflow-x-auto">
         <Table>
-          <TableHeader>
+          <TableHeader className="bg-slate-700 hover:bg-slate-700">
             {table.getHeaderGroups().map((headerGroup: HeaderGroup<TData>) => (
-              <TableRow key={headerGroup.id}>
+              <TableRow key={headerGroup.id} className="border-b hover:bg-slate-700">
                 {headerGroup.headers.map((header: Header<TData, unknown>) => {
                   return (
-                    <TableHead key={header.id}>
+                    <TableHead key={header.id} className="whitespace-nowrap text-white font-semibold">
                       {header.isPlaceholder
                         ? null
                         : flexRender(
@@ -101,13 +101,14 @@ export function DataTable<TData, TValue>({
           </TableHeader>
           <TableBody>
             {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row: Row<TData>) => (
+              table.getRowModel().rows.map((row: Row<TData>, index: number) => (
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
+                  className={index % 2 === 0 ? "bg-white" : "bg-slate-50"}
                 >
                   {row.getVisibleCells().map((cell: Cell<TData, unknown>) => (
-                    <TableCell key={cell.id}>
+                    <TableCell key={cell.id} className="whitespace-nowrap">
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()

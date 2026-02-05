@@ -34,7 +34,9 @@ export default function StudentsPage() {
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
       ) : (
-        <DataTable columns={columns} data={students || []} />
+        <div className="overflow-x-auto">
+          <DataTable columns={columns} data={students || []} />
+        </div>
       )}
     </div>
   );

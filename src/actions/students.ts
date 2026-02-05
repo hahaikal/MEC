@@ -7,13 +7,27 @@ import { revalidatePath } from "next/cache";
 export async function getStudents() {
   const supabase = await createClient();
   
-  // Join dengan table classes untuk mendapatkan nama kelas (jika ada)
+  // Join dengan table classes untuk mendapatkan nama kelas dan payments
   const { data, error } = await supabase
     .from("students")
     .select(`
       *,
       classes (
         name
+      ),
+      payments (
+        id,
+        student_id,
+        payment_date,
+        amount,
+        payment_method,
+        payment_status,
+        program_id,
+        notes,
+        invoice_number,
+        received_by,
+        created_at,
+        updated_at
       )
     `)
     .order("created_at", { ascending: false });
