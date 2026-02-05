@@ -8,8 +8,8 @@ export const metadata = {
 
 export default function StudentsPage() {
   return (
-    <div className="flex flex-col h-full space-y-6 p-8">
-      <div className="flex items-center justify-between">
+    <div className="flex flex-col h-full p-8">
+      <div className="flex items-center justify-between mb-6">
         <div className="space-y-0.5">
           <h2 className="text-2xl font-bold tracking-tight">Manajemen Siswa & SPP</h2>
           <p className="text-muted-foreground">
@@ -17,8 +17,8 @@ export default function StudentsPage() {
           </p>
         </div>
       </div>
-      <Separator />
-      <div className="flex-1 overflow-hidden rounded-md border bg-card shadow-sm">
+      <Separator className="mb-6" />
+      <div className="flex-1 min-h-0 overflow-hidden rounded-md border bg-card shadow-sm">
         <TuitionMatrixTable />
       </div>
     </div>
