@@ -141,7 +141,7 @@ export function PaymentActionDialog({
                 type="number"
                 min="0"
                 placeholder="0"
-                value={discount === 0 ? "" : discount}
+                value={discount}
                 onChange={(e) => setDiscount(Number(e.target.value))}
               />
             </div>

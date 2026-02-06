@@ -1,3 +1,5 @@
+"use client"
+
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
@@ -9,7 +11,6 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-  FormDescription,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import {
@@ -19,319 +20,239 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { useClasses } from "@/lib/hooks/use-mutations" 
-import { useQuery } from "@tanstack/react-query"
-import { createClient } from "@/lib/supabase/client"
-import { useEffect } from "react"
+import { createStudent, updateStudent } from "@/actions/students"
+import { useToast } from "@/components/ui/use-toast" // atau path hook toast yang sesuai di projectmu
+import { useState } from "react"
 import { Loader2 } from "lucide-react"
 
-// Skema validasi
+// Schema validasi yang diperbarui agar lebih robust
 const studentSchema = z.object({
   name: z.string().min(2, "Nama minimal 2 karakter"),
+  nis: z.string().optional(),
   email: z.string().email("Email tidak valid").optional().or(z.literal("")),
   phone_number: z.string().optional(),
   parent_name: z.string().optional(),
   parent_phone: z.string().optional(),
   address: z.string().optional(),
-  date_of_birth: z.string().optional(), // String YYYY-MM-DD
-  status: z.enum(["ACTIVE", "GRADUATED", "DROPOUT", "ON_LEAVE"]).default("ACTIVE"),
-  class_id: z.string().optional(),
-  program_id: z.string().min(1, "Program wajib dipilih"), // Program wajib untuk enrollment awal
-  base_fee: z.coerce.number().min(0, "Biaya bulanan tidak boleh negatif"),
-  billing_cycle_date: z.coerce.number().min(1).max(28).default(10),
-  nis: z.string().optional(),
+  status: z.string().default("ACTIVE"),
+  class_year: z.string().optional(),
+  base_fee: z.string().or(z.number()).transform((val) => Number(val) || 0),
 })
 
-export type StudentFormValues = z.infer<typeof studentSchema>
-
 interface StudentFormProps {
-  defaultValues?: Partial<StudentFormValues>
-  onSubmit: (data: StudentFormValues) => void
-  isLoading?: boolean
+  initialData?: any // Data siswa untuk mode Edit
+  onSuccess?: () => void
 }
 
-export function StudentForm({ defaultValues, onSubmit, isLoading }: StudentFormProps) {
-  const supabase = createClient()
+export function StudentForm({ initialData, onSuccess }: StudentFormProps) {
+  const { toast } = useToast()
+  const [loading, setLoading] = useState(false)
 
-  // Fetch Classes
-  const { data: classesData } = useQuery({
-    queryKey: ['classes'],
-    queryFn: async () => {
-      const { data, error } = await supabase.from('classes').select('*').order('name')
-      if (error) throw error
-      return data
-    }
-  })
+  // Inisialisasi default values, memastikan tidak ada field yang undefined
+  const defaultValues = {
+    name: initialData?.name || "",
+    nis: initialData?.nis || "",
+    email: initialData?.email || "",
+    phone_number: initialData?.phone_number || "",
+    parent_name: initialData?.parent_name || "",
+    parent_phone: initialData?.parent_phone || "",
+    address: initialData?.address || "",
+    status: initialData?.status || "ACTIVE",
+    class_year: initialData?.class_year || "",
+    base_fee: initialData?.base_fee || 0,
+  }
 
-  // Fetch Programs (Active only)
-  const { data: programsData } = useQuery({
-    queryKey: ['programs'],
-    queryFn: async () => {
-      const { data, error } = await supabase.from('programs').select('*').eq('is_active', true).order('name')
-      if (error) throw error
-      return data
-    }
-  })
-
-  const form = useForm<StudentFormValues>({
+  const form = useForm<z.infer<typeof studentSchema>>({
     resolver: zodResolver(studentSchema),
-    defaultValues: {
-      name: "",
-      email: "",
-      phone_number: "",
-      parent_name: "",
-      parent_phone: "",
-      address: "",
-      status: "ACTIVE",
-      base_fee: 0,
-      billing_cycle_date: 10,
-      nis: "",
-      ...defaultValues,
-    },
+    defaultValues,
   })
 
-  // Set default price based on selected program IF base_fee is 0/empty
-  // Ini opsional, jika user ingin harga otomatis dari program, tapi tetap bisa diedit
-  const selectedProgramId = form.watch("program_id")
-  
-  useEffect(() => {
-    if (selectedProgramId && programsData && form.getValues("base_fee") === 0) {
-      const program = programsData.find(p => p.id === selectedProgramId)
-      if (program) {
-        // Asumsi harga program bisa jadi referensi awal
-        form.setValue("base_fee", Number(program.price))
+  // Fungsi onSubmit yang menangani Create (jika tidak ada ID) dan Update (jika ada ID)
+  async function onSubmit(values: z.infer<typeof studentSchema>) {
+    setLoading(true)
+    try {
+      if (initialData?.id) {
+        // Mode Edit
+        await updateStudent(initialData.id, values)
+        toast({
+          title: "Berhasil",
+          description: "Data siswa berhasil diperbarui",
+        })
+      } else {
+        // Mode Create
+        await createStudent(values)
+        toast({
+          title: "Berhasil",
+          description: "Siswa baru berhasil ditambahkan",
+        })
       }
+      onSuccess?.()
+    } catch (error) {
+      console.error(error)
+      toast({
+        variant: "destructive",
+        title: "Gagal",
+        description: "Terjadi kesalahan saat menyimpan data",
+      })
+    } finally {
+      setLoading(false)
     }
-  }, [selectedProgramId, programsData, form])
+  }
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Nama Lengkap</FormLabel>
+                <FormControl>
+                  <Input placeholder="Nama siswa" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
           
-          {/* Informasi Pribadi */}
-          <div className="space-y-4 border p-4 rounded-md">
-            <h3 className="font-semibold text-sm text-muted-foreground mb-2">Data Pribadi</h3>
-            
-            <FormField
-              control={form.control}
-              name="nis"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>NIS (Nomor Induk Siswa)</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Contoh: 2024001" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+          <FormField
+            control={form.control}
+            name="nis"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>NIS</FormLabel>
+                <FormControl>
+                  <Input placeholder="Nomor Induk Siswa" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Nama Lengkap *</FormLabel>
+          <FormField
+            control={form.control}
+            name="status"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Status</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
                   <FormControl>
-                    <Input placeholder="Nama siswa" {...field} />
+                    <SelectTrigger>
+                      <SelectValue placeholder="Pilih status" />
+                    </SelectTrigger>
                   </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                  <SelectContent>
+                    <SelectItem value="ACTIVE">Aktif</SelectItem>
+                    <SelectItem value="GRADUATED">Lulus</SelectItem>
+                    <SelectItem value="DROPOUT">Keluar</SelectItem>
+                    <SelectItem value="ON_LEAVE">Cuti</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-            <FormField
-              control={form.control}
-              name="date_of_birth"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Tanggal Lahir</FormLabel>
-                  <FormControl>
-                    <Input type="date" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+           <FormField
+            control={form.control}
+            name="base_fee"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>SPP Bulanan (Base Fee)</FormLabel>
+                <FormControl>
+                  <Input 
+                    type="number" 
+                    placeholder="0" 
+                    {...field}
+                    onChange={(e) => field.onChange(e.target.value)} 
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
 
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField
-              control={form.control}
-              name="address"
-              render={({ field }) => (
+                control={form.control}
+                name="email"
+                render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Alamat</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Alamat lengkap" {...field} />
-                  </FormControl>
-                  <FormMessage />
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                    <Input placeholder="email@contoh.com" {...field} />
+                    </FormControl>
+                    <FormMessage />
                 </FormItem>
-              )}
+                )}
             />
-          </div>
-
-          {/* Informasi Kontak Orang Tua */}
-          <div className="space-y-4 border p-4 rounded-md">
-            <h3 className="font-semibold text-sm text-muted-foreground mb-2">Kontak & Orang Tua</h3>
-            
             <FormField
-              control={form.control}
-              name="parent_name"
-              render={({ field }) => (
+                control={form.control}
+                name="phone_number"
+                render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nama Orang Tua</FormLabel>
-                  <FormControl>
+                    <FormLabel>No. HP Siswa</FormLabel>
+                    <FormControl>
+                    <Input placeholder="08..." {...field} />
+                    </FormControl>
+                    <FormMessage />
+                </FormItem>
+                )}
+            />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+                control={form.control}
+                name="parent_name"
+                render={({ field }) => (
+                <FormItem>
+                    <FormLabel>Nama Orang Tua</FormLabel>
+                    <FormControl>
                     <Input placeholder="Nama Ayah/Ibu" {...field} />
-                  </FormControl>
-                  <FormMessage />
+                    </FormControl>
+                    <FormMessage />
                 </FormItem>
-              )}
+                )}
             />
-
-            <FormField
-              control={form.control}
-              name="parent_phone"
-              render={({ field }) => (
+             <FormField
+                control={form.control}
+                name="parent_phone"
+                render={({ field }) => (
                 <FormItem>
-                  <FormLabel>No. HP Orang Tua (WA)</FormLabel>
-                  <FormControl>
-                    <Input placeholder="0812..." {...field} />
-                  </FormControl>
-                  <FormMessage />
+                    <FormLabel>No. HP Orang Tua</FormLabel>
+                    <FormControl>
+                    <Input placeholder="08..." {...field} />
+                    </FormControl>
+                    <FormMessage />
                 </FormItem>
-              )}
+                )}
             />
-
-            <FormField
-              control={form.control}
-              name="phone_number"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>No. HP Siswa (Opsional)</FormLabel>
-                  <FormControl>
-                    <Input placeholder="0812..." {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
         </div>
 
-        {/* Informasi Akademik & Keuangan */}
-        <div className="border p-4 rounded-md space-y-4">
-          <h3 className="font-semibold text-sm text-muted-foreground mb-2">Akademik & Keuangan</h3>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormField
-              control={form.control}
-              name="class_id"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Kelas Fisik</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Pilih Kelas" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {classesData?.map((c) => (
-                        <SelectItem key={c.id} value={c.id}>
-                          {c.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+        <FormField
+            control={form.control}
+            name="address"
+            render={({ field }) => (
+            <FormItem>
+                <FormLabel>Alamat</FormLabel>
+                <FormControl>
+                <Input placeholder="Alamat lengkap" {...field} />
+                </FormControl>
+                <FormMessage />
+            </FormItem>
+            )}
+        />
 
-            <FormField
-              control={form.control}
-              name="program_id"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Program Pendidikan *</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Pilih Program" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {programsData?.map((p) => (
-                        <SelectItem key={p.id} value={p.id}>
-                          {p.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormDescription>
-                    Program menentukan kurikulum yang diambil siswa.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="base_fee"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Biaya Bulanan (SPP) *</FormLabel>
-                  <FormControl>
-                    {/* Fix: Handle NaN by converting null/undefined to empty string for display, but number for logic */}
-                    <div className="relative">
-                      <span className="absolute left-3 top-2.5 text-gray-500">Rp</span>
-                      <Input 
-                        type="number" 
-                        className="pl-10" 
-                        placeholder="0" 
-                        {...field}
-                        value={field.value ?? ''}
-                        onChange={(e) => field.onChange(e.target.valueAsNumber)} 
-                      />
-                    </div>
-                  </FormControl>
-                  <FormDescription>
-                    Harga SPP khusus untuk siswa ini (unik).
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="billing_cycle_date"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Tanggal Tagihan</FormLabel>
-                  <FormControl>
-                    <Input 
-                      type="number" 
-                      min={1} 
-                      max={28} 
-                      {...field} 
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Tanggal jatuh tempo setiap bulan (1-28).
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
+        <div className="flex justify-end space-x-2 pt-4">
+          <Button type="submit" disabled={loading}>
+            {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Simpan Data
+          </Button>
         </div>
-
-        <Button type="submit" className="w-full" disabled={isLoading}>
-          {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-          Simpan Data Siswa
-        </Button>
       </form>
     </Form>
   )
