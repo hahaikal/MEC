@@ -1,6 +1,8 @@
-"use client";
-
-import * as React from "react";
+import { useState, useEffect } from "react"
+import { useQueryClient } from "@tanstack/react-query"
+import { useRouter } from "next/navigation"
+import { createClient } from "@/lib/supabase/client"
+import { toast } from "sonner"
 import {
   Dialog,
   DialogContent,
@@ -8,273 +10,186 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { createClient } from "@/lib/supabase/client";
-import { Loader2, CheckCircle2, Calendar, CreditCard, User, Receipt } from "lucide-react";
-import { format } from "date-fns";
-import { useToast } from "@/components/ui/use-toast";
-import { Separator } from "@/components/ui/separator";
-
-type Student = {
-  id: string;
-  name: string;
-  nis: string | null;
-};
-
-type Payment = {
-  id: string;
-  amount: number;
-  payment_date: string;
-  invoice_number: string | null;
-  payment_method?: string; // Add this if available in your type or ignore for display if not needed
-};
+} from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select"
+import { Textarea } from "@/components/ui/textarea"
+import { formatCurrency } from "@/lib/utils"
+import { Loader2 } from "lucide-react"
 
 interface PaymentActionDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  student: Student;
-  month: string;
-  year: string;
-  existingPayment?: Payment;
-  onSuccess: () => void;
+  studentId: string
+  studentName: string
+  programId: string
+  monthName: string
+  year: string
+  baseFee: number
+  status: "paid" | "unpaid" | "partial"
+  open: boolean
+  onOpenChange: (open: boolean) => void
 }
 
 export function PaymentActionDialog({
+  studentId,
+  studentName,
+  programId,
+  monthName,
+  year,
+  baseFee,
+  status,
   open,
   onOpenChange,
-  student,
-  month,
-  year,
-  existingPayment,
-  onSuccess,
 }: PaymentActionDialogProps) {
-  const { toast } = useToast();
-  const supabase = createClient();
-  const [loading, setLoading] = React.useState(false);
+  const [isLoading, setIsLoading] = useState(false)
+  const queryClient = useQueryClient()
+  const router = useRouter()
+  const supabase = createClient()
+  
+  const [paymentDate, setPaymentDate] = useState<string>(new Date().toISOString().split('T')[0])
+  const [discount, setDiscount] = useState<number>(0)
+  const [paymentMethod, setPaymentMethod] = useState("cash")
+  const [notes, setNotes] = useState("")
 
-  // Form States
-  const [amount, setAmount] = React.useState("150000"); // Default fee, can be made dynamic later
-  const [paymentMethod, setPaymentMethod] = React.useState("cash");
-  const [notes, setNotes] = React.useState("");
+  const finalAmount = Math.max(0, baseFee - discount)
 
-  // Mode: "view" if paid, "add" if unpaid
-  const isViewMode = !!existingPayment;
+  useEffect(() => {
+    if (open) {
+      setPaymentDate(new Date().toISOString().split('T')[0])
+      setDiscount(0)
+      setNotes("")
+      setPaymentMethod("cash")
+    }
+  }, [open])
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
+  const handlePayment = async () => {
+    if (!programId) {
+      toast.error("Data program siswa tidak ditemukan. Pembayaran membutuhkan Program ID.")
+      return
+    }
 
     try {
-      // 1. Get the current user for received_by
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("User not authenticated");
-
-      // 2. Need to find an active program for the student to link the payment
-      const { data: programData, error: programError } = await supabase
-        .from('student_programs')
-        .select('program_id')
-        .eq('student_id', student.id)
-        .eq('status', 'active')
-        .limit(1)
-        .single();
-
-      // If no active program, we might default to a generic one or throw error
-      // For now, let's assume one exists or proceed carefully. 
-      // If no program found, we can't insert into `payments` due to FK constraint typically.
-      const programId = programData?.program_id;
-
-      if (!programId) {
-         throw new Error("Siswa tidak memiliki program aktif. Harap daftarkan siswa ke program terlebih dahulu.");
-      }
-
-      const invoiceNum = `INV/${format(new Date(), "yyyyMMdd")}/${Math.floor(Math.random() * 10000)}`;
-
-      // 3. Insert Payment
+      setIsLoading(true)
+      
       const { error } = await supabase.from("payments").insert({
-        student_id: student.id,
+        student_id: studentId,
         program_id: programId,
-        amount: parseFloat(amount),
-        payment_date: new Date().toISOString(), // Or use a selected date
+        amount: finalAmount,
+        category: "tuition",
+        payment_for_month: `${monthName} ${year}`,
+        payment_date: paymentDate,
         payment_method: paymentMethod,
         payment_status: "completed",
-        category: "tuition",
-        payment_for_month: month, // The key linkage
-        received_by: user.id,
-        invoice_number: invoiceNum,
-        notes: notes || `Pembayaran SPP Bulan ${month} ${year}`,
-      });
+        notes: notes ? `${notes} (Disc: ${formatCurrency(discount)})` : discount > 0 ? `Discount: ${formatCurrency(discount)}` : null,
+        received_by: (await supabase.auth.getUser()).data.user?.id
+      })
 
-      if (error) throw error;
+      if (error) throw error
 
-      toast({
-        title: "Pembayaran Berhasil",
-        description: `SPP ${month} untuk ${student.name} telah dicatat.`,
-      });
-
-      onSuccess();
+      toast.success(`Pembayaran SPP ${monthName} berhasil`)
+      queryClient.invalidateQueries({ queryKey: ["payments"] })
+      queryClient.invalidateQueries({ queryKey: ["students"] }) // Refresh status pembayaran di tabel siswa juga
+      router.refresh() // Refresh data server component
+      onOpenChange(false)
     } catch (error: any) {
-      console.error(error);
-      toast({
-        variant: "destructive",
-        title: "Gagal Menyimpan",
-        description: error.message || "Terjadi kesalahan saat menyimpan pembayaran.",
-      });
+      toast.error("Gagal mencatat pembayaran: " + error.message)
     } finally {
-      setLoading(false);
+      setIsLoading(false)
     }
-  };
-
-  // Reset form when opening for a new unsaved cell
-  React.useEffect(() => {
-    if (open && !existingPayment) {
-      setAmount("150000"); // Reset to default
-      setPaymentMethod("cash");
-      setNotes("");
-    }
-  }, [open, existingPayment]);
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            {isViewMode ? (
-              <>
-                <CheckCircle2 className="h-5 w-5 text-green-600" />
-                Detail Pembayaran
-              </>
-            ) : (
-              <>
-                <Receipt className="h-5 w-5 text-primary" />
-                Input Pembayaran SPP
-              </>
-            )}
-          </DialogTitle>
+          <DialogTitle>Bayar SPP: {monthName} {year}</DialogTitle>
           <DialogDescription>
-            {isViewMode
-              ? "Informasi pembayaran yang telah tercatat."
-              : `Masukkan data pembayaran untuk bulan ${month} ${year}.`}
+            Siswa: <span className="font-semibold text-foreground">{studentName}</span>
           </DialogDescription>
         </DialogHeader>
 
-        {isViewMode ? (
-          // --- VIEW MODE ---
-          <div className="grid gap-4 py-4">
-            <div className="bg-muted/30 p-4 rounded-lg space-y-3 border">
-              <div className="grid grid-cols-3 gap-2 text-sm">
-                <span className="text-muted-foreground">Siswa:</span>
-                <span className="col-span-2 font-medium">{student.name}</span>
-              </div>
-              <div className="grid grid-cols-3 gap-2 text-sm">
-                <span className="text-muted-foreground">Bulan:</span>
-                <span className="col-span-2 font-medium">{month} {year}</span>
-              </div>
-              <Separator />
-              <div className="grid grid-cols-3 gap-2 text-sm">
-                <span className="text-muted-foreground">Jumlah:</span>
-                <span className="col-span-2 font-bold text-green-600">
-                  Rp {existingPayment?.amount?.toLocaleString("id-ID")}
-                </span>
-              </div>
-              <div className="grid grid-cols-3 gap-2 text-sm">
-                <span className="text-muted-foreground">Tanggal:</span>
-                <span className="col-span-2">
-                  {existingPayment?.payment_date ? format(new Date(existingPayment.payment_date), "dd MMMM yyyy") : "-"}
-                </span>
-              </div>
-              <div className="grid grid-cols-3 gap-2 text-sm">
-                <span className="text-muted-foreground">Invoice:</span>
-                <span className="col-span-2 font-mono text-xs">{existingPayment?.invoice_number || "-"}</span>
+        <div className="grid gap-4 py-4">
+          <div className="grid gap-2">
+            <Label htmlFor="date">Tanggal Pembayaran</Label>
+            <Input
+              id="date"
+              type="date"
+              value={paymentDate}
+              onChange={(e) => setPaymentDate(e.target.value)}
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="grid gap-2">
+              <Label>Biaya (SPP)</Label>
+              <div className="h-10 px-3 py-2 bg-muted rounded-md text-sm flex items-center font-medium">
+                {formatCurrency(baseFee)}
               </div>
             </div>
             
-            <div className="flex justify-end">
-               <Button variant="outline" onClick={() => onOpenChange(false)}>Tutup</Button>
-            </div>
-          </div>
-        ) : (
-          // --- ADD MODE ---
-          <form onSubmit={handleSubmit} className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label>Siswa</Label>
-              <div className="flex items-center gap-2 p-2 border rounded-md bg-muted/50 text-sm">
-                <User className="h-4 w-4 text-muted-foreground" />
-                <span className="font-medium">{student.name}</span>
-                {student.nis && <span className="text-muted-foreground text-xs">({student.nis})</span>}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-               <div className="grid gap-2">
-                  <Label>Bulan</Label>
-                  <div className="flex items-center gap-2 p-2 border rounded-md bg-muted/50 text-sm">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
-                    <span>{month} {year}</span>
-                  </div>
-               </div>
-               <div className="grid gap-2">
-                  <Label htmlFor="method">Metode</Label>
-                  <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-                    <SelectTrigger id="method">
-                      <SelectValue placeholder="Pilih" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="cash">Tunai</SelectItem>
-                      <SelectItem value="transfer">Transfer</SelectItem>
-                      <SelectItem value="card">Kartu</SelectItem>
-                    </SelectContent>
-                  </Select>
-               </div>
-            </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="amount">Jumlah Pembayaran (Rp)</Label>
-              <div className="relative">
-                 <span className="absolute left-3 top-2.5 text-muted-foreground text-sm">Rp</span>
-                 <Input
-                    id="amount"
-                    type="number"
-                    className="pl-9 font-bold"
-                    value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
-                    required
-                    min="1"
-                  />
-              </div>
-            </div>
-
-            <div className="grid gap-2">
-              <Label htmlFor="notes">Catatan (Opsional)</Label>
+              <Label htmlFor="discount">Diskon (Rp)</Label>
               <Input
-                id="notes"
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="Contoh: Titipan orang tua"
+                id="discount"
+                type="number"
+                min="0"
+                placeholder="0"
+                value={discount === 0 ? "" : discount}
+                onChange={(e) => setDiscount(Number(e.target.value))}
               />
             </div>
+          </div>
 
-            <DialogFooter className="mt-4">
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-                Batal
-              </Button>
-              <Button type="submit" disabled={loading}>
-                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Simpan Pembayaran
-              </Button>
-            </DialogFooter>
-          </form>
-        )}
+          <div className="p-3 bg-blue-50 dark:bg-blue-950/30 rounded-md flex justify-between items-center border border-blue-100 dark:border-blue-900">
+            <span className="text-sm font-medium">Total Diterima:</span>
+            <span className="text-lg font-bold text-blue-600 dark:text-blue-400">
+              {formatCurrency(finalAmount)}
+            </span>
+          </div>
+
+          <div className="grid gap-2">
+            <Label htmlFor="method">Metode Pembayaran</Label>
+            <Select value={paymentMethod} onValueChange={setPaymentMethod}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="cash">Tunai (Cash)</SelectItem>
+                <SelectItem value="transfer">Transfer Bank</SelectItem>
+                <SelectItem value="qris">QRIS</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="grid gap-2">
+            <Label htmlFor="notes">Catatan</Label>
+            <Textarea
+              id="notes"
+              placeholder="Catatan tambahan..."
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+            />
+          </div>
+
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Batal
+          </Button>
+          <Button onClick={handlePayment} disabled={isLoading}>
+            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Simpan
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
+  )
 }

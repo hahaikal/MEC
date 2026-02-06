@@ -18,7 +18,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Plus, Download, Eye, CheckCircle2, Clock, XCircle } from "lucide-react"
-import { formatRupiah } from "@/lib/utils"
+import { formatCurrency } from "@/lib/utils"
 
 // Mock payment data
 const mockPayments = [

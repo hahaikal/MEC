@@ -1,328 +1,338 @@
-"use client";
-
-import { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
-import { Button } from "@/components/ui/button";
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import * as z from "zod"
+import { Button } from "@/components/ui/button"
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+  FormDescription,
+} from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { studentSchema, type StudentFormValues } from "@/lib/validators/student";
-import { toast } from "sonner";
-import { useAuth } from "@/lib/auth/use-auth";
+} from "@/components/ui/select"
+import { useClasses } from "@/lib/hooks/use-mutations" 
+import { useQuery } from "@tanstack/react-query"
+import { createClient } from "@/lib/supabase/client"
+import { useEffect } from "react"
+import { Loader2 } from "lucide-react"
+
+// Skema validasi
+const studentSchema = z.object({
+  name: z.string().min(2, "Nama minimal 2 karakter"),
+  email: z.string().email("Email tidak valid").optional().or(z.literal("")),
+  phone_number: z.string().optional(),
+  parent_name: z.string().optional(),
+  parent_phone: z.string().optional(),
+  address: z.string().optional(),
+  date_of_birth: z.string().optional(), // String YYYY-MM-DD
+  status: z.enum(["ACTIVE", "GRADUATED", "DROPOUT", "ON_LEAVE"]).default("ACTIVE"),
+  class_id: z.string().optional(),
+  program_id: z.string().min(1, "Program wajib dipilih"), // Program wajib untuk enrollment awal
+  base_fee: z.coerce.number().min(0, "Biaya bulanan tidak boleh negatif"),
+  billing_cycle_date: z.coerce.number().min(1).max(28).default(10),
+  nis: z.string().optional(),
+})
+
+export type StudentFormValues = z.infer<typeof studentSchema>
 
 interface StudentFormProps {
-  onSuccess?: () => void;
-  initialData?: any; // Data siswa untuk mode edit
+  defaultValues?: Partial<StudentFormValues>
+  onSubmit: (data: StudentFormValues) => void
+  isLoading?: boolean
 }
 
-export function StudentForm({ onSuccess, initialData }: StudentFormProps) {
-  const [isLoading, setIsLoading] = useState(false);
-  const [programs, setPrograms] = useState<{ id: string; name: string; price: number }[]>([]);
-  const [classes, setClasses] = useState<{ id: string; name: string }[]>([]);
-  const { user } = useAuth();
-  const supabase = createClient();
-  const isEditing = !!initialData;
+export function StudentForm({ defaultValues, onSubmit, isLoading }: StudentFormProps) {
+  const supabase = createClient()
+
+  // Fetch Classes
+  const { data: classesData } = useQuery({
+    queryKey: ['classes'],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('classes').select('*').order('name')
+      if (error) throw error
+      return data
+    }
+  })
+
+  // Fetch Programs (Active only)
+  const { data: programsData } = useQuery({
+    queryKey: ['programs'],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('programs').select('*').eq('is_active', true).order('name')
+      if (error) throw error
+      return data
+    }
+  })
 
   const form = useForm<StudentFormValues>({
     resolver: zodResolver(studentSchema),
     defaultValues: {
-      name: initialData?.name || "",
-      email: initialData?.email || "",
-      phone_number: initialData?.phone_number || "",
-      parent_name: initialData?.parent_name || "",
-      parent_phone: initialData?.parent_phone || "",
-      nis: initialData?.nis || "",
-      base_fee: initialData?.base_fee || 0,
-      billing_cycle_date: initialData?.billing_cycle_date || 10,
-      class_id: initialData?.class_id || undefined,
-      program_id: initialData?.paymentMap?.program_id || "", 
-      address: initialData?.address || "",
+      name: "",
+      email: "",
+      phone_number: "",
+      parent_name: "",
+      parent_phone: "",
+      address: "",
+      status: "ACTIVE",
+      base_fee: 0,
+      billing_cycle_date: 10,
+      nis: "",
+      ...defaultValues,
     },
-  });
+  })
 
-  // Fetch Programs and Classes on mount
+  // Set default price based on selected program IF base_fee is 0/empty
+  // Ini opsional, jika user ingin harga otomatis dari program, tapi tetap bisa diedit
+  const selectedProgramId = form.watch("program_id")
+  
   useEffect(() => {
-    async function fetchData() {
-      const { data: programsData, error: programsError } = await supabase
-        .from("programs")
-        .select("id, name, price")
-        .eq("is_active", true);
-
-      if (programsError) {
-        console.error("Error fetching programs:", programsError);
-      } else if (programsData) {
-        setPrograms(programsData);
-      }
-
-      const { data: classesData, error: classesError } = await supabase
-        .from("classes")
-        .select("id, name")
-        .order("name");
-
-      if (classesError) {
-        console.error("Error fetching classes:", classesError);
-      } else if (classesData) {
-        setClasses(classesData);
+    if (selectedProgramId && programsData && form.getValues("base_fee") === 0) {
+      const program = programsData.find(p => p.id === selectedProgramId)
+      if (program) {
+        // Asumsi harga program bisa jadi referensi awal
+        form.setValue("base_fee", Number(program.price))
       }
     }
-    fetchData();
-  }, [initialData, supabase]);
-
-  const handleProgramChange = (programId: string) => {
-    const program = programs.find((p) => p.id === programId);
-    if (program) {
-      // Only auto-set fee if creating new or explicitly changing program
-      form.setValue("base_fee", program.price);
-    }
-    form.setValue("program_id", programId);
-  };
-
-  async function onSubmit(data: StudentFormValues) {
-    if (!user) {
-      toast.error("You must be logged in");
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      if (isEditing) {
-        // --- UPDATE MODE ---
-        const { error: updateError } = await supabase
-          .from("students")
-          .update({
-            name: data.name,
-            email: data.email || null,
-            phone_number: data.phone_number || null,
-            parent_name: data.parent_name || null,
-            parent_phone: data.parent_phone || null,
-            nis: data.nis || null,
-            address: data.address || null,
-            base_fee: data.base_fee,
-            class_id: data.class_id || null,
-            billing_cycle_date: data.billing_cycle_date,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", initialData.id);
-
-        if (updateError) throw updateError;
-        toast.success("Student updated successfully");
-      } else {
-        // --- CREATE MODE ---
-        // FIX: Change status to 'ACTIVE' (uppercase) to match database constraint
-        const { data: student, error: studentError } = await supabase
-          .from("students")
-          .insert({
-            name: data.name,
-            email: data.email || null,
-            phone_number: data.phone_number || null,
-            parent_name: data.parent_name || null,
-            parent_phone: data.parent_phone || null,
-            nis: data.nis || null,
-            date_of_birth: data.date_of_birth ? data.date_of_birth.toISOString() : null,
-            address: data.address || null,
-            base_fee: data.base_fee,
-            class_id: data.class_id || null,
-            billing_cycle_date: data.billing_cycle_date,
-            created_by: user.id,
-            status: "ACTIVE", 
-          })
-          .select()
-          .single();
-
-        if (studentError) {
-            console.error("Student Insert Error:", studentError);
-            throw studentError;
-        }
-
-        // Enroll Student
-        const { error: enrollmentError } = await supabase
-          .from("student_programs")
-          .insert({
-            student_id: student.id,
-            program_id: data.program_id,
-            status: "active", // This table likely uses lowercase 'active', checking schema... schema says 'active' is allowed.
-            enrollment_date: new Date().toISOString(),
-          });
-
-        if (enrollmentError) {
-          console.error("Enrollment error:", enrollmentError);
-          toast.warning("Student created but program enrollment failed.");
-        } else {
-          toast.success("Student created and enrolled successfully");
-        }
-      }
-
-      form.reset();
-      onSuccess?.();
-    } catch (error: any) {
-      console.error(error);
-      toast.error(error.message || "Operation failed");
-    } finally {
-      setIsLoading(false);
-    }
-  }
+  }, [selectedProgramId, programsData, form])
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <FormField
-          control={form.control}
-          name="name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Full Name</FormLabel>
-              <FormControl>
-                <Input placeholder="John Doe" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <div className="grid grid-cols-2 gap-4">
-           <FormField
-            control={form.control}
-            name="nis"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>NIS (Student ID)</FormLabel>
-                <FormControl>
-                  <Input placeholder="12345" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           
-          <FormField
-            control={form.control}
-            name="class_id"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Class</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value || ""}>
+          {/* Informasi Pribadi */}
+          <div className="space-y-4 border p-4 rounded-md">
+            <h3 className="font-semibold text-sm text-muted-foreground mb-2">Data Pribadi</h3>
+            
+            <FormField
+              control={form.control}
+              name="nis"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>NIS (Nomor Induk Siswa)</FormLabel>
                   <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select Class" />
-                    </SelectTrigger>
+                    <Input placeholder="Contoh: 2024001" {...field} />
                   </FormControl>
-                  <SelectContent>
-                    {classes.map((c) => (
-                      <SelectItem key={c.id} value={c.id}>
-                        {c.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Nama Lengkap *</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Nama siswa" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="date_of_birth"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Tanggal Lahir</FormLabel>
+                  <FormControl>
+                    <Input type="date" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="address"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Alamat</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Alamat lengkap" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          {/* Informasi Kontak Orang Tua */}
+          <div className="space-y-4 border p-4 rounded-md">
+            <h3 className="font-semibold text-sm text-muted-foreground mb-2">Kontak & Orang Tua</h3>
+            
+            <FormField
+              control={form.control}
+              name="parent_name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Nama Orang Tua</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Nama Ayah/Ibu" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="parent_phone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>No. HP Orang Tua (WA)</FormLabel>
+                  <FormControl>
+                    <Input placeholder="0812..." {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="phone_number"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>No. HP Siswa (Opsional)</FormLabel>
+                  <FormControl>
+                    <Input placeholder="0812..." {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
         </div>
 
-        {/* Only show program selection if creating new student or we want to allow changing it explicitly */}
-        {(!isEditing || true) && (
-             <FormField
-             control={form.control}
-             name="program_id"
-             render={({ field }) => (
-               <FormItem>
-                 <FormLabel>Program</FormLabel>
-                 <Select onValueChange={handleProgramChange} defaultValue={field.value}>
-                   <FormControl>
-                     <SelectTrigger>
-                       <SelectValue placeholder="Select Program" />
-                     </SelectTrigger>
-                   </FormControl>
-                   <SelectContent>
-                     {programs.map((p) => (
-                       <SelectItem key={p.id} value={p.id}>
-                         {p.name} - {new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR" }).format(p.price)}
-                       </SelectItem>
-                     ))}
-                   </SelectContent>
-                 </Select>
-                 <FormDescription>
-                    {isEditing ? "Changing this may update the monthly fee." : "Sets the default tuition fee."}
-                 </FormDescription>
-                 <FormMessage />
-               </FormItem>
-             )}
-           />
-        )}
-     
+        {/* Informasi Akademik & Keuangan */}
+        <div className="border p-4 rounded-md space-y-4">
+          <h3 className="font-semibold text-sm text-muted-foreground mb-2">Akademik & Keuangan</h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="class_id"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Kelas Fisik</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Pilih Kelas" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {classesData?.map((c) => (
+                        <SelectItem key={c.id} value={c.id}>
+                          {c.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-        <div className="grid grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="parent_name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Parent Name</FormLabel>
-                <FormControl>
-                  <Input placeholder="Jane Doe" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="parent_phone"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Parent Phone</FormLabel>
-                <FormControl>
-                  <Input placeholder="+62..." {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+            <FormField
+              control={form.control}
+              name="program_id"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Program Pendidikan *</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Pilih Program" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {programsData?.map((p) => (
+                        <SelectItem key={p.id} value={p.id}>
+                          {p.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormDescription>
+                    Program menentukan kurikulum yang diambil siswa.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="base_fee"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Biaya Bulanan (SPP) *</FormLabel>
+                  <FormControl>
+                    {/* Fix: Handle NaN by converting null/undefined to empty string for display, but number for logic */}
+                    <div className="relative">
+                      <span className="absolute left-3 top-2.5 text-gray-500">Rp</span>
+                      <Input 
+                        type="number" 
+                        className="pl-10" 
+                        placeholder="0" 
+                        {...field}
+                        value={field.value ?? ''}
+                        onChange={(e) => field.onChange(e.target.valueAsNumber)} 
+                      />
+                    </div>
+                  </FormControl>
+                  <FormDescription>
+                    Harga SPP khusus untuk siswa ini (unik).
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="billing_cycle_date"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Tanggal Tagihan</FormLabel>
+                  <FormControl>
+                    <Input 
+                      type="number" 
+                      min={1} 
+                      max={28} 
+                      {...field} 
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Tanggal jatuh tempo setiap bulan (1-28).
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
         </div>
 
-        <FormField
-          control={form.control}
-          name="base_fee"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Monthly Tuition Fee (IDR)</FormLabel>
-              <FormControl>
-                <Input 
-                  type="number" 
-                  {...field} 
-                  onChange={e => field.onChange(parseFloat(e.target.value))}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <div className="flex justify-end pt-4 gap-2">
-          <Button type="submit" disabled={isLoading}>
-            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {isEditing ? "Update Student" : "Save Student"}
-          </Button>
-        </div>
+        <Button type="submit" className="w-full" disabled={isLoading}>
+          {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          Simpan Data Siswa
+        </Button>
       </form>
     </Form>
-  );
+  )
 }

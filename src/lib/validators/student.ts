@@ -7,8 +7,9 @@ export const studentSchema = z.object({
   parent_name: z.string().optional(),
   parent_phone: z.string().optional(),
   nis: z.string().optional(),
-  date_of_birth: z.date().optional(),
+  date_of_birth: z.string().optional(),
   address: z.string().optional(),
+  status: z.enum(["ACTIVE", "GRADUATED", "DROPOUT", "ON_LEAVE"]).default("ACTIVE"),
   class_id: z.string().uuid("Please select a class").optional(),
   program_id: z.string().uuid("Please select a program"), // Mandatory for payments
   base_fee: z.coerce.number().min(0, "Fee must be positive"),
