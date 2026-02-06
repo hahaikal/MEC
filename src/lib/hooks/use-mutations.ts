@@ -1,57 +1,87 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { createClient } from '@/lib/supabase/client'
+import { createStudent, updateStudent, deleteStudent } from '@/actions/students'
+import { useToast } from '@/components/ui/use-toast'
+import { StudentFormValues } from '@/lib/validators/student'
 
-const supabase = createClient()
-
-export function useAddStudent() {
+export function useCreateStudent() {
   const queryClient = useQueryClient()
+  const { toast } = useToast()
 
   return useMutation({
-    mutationFn: async (studentData: {
-      name: string
-      email: string
-      phone: string
-      program_id: string
-      enrollment_date: string
-      status: string
-    }) => {
-      const { data, error } = await supabase
-        .from('students')
-        .insert([studentData])
-        .select()
-        .single()
-
-      if (error) throw error
-      return data
+    mutationFn: async (data: StudentFormValues) => {
+      const result = await createStudent(data)
+      if (result.error) throw new Error(result.error)
+      return result
     },
     onSuccess: () => {
+      // INI KUNCINYA: Invalidate query 'students' agar data diambil ulang otomatis
       queryClient.invalidateQueries({ queryKey: ['students'] })
+      
+      toast({
+        title: 'Berhasil',
+        description: 'Data siswa berhasil ditambahkan.',
+      })
+    },
+    onError: (error) => {
+      toast({
+        variant: 'destructive',
+        title: 'Gagal',
+        description: error.message,
+      })
     },
   })
 }
 
-export function useAddPayment() {
+export function useUpdateStudent() {
   const queryClient = useQueryClient()
+  const { toast } = useToast()
 
   return useMutation({
-    mutationFn: async (paymentData: {
-      student_id: string
-      amount: number
-      payment_method: string
-      payment_date: string
-      description?: string
-    }) => {
-      const { data, error } = await supabase
-        .from('payments')
-        .insert([paymentData])
-        .select()
-        .single()
-
-      if (error) throw error
-      return data
+    mutationFn: async ({ id, data }: { id: string; data: StudentFormValues }) => {
+      const result = await updateStudent(id, data)
+      if (result.error) throw new Error(result.error)
+      return result
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['payments'] })
+      queryClient.invalidateQueries({ queryKey: ['students'] })
+      toast({
+        title: 'Berhasil',
+        description: 'Data siswa berhasil diperbarui.',
+      })
+    },
+    onError: (error) => {
+      toast({
+        variant: 'destructive',
+        title: 'Gagal',
+        description: error.message,
+      })
+    },
+  })
+}
+
+export function useDeleteStudent() {
+  const queryClient = useQueryClient()
+  const { toast } = useToast()
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const result = await deleteStudent(id)
+      if (result.error) throw new Error(result.error)
+      return result
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['students'] })
+      toast({
+        title: 'Berhasil',
+        description: 'Data siswa berhasil dihapus.',
+      })
+    },
+    onError: (error) => {
+      toast({
+        variant: 'destructive',
+        title: 'Gagal',
+        description: error.message,
+      })
     },
   })
 }

@@ -1,120 +1,169 @@
-"use client";
+'use client'
 
-import { ColumnDef } from "@tanstack/react-table";
-import { Student } from "@/lib/validators/student";
-import { PaymentStatusCell } from "./payment-status-cell";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { StudentDetailDialog } from "./StudentDetailDialog";
+import { ColumnDef } from '@tanstack/react-table'
+import { MoreHorizontal, ArrowUpDown } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { Badge } from '@/components/ui/badge'
+import { PaymentStatusCell } from './payment-status-cell'
+import { AddStudentDialog } from './add-student-dialog'
+import { useDeleteStudent } from '@/lib/hooks/use-mutations'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
+import { useState } from 'react'
+import { StudentDetailDialog } from './StudentDetailDialog'
 
-// Extended Student type to include the payment map
-export type StudentTuitionRow = Student & {
-  paymentMap: Record<string, any>;
-};
+// Sesuaikan tipe data dengan hasil query dari Supabase
+export type Student = {
+  id: string
+  name: string
+  nis: string | null
+  email: string | null
+  class_name: string | null // Update ini
+  class_year: string | null
+  status: 'ACTIVE' | 'GRADUATED' | 'DROPOUT' | 'ON_LEAVE'
+  parent_name: string | null
+  phone_number: string | null
+  enrollment_date: string | null
+  base_fee: number
+  created_at: string
+}
 
-const months = [
-  "January", "February", "March", "April", "May", "June", 
-  "July", "August", "September", "October", "November", "December"
-];
-
-export const columns: ColumnDef<StudentTuitionRow>[] = [
+export const columns: ColumnDef<Student>[] = [
   {
-    id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
-        }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-      />
-    ),
-    enableSorting: false,
-    enableHiding: false,
-    size: 40,
-    maxSize: 40,
-  },
-  {
-    accessorKey: "name",
-    header: "Student Name",
-    size: 250,
-    minSize: 200,
-    enablePinning: true,
-    cell: ({ row }) => {
-      const student = row.original;
+    accessorKey: 'name',
+    header: ({ column }) => {
       return (
-        <StudentDetailDialog student={student}>
-            <button className="flex w-full text-left items-center gap-3 cursor-pointer group hover:bg-slate-50 p-1 rounded-md transition-colors outline-none focus-visible:ring-2 focus-visible:ring-primary">
-                <Avatar className="h-8 w-8">
-                    <AvatarImage src={`https://api.dicebear.com/7.x/initials/svg?seed=${student.name}`} />
-                    <AvatarFallback>{student.name.substring(0, 2).toUpperCase()}</AvatarFallback>
-                </Avatar>
-                <div className="flex flex-col">
-                    <span className="font-medium text-sm group-hover:text-primary transition-colors">{student.name}</span>
-                    <span className="text-xs text-muted-foreground truncate max-w-[150px]">
-                    {student.nis || "No ID"}
-                    </span>
-                </div>
-            </button>
-        </StudentDetailDialog>
-      );
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+        >
+          Nama Siswa
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      )
     },
-  },
-  {
-    accessorKey: "class_year",
-    header: "Class",
-    size: 80,
     cell: ({ row }) => (
-      <div className="text-xs font-medium text-muted-foreground">
-        {row.getValue("class_year") || "-"}
+      <div className="flex flex-col">
+        <span className="font-medium">{row.getValue('name')}</span>
+        <span className="text-xs text-muted-foreground">{row.original.nis || '-'}</span>
       </div>
     ),
   },
   {
-    accessorKey: "status",
-    header: "Status",
-    size: 100,
+    accessorKey: 'class_name',
+    header: 'Kelas',
     cell: ({ row }) => {
-      const status = row.getValue("status") as string;
-      return (
-        <Badge 
-          variant={status === "active" || status === "ACTIVE" ? "default" : "secondary"}
-          className="capitalize text-[10px] px-2 h-5"
-        >
-          {status.toLowerCase()}
-        </Badge>
-      );
+      const className = row.getValue('class_name') as string
+      return className ? <Badge variant="outline">{className}</Badge> : <span className="text-muted-foreground">-</span>
     },
   },
-  // Generate columns for each month
-  ...months.map((month) => ({
-    accessorKey: `paymentMap.${month}`,
-    id: month.toLowerCase(),
-    header: () => <span className="text-xs font-semibold text-muted-foreground">{month.slice(0, 3)}</span>,
-    size: 60, // Fixed width for month columns
-    cell: ({ row }: { row: any }) => {
-      const student = row.original;
-      // Access the specific payment for this month from the map
-      const payment = student.paymentMap?.[month];
+  {
+    accessorKey: 'class_year',
+    header: 'Angkatan',
+  },
+  {
+    accessorKey: 'status',
+    header: 'Status',
+    cell: ({ row }) => {
+      const status = row.getValue('status') as string
+      
+      const variantMap: Record<string, "default" | "destructive" | "outline" | "secondary"> = {
+        ACTIVE: 'default',
+        GRADUATED: 'secondary',
+        DROPOUT: 'destructive',
+        ON_LEAVE: 'outline',
+      }
       
       return (
-        <div className="flex justify-center">
-          <PaymentStatusCell 
-            student={student} 
-            month={month} 
-            payment={payment} 
-          />
-        </div>
-      );
+        <Badge variant={variantMap[status] || 'default'}>
+          {status}
+        </Badge>
+      )
     },
-  })),
-];
+  },
+  {
+    id: 'payment_status',
+    header: 'Status Pembayaran (Bulan Ini)',
+    cell: ({ row }) => <PaymentStatusCell studentId={row.original.id} />,
+  },
+  {
+    id: 'actions',
+    cell: ({ row }) => {
+      const student = row.original
+      const deleteStudent = useDeleteStudent()
+      const [showDeleteAlert, setShowDeleteAlert] = useState(false)
+      const [showDetailDialog, setShowDetailDialog] = useState(false)
+
+      return (
+        <>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <span className="sr-only">Open menu</span>
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Aksi</DropdownMenuLabel>
+              <DropdownMenuItem onClick={() => setShowDetailDialog(true)}>
+                Lihat Detail & Edit
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem 
+                className="text-red-600 focus:text-red-600"
+                onClick={() => setShowDeleteAlert(true)}
+              >
+                Hapus Siswa
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <AlertDialog open={showDeleteAlert} onOpenChange={setShowDeleteAlert}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Apakah anda yakin?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Tindakan ini tidak dapat dibatalkan. Data siswa beserta riwayat pembayarannya akan dihapus permanen.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Batal</AlertDialogCancel>
+                <AlertDialogAction 
+                  className="bg-red-600 hover:bg-red-700"
+                  onClick={() => deleteStudent.mutate(student.id)}
+                >
+                  Hapus
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+          
+           {/* Dialog Edit/Detail menggunakan form yang sama, di wrap component wrapper */}
+           {/* Catatan: Untuk simplifikasi, logic edit biasanya digabung dengan AddStudentDialog atau dialog terpisah yang memanggil StudentForm */}
+           <AddStudentDialog 
+             open={showDetailDialog} 
+             onOpenChange={setShowDetailDialog}
+             studentToEdit={student} 
+           />
+        </>
+      )
+    },
+  },
+]

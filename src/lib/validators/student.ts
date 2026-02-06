@@ -1,27 +1,25 @@
-import { z } from "zod";
+import { z } from 'zod'
 
 export const studentSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters"),
-  email: z.string().email("Invalid email address").optional().or(z.literal("")),
+  name: z.string().min(1, 'Nama lengkap wajib diisi'),
+  nis: z.string().optional(),
+  email: z.string().email('Email tidak valid').optional().or(z.literal('')),
   phone_number: z.string().optional(),
+  
+  // Data Akademik
+  class_name: z.string().optional(), // Menggantikan class_id
+  class_year: z.string().optional(),
+  status: z.enum(['ACTIVE', 'GRADUATED', 'DROPOUT', 'ON_LEAVE']).default('ACTIVE'),
+  enrollment_date: z.string().optional(), // Untuk tanggal masuk
+  
+  // Data Orang Tua
   parent_name: z.string().optional(),
   parent_phone: z.string().optional(),
-  nis: z.string().optional(),
-  date_of_birth: z.string().optional(),
-  address: z.string().optional(),
-  status: z.enum(["ACTIVE", "GRADUATED", "DROPOUT", "ON_LEAVE"]).default("ACTIVE"),
-  class_id: z.string().uuid("Please select a class").optional(),
-  program_id: z.string().uuid("Please select a program"), // Mandatory for payments
-  base_fee: z.coerce.number().min(0, "Fee must be positive"),
+  
+  // Data Keuangan & Alamat
+  base_fee: z.coerce.number().min(0, 'Biaya SPP tidak boleh negatif'),
   billing_cycle_date: z.coerce.number().min(1).max(28).default(10),
-});
+  address: z.string().optional(),
+})
 
-export type StudentFormValues = z.infer<typeof studentSchema>;
-
-export type Student = StudentFormValues & {
-  id: string;
-  status: string;
-  enrollment_date: string;
-  created_at: string;
-  class_year?: string;
-};
+export type StudentFormValues = z.infer<typeof studentSchema>

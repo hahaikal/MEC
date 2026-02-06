@@ -31,7 +31,6 @@ export function AddStudentDialog() {
           </DialogDescription>
         </DialogHeader>
         <div className="py-4">
-          {/* Menggunakan onSuccess untuk menutup dialog setelah submit berhasil */}
           <StudentForm onSuccess={() => setOpen(false)} />
         </div>
       </DialogContent>

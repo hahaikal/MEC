@@ -1,43 +1,73 @@
-import { Suspense } from "react";
-import { Metadata } from "next";
-import { getStudents } from "@/actions/students";
-import { AddStudentDialog } from "@/components/students/add-student-dialog";
-import { StudentStats } from "@/components/students/student-stats";
-import { StudentsClientWrapper } from "@/components/students/students-client-wrapper";
+'use client'
 
-export const metadata: Metadata = {
-  title: "Data Siswa & Keuangan",
-  description: "Kelola data siswa dan status pembayaran SPP",
-};
+import { useState } from 'react'
+import { Plus, Search } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { DataTable } from '@/components/students/data-table'
+import { columns } from '@/components/students/columns'
+import { StudentStats } from '@/components/students/student-stats'
+import { AddStudentDialog } from '@/components/students/add-student-dialog'
+import { useStudents } from '@/lib/hooks/use-students'
+import { Skeleton } from '@/components/ui/skeleton'
 
-export default async function StudentsPage() {
-  const students = await getStudents();
+export default function StudentsPage() {
+  const [searchQuery, setSearchQuery] = useState('')
+  const { data: students, isLoading, isError } = useStudents()
+
+  // Filter client-side sederhana
+  const filteredStudents = students?.filter(student => 
+    student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    student.nis?.includes(searchQuery)
+  ) || []
 
   return (
-    <div className="flex flex-col space-y-6 p-8 h-full">
-      {/* Header Section */}
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between space-y-2 md:space-y-0">
+    <div className="space-y-6">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Manajemen Siswa</h2>
+          <h1 className="text-2xl font-bold tracking-tight">Manajemen Siswa</h1>
           <p className="text-muted-foreground">
-            Monitoring pembayaran SPP dan data siswa.
+            Kelola data siswa, status akademik, dan riwayat pembayaran.
           </p>
         </div>
         <AddStudentDialog />
       </div>
 
-      {/* Stats Section - Memberikan insight cepat */}
-      <Suspense fallback={<div className="h-32 bg-muted/20 animate-pulse rounded-lg" />}>
-        <StudentStats students={students} />
-      </Suspense>
+      {/* Stats Cards */}
+      <StudentStats students={students || []} />
 
-      {/* Main Content (Filters + Table Matrix) */}
-      <div className="flex-1 overflow-hidden rounded-xl border bg-card text-card-foreground shadow">
-        <div className="p-4 md:p-6 h-full flex flex-col">
-          {/* Wrapper client untuk logic filtering */}
-          <StudentsClientWrapper initialData={students} />
+      {/* Data Table Section */}
+      <div className="space-y-4">
+        <div className="flex items-center gap-2">
+          <div className="relative flex-1 md:max-w-sm">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Cari nama atau NIS..."
+              className="pl-8"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+        </div>
+
+        <div className="rounded-md border bg-card">
+          {isLoading ? (
+             <div className="p-8 space-y-4">
+               <div className="flex items-center justify-between">
+                 <Skeleton className="h-8 w-[200px]" />
+                 <Skeleton className="h-8 w-[100px]" />
+               </div>
+               <Skeleton className="h-[300px] w-full" />
+             </div>
+          ) : isError ? (
+            <div className="p-8 text-center text-red-500">
+              Gagal memuat data siswa. Silakan coba lagi.
+            </div>
+          ) : (
+            <DataTable columns={columns} data={filteredStudents} />
+          )}
         </div>
       </div>
     </div>
-  );
+  )
 }
