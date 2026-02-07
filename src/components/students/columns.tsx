@@ -75,33 +75,76 @@ export const columns: ColumnDef<Student>[] = [
     },
   },
   {
-    accessorKey: 'class_year',
-    header: 'Angkatan',
+    id: 'januari',
+    header: () => <div className="w-20 text-center text-xs font-medium">Jan</div>,
+    size: 80,
+    cell: ({ row }) => <PaymentStatusCell student={row.original} month={0} />,
   },
   {
-    accessorKey: 'status',
-    header: 'Status',
-    cell: ({ row }) => {
-      const status = row.getValue('status') as string
-      
-      const variantMap: Record<string, "default" | "destructive" | "outline" | "secondary"> = {
-        ACTIVE: 'default',
-        GRADUATED: 'secondary',
-        DROPOUT: 'destructive',
-        ON_LEAVE: 'outline',
-      }
-      
-      return (
-        <Badge variant={variantMap[status] || 'default'}>
-          {status}
-        </Badge>
-      )
-    },
+    id: 'februari',
+    header: () => <div className="w-20 text-center text-xs font-medium">Feb</div>,
+    size: 80,
+    cell: ({ row }) => <PaymentStatusCell student={row.original} month={1} />,
   },
   {
-    id: 'payment_status',
-    header: 'Status Pembayaran (Bulan Ini)',
-    cell: ({ row }) => <PaymentStatusCell studentId={row.original.id} />,
+    id: 'maret',
+    header: () => <div className="w-20 text-center text-xs font-medium">Mar</div>,
+    size: 80,
+    cell: ({ row }) => <PaymentStatusCell student={row.original} month={2} />,
+  },
+  {
+    id: 'april',
+    header: () => <div className="w-20 text-center text-xs font-medium">Apr</div>,
+    size: 80,
+    cell: ({ row }) => <PaymentStatusCell student={row.original} month={3} />,
+  },
+  {
+    id: 'mei',
+    header: () => <div className="w-20 text-center text-xs font-medium">Mei</div>,
+    size: 80,
+    cell: ({ row }) => <PaymentStatusCell student={row.original} month={4} />,
+  },
+  {
+    id: 'juni',
+    header: () => <div className="w-20 text-center text-xs font-medium">Jun</div>,
+    size: 80,
+    cell: ({ row }) => <PaymentStatusCell student={row.original} month={5} />,
+  },
+  {
+    id: 'juli',
+    header: () => <div className="w-20 text-center text-xs font-medium">Jul</div>,
+    size: 80,
+    cell: ({ row }) => <PaymentStatusCell student={row.original} month={6} />,
+  },
+  {
+    id: 'agustus',
+    header: () => <div className="w-20 text-center text-xs font-medium">Ags</div>,
+    size: 80,
+    cell: ({ row }) => <PaymentStatusCell student={row.original} month={7} />,
+  },
+  {
+    id: 'september',
+    header: () => <div className="w-20 text-center text-xs font-medium">Sep</div>,
+    size: 80,
+    cell: ({ row }) => <PaymentStatusCell student={row.original} month={8} />,
+  },
+  {
+    id: 'oktober',
+    header: () => <div className="w-20 text-center text-xs font-medium">Okt</div>,
+    size: 80,
+    cell: ({ row }) => <PaymentStatusCell student={row.original} month={9} />,
+  },
+  {
+    id: 'november',
+    header: () => <div className="w-20 text-center text-xs font-medium">Nov</div>,
+    size: 80,
+    cell: ({ row }) => <PaymentStatusCell student={row.original} month={10} />,
+  },
+  {
+    id: 'desember',
+    header: () => <div className="w-20 text-center text-xs font-medium">Des</div>,
+    size: 80,
+    cell: ({ row }) => <PaymentStatusCell student={row.original} month={11} />,
   },
   {
     id: 'actions',

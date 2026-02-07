@@ -2,12 +2,12 @@
 
 import { useState } from "react";
 import { format } from "date-fns";
-import { 
-  Calendar, 
-  CheckCircle2, 
-  CreditCard, 
-  Info, 
-  Loader2 
+import {
+  Calendar,
+  CheckCircle2,
+  CreditCard,
+  Info,
+  Loader2
 } from "lucide-react";
 import {
   Popover,
@@ -28,6 +28,7 @@ import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { PaymentEntryForm } from "@/components/finance/payment-entry-form";
 import { useRouter } from "next/navigation";
+import { usePayments } from "@/lib/hooks/use-payments";
 
 // Define strict types for the props
 interface Payment {
@@ -48,13 +49,32 @@ interface Student {
 
 interface PaymentStatusCellProps {
   student: Student;
-  month: string;
-  payment?: Payment | null;
+  month?: number; // 0-11
+  year?: number;
 }
 
-export function PaymentStatusCell({ student, month, payment }: PaymentStatusCellProps) {
+export function PaymentStatusCell({ student, month, year }: PaymentStatusCellProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const router = useRouter();
+
+  // Use provided month/year or default to current
+  const currentDate = new Date();
+  const targetMonth = month ?? currentDate.getMonth();
+  const targetYear = year ?? currentDate.getFullYear();
+
+  const targetDate = new Date(targetYear, targetMonth, 1);
+  const monthName = format(targetDate, 'MMMM yyyy');
+  const startOfMonth = new Date(targetYear, targetMonth, 1);
+  const endOfMonth = new Date(targetYear, targetMonth + 1, 0);
+
+  // Fetch payments for current month
+  const { data: paymentsData } = usePayments({
+    studentId: student.id,
+    startDate: startOfMonth.toISOString().split('T')[0],
+    endDate: endOfMonth.toISOString().split('T')[0],
+  });
+
+  const payment = paymentsData?.data?.[0] || null;
 
   // If payment exists and is completed/verified
   if (payment && payment.payment_status === 'completed') {
@@ -67,7 +87,7 @@ export function PaymentStatusCell({ student, month, payment }: PaymentStatusCell
             className="h-8 w-8 hover:bg-green-50 text-green-600 hover:text-green-700"
           >
             <CheckCircle2 className="h-5 w-5" />
-            <span className="sr-only">Paid {month}</span>
+          <span className="sr-only">Paid {monthName}</span>
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-80 p-0" align="center">
@@ -78,7 +98,7 @@ export function PaymentStatusCell({ student, month, payment }: PaymentStatusCell
                 <span>Payment Completed</span>
               </div>
               <p className="text-xs text-green-600">
-                Tuition for {month}
+                Tuition for {monthName}
               </p>
             </div>
             
@@ -150,32 +170,20 @@ export function PaymentStatusCell({ student, month, payment }: PaymentStatusCell
           className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
         >
           <Calendar className="h-4 w-4" />
-          <span className="sr-only">Pay for {month}</span>
+          <span className="sr-only">Pay for {monthName}</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Record Payment</DialogTitle>
           <DialogDescription>
-            Enter tuition payment details for <strong>{student.name}</strong> for the month of <strong>{month}</strong>.
+            Enter tuition payment details for <strong>{student.name}</strong> for the month of <strong>{monthName}</strong>.
           </DialogDescription>
         </DialogHeader>
         
-        {/* We use the existing PaymentEntryForm but pre-fill data */}
+        {/* We use the existing PaymentEntryForm */}
         <div className="mt-4">
-          <PaymentEntryForm 
-            prefillData={{
-              studentId: student.id,
-              month: month, // Assuming the form handles month mapping or string
-              amount: student.base_fee || 0,
-              category: 'tuition'
-            }}
-            onSuccess={() => {
-              setIsDialogOpen(false);
-              router.refresh(); // Refresh server data
-            }}
-            onCancel={() => setIsDialogOpen(false)}
-          />
+          <PaymentEntryForm />
         </div>
       </DialogContent>
     </Dialog>
