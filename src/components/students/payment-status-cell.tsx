@@ -26,7 +26,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
-import { PaymentEntryForm } from "@/components/finance/payment-entry-form";
+// import { PaymentEntryForm } from "@/components/finance/payment-entry-form";
+import { QuickPaymentForm } from "@/components/finance/quick-payment-form";
 import { useRouter } from "next/navigation";
 import { usePayments } from "@/lib/hooks/use-payments";
 
@@ -181,9 +182,14 @@ export function PaymentStatusCell({ student, month, year }: PaymentStatusCellPro
           </DialogDescription>
         </DialogHeader>
         
-        {/* We use the existing PaymentEntryForm */}
+        {/* We use the simplified QuickPaymentForm */}
         <div className="mt-4">
-          <PaymentEntryForm />
+          <QuickPaymentForm
+            student={student}
+            month={targetMonth}
+            year={targetYear}
+            onSuccess={() => setIsDialogOpen(false)}
+          />
         </div>
       </DialogContent>
     </Dialog>

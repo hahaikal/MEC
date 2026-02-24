@@ -43,7 +43,7 @@ export function AddStudentDialog({ open, onOpenChange, studentToEdit }: AddStude
           </DialogDescription>
         </DialogHeader>
         <div className="py-4">
-          <StudentForm onSuccess={() => setDialogOpen?.(false)} studentToEdit={studentToEdit} />
+          <StudentForm onSuccess={() => setDialogOpen?.(false)} initialData={studentToEdit} />
         </div>
       </DialogContent>
     </Dialog>

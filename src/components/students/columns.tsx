@@ -1,7 +1,7 @@
 'use client'
 
 import { ColumnDef } from '@tanstack/react-table'
-import { MoreHorizontal, ArrowUpDown } from 'lucide-react'
+import { MoreHorizontal, ArrowUpDown, Pencil, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -59,12 +59,27 @@ export const columns: ColumnDef<Student>[] = [
         </Button>
       )
     },
-    cell: ({ row }) => (
-      <div className="flex flex-col">
-        <span className="font-medium">{row.getValue('name')}</span>
-        <span className="text-xs text-muted-foreground">{row.original.nis || '-'}</span>
-      </div>
-    ),
+    cell: ({ row }) => {
+      const [showDetail, setShowDetail] = useState(false)
+      const student = row.original
+
+      return (
+        <>
+          <div
+            className="flex flex-col cursor-pointer hover:bg-slate-100 p-1 rounded transition-colors"
+            onClick={() => setShowDetail(true)}
+          >
+            <span className="font-medium text-primary hover:underline">{row.getValue('name')}</span>
+            <span className="text-xs text-muted-foreground">{student.nis || '-'}</span>
+          </div>
+          <AddStudentDialog
+             open={showDetail}
+             onOpenChange={setShowDetail}
+             studentToEdit={student}
+           />
+        </>
+      )
+    },
   },
   {
     accessorKey: 'class_name',
@@ -166,6 +181,7 @@ export const columns: ColumnDef<Student>[] = [
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Aksi</DropdownMenuLabel>
               <DropdownMenuItem onClick={() => setShowDetailDialog(true)}>
+                <Pencil className="mr-2 h-4 w-4" />
                 Lihat Detail & Edit
               </DropdownMenuItem>
               <DropdownMenuSeparator />
@@ -173,6 +189,7 @@ export const columns: ColumnDef<Student>[] = [
                 className="text-red-600 focus:text-red-600"
                 onClick={() => setShowDeleteAlert(true)}
               >
+                <Trash2 className="mr-2 h-4 w-4" />
                 Hapus Siswa
               </DropdownMenuItem>
             </DropdownMenuContent>
