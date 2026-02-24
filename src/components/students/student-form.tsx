@@ -23,6 +23,11 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
+import { CalendarIcon } from 'lucide-react'
+import { format } from 'date-fns'
+import { cn } from '@/lib/utils'
+import { Calendar } from '@/components/ui/calendar'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 
 interface StudentFormProps {
   initialData?: any 
@@ -42,25 +47,32 @@ export function StudentForm({ initialData, onSuccess }: StudentFormProps) {
       ...initialData,
       // Pastikan field optional memiliki fallback string kosong jika null
       class_name: initialData.class_name || '',
-      nis: initialData.nis || '',
       email: initialData.email || '',
       phone_number: initialData.phone_number || '',
       parent_name: initialData.parent_name || '',
       parent_phone: initialData.parent_phone || '',
       address: initialData.address || '',
+      place_of_birth: initialData.place_of_birth || '',
+      date_of_birth: initialData.date_of_birth || '',
+      gender: initialData.gender || 'MALE',
+      religion: initialData.religion || '',
+      school_origin: initialData.school_origin || '',
+      parent_occupation: initialData.parent_occupation || '',
     } : {
       name: '',
+      place_of_birth: '',
+      date_of_birth: '',
+      gender: 'MALE',
+      religion: '',
+      address: '',
       email: '',
       phone_number: '',
-      nis: '',
+      school_origin: '',
       class_name: '',
-      class_year: new Date().getFullYear().toString(),
-      status: 'ACTIVE',
       parent_name: '',
+      parent_occupation: '',
       parent_phone: '',
-      address: '',
       base_fee: 0,
-      billing_cycle_date: 10,
     },
   })
 
@@ -86,120 +98,219 @@ export function StudentForm({ initialData, onSuccess }: StudentFormProps) {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Data Pribadi */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-medium text-muted-foreground">Data Siswa</h3>
-            
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+
+        {/* SECTION: DATA PRIBADI */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold border-b pb-2">Biodata Siswa</h3>
+
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Nama Lengkap</FormLabel>
+                <FormControl>
+                  <Input placeholder="Nama Lengkap Siswa" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField
               control={form.control}
-              name="name"
+              name="place_of_birth"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nama Lengkap</FormLabel>
+                  <FormLabel>Tempat Lahir</FormLabel>
                   <FormControl>
-                    <Input placeholder="Nama siswa" {...field} />
+                    <Input placeholder="Kota Lahir" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            <div className="grid grid-cols-2 gap-2">
-              <FormField
-                control={form.control}
-                name="nis"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>NIS</FormLabel>
-                    <FormControl>
-                      <Input placeholder="NIS" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            <FormField
+              control={form.control}
+              name="date_of_birth"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Tanggal Lahir</FormLabel>
+                  <FormControl>
+                     <Input
+                       type="date"
+                       placeholder="Tanggal Lahir"
+                       {...field}
+                       value={field.value ? format(new Date(field.value), "yyyy-MM-dd") : ""}
+                       onChange={(e) => field.onChange(e.target.value)}
+                     />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-              <FormField
-                control={form.control}
-                name="class_name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Kelas</FormLabel>
+            <FormField
+              control={form.control}
+              name="gender"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Jenis Kelamin</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
-                      <Input placeholder="Contoh: 10 IPA 1" {...field} />
+                      <SelectTrigger>
+                        <SelectValue placeholder="Pilih Jenis Kelamin" />
+                      </SelectTrigger>
                     </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+                    <SelectContent>
+                      <SelectItem value="MALE">Laki-laki</SelectItem>
+                      <SelectItem value="FEMALE">Perempuan</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-            <div className="grid grid-cols-2 gap-2">
-                <FormField
-                control={form.control}
-                name="class_year"
-                render={({ field }) => (
-                    <FormItem>
-                    <FormLabel>Angkatan</FormLabel>
+            <FormField
+              control={form.control}
+              name="religion"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Agama</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
-                        <Input placeholder="2024" {...field} />
+                      <SelectTrigger>
+                        <SelectValue placeholder="Pilih Agama" />
+                      </SelectTrigger>
                     </FormControl>
-                    <FormMessage />
-                    </FormItem>
-                )}
-                />
-                 <FormField
-                  control={form.control}
-                  name="status"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Status</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Pilih status" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="ACTIVE">Aktif</SelectItem>
-                          <SelectItem value="GRADUATED">Lulus</SelectItem>
-                          <SelectItem value="DROPOUT">Keluar</SelectItem>
-                          <SelectItem value="ON_LEAVE">Cuti</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-            </div>
+                    <SelectContent>
+                      <SelectItem value="ISLAM">Islam</SelectItem>
+                      <SelectItem value="KRISTEN">Kristen</SelectItem>
+                      <SelectItem value="KATOLIK">Katolik</SelectItem>
+                      <SelectItem value="HINDU">Hindu</SelectItem>
+                      <SelectItem value="BUDDHA">Buddha</SelectItem>
+                      <SelectItem value="KONGHUCU">Konghucu</SelectItem>
+                      <SelectItem value="LAINNYA">Lainnya</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </div>
 
-          {/* Data Kontak & Wali */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-medium text-muted-foreground">Kontak & Wali</h3>
-            
+          <FormField
+            control={form.control}
+            name="address"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Alamat Lengkap</FormLabel>
+                <FormControl>
+                  <Textarea placeholder="Jalan, RT/RW, Kelurahan, Kecamatan..." {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        {/* SECTION: DATA AKADEMIK */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold border-b pb-2">Data Akademik</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="school_origin"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Sekolah Asal</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Nama Sekolah Asal" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="class_name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Kelas Saat Ini (Masuk)</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Contoh: 10 IPA 1" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {!isEditing && (
+              <FormField
+                control={form.control}
+                name="enrollment_date"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Tanggal Masuk / Gabung</FormLabel>
+                    <FormControl>
+                       <Input
+                         type="date"
+                         {...field}
+                         value={field.value ? format(new Date(field.value), "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd")}
+                         onChange={(e) => field.onChange(e.target.value)}
+                       />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+          </div>
+        </div>
+
+        {/* SECTION: DATA ORANG TUA */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold border-b pb-2">Data Orang Tua / Wali</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField
               control={form.control}
               name="parent_name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nama Orang Tua/Wali</FormLabel>
+                  <FormLabel>Nama Orang Tua</FormLabel>
                   <FormControl>
-                    <Input placeholder="Nama orang tua" {...field} />
+                    <Input placeholder="Nama Ayah/Ibu" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-             <FormField
+            <FormField
               control={form.control}
-              name="phone_number"
+              name="parent_occupation"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>No. HP Siswa</FormLabel>
+                  <FormLabel>Pekerjaan Orang Tua</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Pekerjaan" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="parent_phone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>No. HP Orang Tua</FormLabel>
                   <FormControl>
                     <Input placeholder="08..." {...field} />
                   </FormControl>
@@ -207,15 +318,29 @@ export function StudentForm({ initialData, onSuccess }: StudentFormProps) {
                 </FormItem>
               )}
             />
-            
+
             <FormField
               control={form.control}
-              name="parent_phone"
+              name="phone_number"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>No. HP Wali</FormLabel>
+                  <FormLabel>No. HP Siswa (Opsional)</FormLabel>
                   <FormControl>
                     <Input placeholder="08..." {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email Siswa (Opsional)</FormLabel>
+                  <FormControl>
+                    <Input type="email" placeholder="contoh@email.com" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -223,9 +348,12 @@ export function StudentForm({ initialData, onSuccess }: StudentFormProps) {
             />
           </div>
         </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormField
+
+        {/* SECTION: KEUANGAN */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold border-b pb-2">Pengaturan Keuangan</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+             <FormField
                 control={form.control}
                 name="base_fee"
                 render={({ field }) => (
@@ -234,7 +362,7 @@ export function StudentForm({ initialData, onSuccess }: StudentFormProps) {
                     <FormControl>
                     <Input 
                         type="number" 
-                        placeholder="0" 
+                        placeholder="0"
                         {...field} 
                         onChange={e => field.onChange(Number(e.target.value))}
                     />
@@ -243,42 +371,8 @@ export function StudentForm({ initialData, onSuccess }: StudentFormProps) {
                 </FormItem>
                 )}
             />
-
-            <FormField
-                control={form.control}
-                name="billing_cycle_date"
-                render={({ field }) => (
-                <FormItem>
-                    <FormLabel>Tanggal Tagihan (Setiap bulan)</FormLabel>
-                    <FormControl>
-                    <Input 
-                        type="number" 
-                        min={1} 
-                        max={28} 
-                        placeholder="10" 
-                        {...field} 
-                        onChange={e => field.onChange(Number(e.target.value))}
-                    />
-                    </FormControl>
-                    <FormMessage />
-                </FormItem>
-                )}
-            />
+          </div>
         </div>
-
-        <FormField
-          control={form.control}
-          name="address"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Alamat Lengkap</FormLabel>
-              <FormControl>
-                <Textarea placeholder="Alamat siswa..." {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
 
         <div className="flex justify-end pt-4">
           <Button type="submit" disabled={isLoading}>

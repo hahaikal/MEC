@@ -38,6 +38,7 @@ const quickPaymentSchema = z.object({
   payment_method: z.enum(['CASH', 'TRANSFER'], {
     required_error: "Metode pembayaran harus dipilih",
   }),
+  discount_amount: z.coerce.number().min(0).default(0),
 })
 
 type QuickPaymentFormValues = z.infer<typeof quickPaymentSchema>
@@ -59,6 +60,7 @@ export function QuickPaymentForm({ student, month, year, onSuccess }: QuickPayme
   const form = useForm<QuickPaymentFormValues>({
     resolver: zodResolver(quickPaymentSchema),
     defaultValues: {
+      discount_amount: 0,
       payment_date: (() => {
         const now = new Date();
         const targetDate = new Date(year, month, 1);
@@ -83,11 +85,17 @@ export function QuickPaymentForm({ student, month, year, onSuccess }: QuickPayme
 
   const monthName = format(new Date(year, month, 1), 'MMMM yyyy', { locale: idLocale })
 
+  // Kalkulasi Total
+  const discount = form.watch("discount_amount") || 0;
+  const baseFee = student.base_fee || 0;
+  const finalAmount = Math.max(0, baseFee - discount);
+
   function onSubmit(data: QuickPaymentFormValues) {
     // Construct payment object
     const paymentData = {
       student_id: student.id,
-      amount: student.base_fee || 0, // Use base_fee from student
+      amount: finalAmount, // Final amount after discount
+      discount_amount: data.discount_amount, // Store discount for record
       payment_date: data.payment_date.toISOString(),
       payment_method: data.payment_method,
       month: month, // Store target month
@@ -122,14 +130,44 @@ export function QuickPaymentForm({ student, month, year, onSuccess }: QuickPayme
              </div>
              <div className="flex justify-between border-t pt-2 mt-2">
                 <span className="text-muted-foreground">Nominal (SPP):</span>
-                <span className="font-bold text-primary">
+                <span className="font-medium">
                   {new Intl.NumberFormat('id-ID', {
                     style: 'currency',
                     currency: 'IDR',
                     maximumFractionDigits: 0
-                  }).format(student.base_fee || 0)}
+                  }).format(baseFee)}
                 </span>
              </div>
+          </div>
+
+          <FormField
+            control={form.control}
+            name="discount_amount"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Diskon / Potongan (Rp)</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    placeholder="0"
+                    {...field}
+                    onChange={e => field.onChange(Number(e.target.value))}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <div className="bg-primary/5 p-3 rounded-md border border-primary/20 flex justify-between items-center">
+            <span className="font-semibold text-primary">Total Bayar:</span>
+            <span className="font-bold text-lg text-primary">
+               {new Intl.NumberFormat('id-ID', {
+                    style: 'currency',
+                    currency: 'IDR',
+                    maximumFractionDigits: 0
+                  }).format(finalAmount)}
+            </span>
           </div>
 
           <FormField

@@ -33,16 +33,30 @@ import { StudentDetailDialog } from './StudentDetailDialog'
 export type Student = {
   id: string
   name: string
-  nis: string | null
+  // nis: string | null // Deprecated
   email: string | null
-  class_name: string | null // Update ini
-  class_year: string | null
-  status: 'ACTIVE' | 'GRADUATED' | 'DROPOUT' | 'ON_LEAVE'
+  class_name: string | null
+  // class_year: string | null // Deprecated
+  // status: 'ACTIVE' | 'GRADUATED' | 'DROPOUT' | 'ON_LEAVE' // Deprecated
   parent_name: string | null
   phone_number: string | null
   enrollment_date: string | null
   base_fee: number
   created_at: string
+
+  // New Fields
+  place_of_birth?: string | null
+  date_of_birth?: string | null
+  gender?: string | null
+  religion?: string | null
+  school_origin?: string | null
+  parent_occupation?: string | null
+  address?: string | null
+  parent_phone?: string | null
+
+  // Kept for type compatibility if needed, but marked optional/deprecated
+  nis?: string | null
+  status?: string | null
 }
 
 export const columns: ColumnDef<Student>[] = [

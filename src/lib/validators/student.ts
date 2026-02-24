@@ -1,25 +1,36 @@
 import { z } from 'zod'
 
 export const studentSchema = z.object({
+  // Data Pribadi
   name: z.string().min(1, 'Nama lengkap wajib diisi'),
-  nis: z.string().optional(),
+  place_of_birth: z.string().min(1, 'Tempat lahir wajib diisi'),
+  date_of_birth: z.string().min(1, 'Tanggal lahir wajib diisi'), // ISO date string
+  gender: z.enum(['MALE', 'FEMALE']),
+  religion: z.string().optional(),
+
+  // Kontak & Alamat
+  address: z.string().optional(),
   email: z.string().email('Email tidak valid').optional().or(z.literal('')),
-  phone_number: z.string().optional(),
+  phone_number: z.string().optional(), // No HP Siswa
   
   // Data Akademik
-  class_name: z.string().optional(), // Menggantikan class_id
-  class_year: z.string().optional(),
-  status: z.enum(['ACTIVE', 'GRADUATED', 'DROPOUT', 'ON_LEAVE']).default('ACTIVE'),
-  enrollment_date: z.string().optional(), // Untuk tanggal masuk
-  
+  school_origin: z.string().optional(),
+  class_name: z.string().min(1, 'Kelas saat ini wajib diisi'),
+  enrollment_date: z.string().optional(), // Tanggal masuk/daftar
+
   // Data Orang Tua
-  parent_name: z.string().optional(),
+  parent_name: z.string().min(1, 'Nama orang tua wajib diisi'),
+  parent_occupation: z.string().optional(),
   parent_phone: z.string().optional(),
   
-  // Data Keuangan & Alamat
+  // Data Keuangan
   base_fee: z.coerce.number().min(0, 'Biaya SPP tidak boleh negatif'),
-  billing_cycle_date: z.coerce.number().min(1).max(28).default(10),
-  address: z.string().optional(),
+
+  // Deprecated / Hidden fields kept for type safety if needed but removed from UI
+  // nis: z.string().optional(),
+  // class_year: z.string().optional(),
+  // status: z.enum(['ACTIVE', 'GRADUATED', 'DROPOUT', 'ON_LEAVE']).default('ACTIVE'),
+  // billing_cycle_date: z.coerce.number().default(10),
 })
 
 export type StudentFormValues = z.infer<typeof studentSchema>
