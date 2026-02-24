@@ -50,7 +50,7 @@ export default function StudentsPage() {
           </div>
         </div>
 
-        <div className="rounded-md border bg-card">
+        <div className="rounded-md border bg-card w-full max-w-[calc(100vw-2rem)] md:max-w-[calc(100vw-20rem)] overflow-hidden">
           {isLoading ? (
              <div className="p-8 space-y-4">
                <div className="flex items-center justify-between">
