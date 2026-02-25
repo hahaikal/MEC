@@ -20,6 +20,9 @@ import {
 import { Download, TrendingUp, TrendingDown, Percent } from "lucide-react"
 import { formatRupiah } from "@/lib/utils"
 
+export default function ReportsPage() {
+  const [selectedMonth, setSelectedMonth] = useState('June 2024')
+
 // Mock data for monthly reports
 const mockMonthlyReports = [
   {
@@ -91,9 +94,6 @@ const mockRevenueSources = [
   { source: 'Kerjasama & Sponsor', amount: 20000000, percentage: 7 },
   { source: 'Penjualan Merchandise', amount: 10000000, percentage: 4 },
 ]
-
-export default function ReportsPage() {
-  const [selectedMonth, setSelectedMonth] = useState('June 2024')
 
   // Calculate totals
   const totalRevenue = mockMonthlyReports.reduce((sum, r) => sum + r.revenue, 0)

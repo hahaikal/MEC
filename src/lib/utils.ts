@@ -13,3 +13,7 @@ export function formatCurrency(amount: number) {
     maximumFractionDigits: 0,
   }).format(amount)
 }
+
+export function formatRupiah(amount: number) {
+  return formatCurrency(amount);
+}

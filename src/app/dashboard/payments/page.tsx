@@ -17,83 +17,21 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { Plus, Download, Eye, CheckCircle2, Clock, XCircle } from "lucide-react"
-import { formatCurrency } from "@/lib/utils"
+import { Plus, Download, Eye, CheckCircle2, Clock, XCircle, Loader2 } from "lucide-react"
+import { formatCurrency, formatRupiah } from "@/lib/utils"
+import { usePayments } from "@/lib/hooks/use-payments"
+import { format } from "date-fns"
+import { id as idLocale } from "date-fns/locale"
 
-// Mock payment data
-const mockPayments = [
-  {
-    id: '1',
-    student: 'Ahmad Ridho Pratama',
-    month: 'Januari 2024',
-    amount: 500000,
-    date: '2024-01-08',
-    method: 'Bank Transfer',
-    status: 'Completed',
-  },
-  {
-    id: '2',
-    student: 'Siti Nurhaliza',
-    month: 'Januari 2024',
-    amount: 500000,
-    date: '2024-01-09',
-    method: 'Cash',
-    status: 'Completed',
-  },
-  {
-    id: '3',
-    student: 'Budi Santoso',
-    month: 'Januari 2024',
-    amount: 500000,
-    date: '2024-01-10',
-    method: 'E-Wallet',
-    status: 'Completed',
-  },
-  {
-    id: '4',
-    student: 'Rina Wijaya',
-    month: 'Januari 2024',
-    amount: 500000,
-    date: '2024-01-12',
-    method: 'Bank Transfer',
-    status: 'Completed',
-  },
-  {
-    id: '5',
-    student: 'Doni Hermawan',
-    month: 'Januari 2024',
-    amount: 500000,
-    date: '2024-01-15',
-    method: 'Cash',
-    status: 'Completed',
-  },
-  {
-    id: '6',
-    student: 'Eka Putri Lestari',
-    month: 'Februari 2024',
-    amount: 500000,
-    date: '2024-02-02',
-    method: 'Bank Transfer',
-    status: 'Pending',
-  },
-  {
-    id: '7',
-    student: 'Fajar Malik',
-    month: 'Februari 2024',
-    amount: 500000,
-    date: null,
-    method: '-',
-    status: 'Failed',
-  },
-]
+// Mock payment data removed
 
 const getStatusIcon = (status: string) => {
-  switch (status) {
-    case 'Completed':
+  switch (status?.toLowerCase()) {
+    case 'completed':
       return <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-    case 'Pending':
+    case 'pending':
       return <Clock className="h-4 w-4 text-amber-500" />
-    case 'Failed':
+    case 'failed':
       return <XCircle className="h-4 w-4 text-red-500" />
     default:
       return null
@@ -101,12 +39,12 @@ const getStatusIcon = (status: string) => {
 }
 
 const getStatusColor = (status: string) => {
-  switch (status) {
-    case 'Completed':
+  switch (status?.toLowerCase()) {
+    case 'completed':
       return 'bg-emerald-100 text-emerald-800'
-    case 'Pending':
+    case 'pending':
       return 'bg-amber-100 text-amber-800'
-    case 'Failed':
+    case 'failed':
       return 'bg-red-100 text-red-800'
     default:
       return 'bg-gray-100 text-gray-800'
@@ -114,15 +52,16 @@ const getStatusColor = (status: string) => {
 }
 
 export default function PaymentsPage() {
-  const [payments] = useState(mockPayments)
+  const { data, isLoading } = usePayments()
+  const payments = data?.data || []
 
   // Calculate statistics
   const totalPayments = payments.length
-  const completedPayments = payments.filter(p => p.status === 'Completed').length
-  const totalAmount = payments.reduce((sum, p) => sum + p.amount, 0)
+  const completedPayments = payments.filter((p: any) => p.payment_status === 'completed').length
+  const totalAmount = payments.reduce((sum: number, p: any) => sum + Number(p.amount), 0)
   const completedAmount = payments
-    .filter(p => p.status === 'Completed')
-    .reduce((sum, p) => sum + p.amount, 0)
+    .filter((p: any) => p.payment_status === 'completed')
+    .reduce((sum: number, p: any) => sum + Number(p.amount), 0)
 
   return (
     <div className="flex flex-col gap-6">
@@ -253,32 +192,62 @@ export default function PaymentsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {payments.map((payment) => (
-                  <TableRow key={payment.id} className="hover:bg-muted/30 transition-colors">
-                    <TableCell className="px-6 font-medium">{payment.student}</TableCell>
-                    <TableCell className="text-sm">{payment.month}</TableCell>
-                    <TableCell className="text-right font-semibold text-emerald-600">
-                      {formatRupiah(payment.amount)}
-                    </TableCell>
-                    <TableCell className="text-sm">{payment.method}</TableCell>
-                    <TableCell className="text-sm">
-                      {payment.date ? new Date(payment.date).toLocaleDateString('id-ID') : '-'}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        {getStatusIcon(payment.status)}
-                        <span className={`inline-block px-2 py-1 text-xs font-medium rounded ${getStatusColor(payment.status)}`}>
-                          {payment.status}
-                        </span>
+                {isLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="h-24 text-center">
+                      <div className="flex justify-center items-center gap-2">
+                        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                        <span className="text-muted-foreground">Memuat data...</span>
                       </div>
                     </TableCell>
-                    <TableCell className="text-right pr-6">
-                      <Button variant="ghost" size="sm" className="h-8 px-2">
-                        <Eye className="h-4 w-4" />
-                      </Button>
+                  </TableRow>
+                ) : payments.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
+                      Belum ada data pembayaran
                     </TableCell>
                   </TableRow>
-                ))}
+                ) : (
+                  payments.map((payment: any) => {
+                    const monthName = format(new Date(payment.year, payment.month, 1), 'MMMM yyyy', { locale: idLocale });
+                    return (
+                      <TableRow key={payment.id} className="hover:bg-muted/30 transition-colors">
+                        <TableCell className="px-6 font-medium">
+                          <div className="flex flex-col">
+                            <span>{payment.students?.name || 'Unknown'}</span>
+                            <span className="text-xs text-muted-foreground">{payment.students?.email}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-sm capitalize">{monthName}</TableCell>
+                        <TableCell className="text-right font-semibold text-emerald-600">
+                          {formatRupiah(Number(payment.amount))}
+                          {payment.discount_amount > 0 && (
+                             <div className="text-xs text-muted-foreground line-through decoration-red-400">
+                               Disc: {formatRupiah(Number(payment.discount_amount))}
+                             </div>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-sm capitalize">{payment.payment_method?.replace('_', ' ')}</TableCell>
+                        <TableCell className="text-sm">
+                          {payment.payment_date ? format(new Date(payment.payment_date), 'dd MMM yyyy') : '-'}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            {getStatusIcon(payment.payment_status)}
+                            <span className={`inline-block px-2 py-1 text-xs font-medium rounded capitalize ${getStatusColor(payment.payment_status)}`}>
+                              {payment.payment_status}
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-right pr-6">
+                          <Button variant="ghost" size="sm" className="h-8 px-2">
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    )
+                  })
+                )}
               </TableBody>
             </Table>
             </div>

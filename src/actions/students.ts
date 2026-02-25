@@ -5,7 +5,6 @@ import { studentSchema, type StudentFormValues } from '@/lib/validators/student'
 import { revalidatePath } from 'next/cache'
 
 export async function createStudent(data: StudentFormValues) {
-  // FIX: Tambahkan await karena createClient mengembalikan Promise
   const supabase = await createClient()
   
   const {
@@ -19,22 +18,24 @@ export async function createStudent(data: StudentFormValues) {
   const validatedFields = studentSchema.safeParse(data)
 
   if (!validatedFields.success) {
-    return { error: 'Invalid fields' }
+    return { error: 'Invalid fields: ' + validatedFields.error.message }
   }
 
   const { error } = await supabase.from('students').insert({
     name: validatedFields.data.name,
-    nis: validatedFields.data.nis,
     email: validatedFields.data.email,
     phone_number: validatedFields.data.phone_number,
-    class_name: validatedFields.data.class_name, // Field baru
-    class_year: validatedFields.data.class_year,
-    status: validatedFields.data.status,
+    class_name: validatedFields.data.class_name,
     parent_name: validatedFields.data.parent_name,
     parent_phone: validatedFields.data.parent_phone,
+    parent_occupation: validatedFields.data.parent_occupation,
     base_fee: validatedFields.data.base_fee,
-    billing_cycle_date: validatedFields.data.billing_cycle_date,
     address: validatedFields.data.address,
+    place_of_birth: validatedFields.data.place_of_birth,
+    date_of_birth: validatedFields.data.date_of_birth,
+    gender: validatedFields.data.gender,
+    religion: validatedFields.data.religion,
+    school_origin: validatedFields.data.school_origin,
     enrollment_date: validatedFields.data.enrollment_date || new Date().toISOString(),
     created_by: user.id,
   })
@@ -49,29 +50,30 @@ export async function createStudent(data: StudentFormValues) {
 }
 
 export async function updateStudent(id: string, data: StudentFormValues) {
-  // FIX: Tambahkan await
   const supabase = await createClient()
   
   const validatedFields = studentSchema.safeParse(data)
 
   if (!validatedFields.success) {
-    return { error: 'Invalid fields' }
+    return { error: 'Invalid fields: ' + validatedFields.error.message }
   }
 
-  // Kita construct object update manual agar aman dari field undefined
   const updateData = {
     name: validatedFields.data.name,
-    nis: validatedFields.data.nis,
     email: validatedFields.data.email,
     phone_number: validatedFields.data.phone_number,
     class_name: validatedFields.data.class_name,
-    class_year: validatedFields.data.class_year,
-    status: validatedFields.data.status,
     parent_name: validatedFields.data.parent_name,
     parent_phone: validatedFields.data.parent_phone,
+    parent_occupation: validatedFields.data.parent_occupation,
     base_fee: validatedFields.data.base_fee,
-    billing_cycle_date: validatedFields.data.billing_cycle_date,
     address: validatedFields.data.address,
+    place_of_birth: validatedFields.data.place_of_birth,
+    date_of_birth: validatedFields.data.date_of_birth,
+    gender: validatedFields.data.gender,
+    religion: validatedFields.data.religion,
+    school_origin: validatedFields.data.school_origin,
+    enrollment_date: validatedFields.data.enrollment_date, // Allow updating this if necessary
     updated_at: new Date().toISOString(),
   }
 
@@ -81,6 +83,7 @@ export async function updateStudent(id: string, data: StudentFormValues) {
     .eq('id', id)
 
   if (error) {
+    console.error('Update Error:', error)
     return { error: error.message }
   }
 
@@ -89,15 +92,19 @@ export async function updateStudent(id: string, data: StudentFormValues) {
 }
 
 export async function deleteStudent(id: string) {
-  // FIX: Tambahkan await
   const supabase = await createClient()
   
+  // Note: Ensure foreign key constraints (like payments) are handled.
+  // If ON DELETE CASCADE is set in DB, this works. Otherwise, we might need to delete payments first.
+  // Assuming CASCADE based on user's request to just "delete it".
+
   const { error } = await supabase
     .from('students')
     .delete()
     .eq('id', id)
 
   if (error) {
+    console.error('Delete Error:', error)
     return { error: error.message }
   }
 
