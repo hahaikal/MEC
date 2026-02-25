@@ -34,7 +34,7 @@ export async function createPayment(data: CreatePaymentInput) {
     return { error: 'Invalid fields: ' + validatedFields.error.message }
   }
 
-  // Check if payment already exists for this month/year
+  // Check if payment already exists for this month/year (Optional: Remove if duplicate payments are allowed)
   const { data: existingPayment } = await supabase
     .from('payments')
     .select('id')
@@ -44,9 +44,10 @@ export async function createPayment(data: CreatePaymentInput) {
     .single()
 
   if (existingPayment) {
-    return { error: 'Payment already exists for this period.' }
+    return { error: 'Payment for this month/year already exists.' }
   }
 
+  // Insert Payment with month/year columns (program_id is now optional/nullable in schema)
   const { error } = await supabase.from('payments').insert({
     student_id: data.student_id,
     amount: data.amount,
@@ -56,9 +57,12 @@ export async function createPayment(data: CreatePaymentInput) {
     month: data.month,
     year: data.year,
     payment_status: data.status,
-    created_by: user.id,
+    created_by: user.id, // Ensure this column is used or mapped correctly, in provided schema it is received_by?
+    received_by: user.id, // Based on schema
     notes: 'Quick Payment via Dashboard',
-    invoice_number: `INV-${Date.now()}`, // Simple invoice generation
+    invoice_number: `INV-${Date.now()}`,
+    category: 'tuition', // Default
+    program_id: null, // Explicitly null for tuition/spp
   })
 
   if (error) {
@@ -68,6 +72,7 @@ export async function createPayment(data: CreatePaymentInput) {
 
   revalidatePath('/dashboard/students')
   revalidatePath('/dashboard/payments')
+  revalidatePath('/dashboard/reports') // Important for reports page update
 
   return { success: true }
 }
