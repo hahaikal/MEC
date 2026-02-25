@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils'
 import {
   LayoutDashboard,
   Users,
+  ClipboardList,
   CreditCard,
   BarChart3,
   Settings,
@@ -21,6 +22,7 @@ import { useRouter } from 'next/navigation'
 const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard', href: '/dashboard' },
   { icon: Users, label: 'Students', href: '/dashboard/students' },
+  { icon: ClipboardList, label: 'Attendance', href: '/dashboard/attendance' },
   { icon: CreditCard, label: 'Payments', href: '/dashboard/payments' },
   { icon: BarChart3, label: 'Reports', href: '/dashboard/reports' },
   { icon: Settings, label: 'Settings', href: '/dashboard/settings' },
