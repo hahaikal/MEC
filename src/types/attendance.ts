@@ -1,12 +1,11 @@
 import { Database } from '@/types/supabase'
 
 export type Student = Database['public']['Tables']['students']['Row']
-export type Program = Database['public']['Tables']['programs']['Row']
 
 export interface AttendanceSummary {
   id: string
   student_id: string
-  program_id: string
+  class_name: string
   month: number
   year: number
   total_meetings: number
@@ -18,7 +17,6 @@ export interface AttendanceSummary {
 
 export interface AttendanceDetail extends AttendanceSummary {
   student_name: string
-  program_name: string
   attendance_percentage: number
 }
 
@@ -30,7 +28,7 @@ export interface StudentAttendanceRow {
 
 export interface UpsertAttendanceParams {
   student_id: string
-  program_id: string
+  class_name: string
   month: number
   year: number
   total_meetings: number

@@ -3,9 +3,9 @@ import { z } from 'zod'
 export const studentSchema = z.object({
   // Data Pribadi
   name: z.string().min(1, 'Nama lengkap wajib diisi'),
-  place_of_birth: z.string().min(1, 'Tempat lahir wajib diisi'),
-  date_of_birth: z.string().min(1, 'Tanggal lahir wajib diisi'), // ISO date string
-  gender: z.enum(['MALE', 'FEMALE']),
+  place_of_birth: z.string().optional(),
+  date_of_birth: z.string().optional(), // ISO date string
+  gender: z.enum(['MALE', 'FEMALE']).optional(),
   religion: z.string().optional(),
 
   // Kontak & Alamat
@@ -15,16 +15,16 @@ export const studentSchema = z.object({
   
   // Data Akademik
   school_origin: z.string().optional(),
-  class_name: z.string().min(1, 'Kelas saat ini wajib diisi'),
+  class_name: z.string().optional(),
   enrollment_date: z.string().optional(), // Tanggal masuk/daftar
 
   // Data Orang Tua
-  parent_name: z.string().min(1, 'Nama orang tua wajib diisi'),
+  parent_name: z.string().optional(),
   parent_occupation: z.string().optional(),
   parent_phone: z.string().optional(),
   
   // Data Keuangan
-  base_fee: z.coerce.number().min(0, 'Biaya SPP tidak boleh negatif'),
+  base_fee: z.coerce.number().min(0, 'Biaya SPP tidak boleh negatif').default(0),
 
   // Deprecated / Hidden fields kept for type safety if needed but removed from UI
   // nis: z.string().optional(),

@@ -2,25 +2,25 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/client'
 import { AttendanceSummary, UpsertAttendanceParams } from '@/types/attendance'
 
-export function useAttendanceByMonth(programId: string | null, month: number, year: number) {
+export function useAttendanceByMonth(className: string | null, month: number, year: number) {
   const supabase = createClient()
 
   return useQuery({
-    queryKey: ['attendance', programId, month, year],
+    queryKey: ['attendance', className, month, year],
     queryFn: async () => {
-      if (!programId) return []
+      if (!className) return []
 
       const { data, error } = await supabase
         .from('attendance_summaries')
         .select('*')
-        .eq('program_id', programId)
+        .eq('class_name', className)
         .eq('month', month)
         .eq('year', year)
 
       if (error) throw error
       return data as AttendanceSummary[]
     },
-    enabled: !!programId,
+    enabled: !!className,
   })
 }
 
@@ -37,7 +37,7 @@ export function useUpsertAttendance() {
         .upsert(
           {
             student_id: params.student_id,
-            program_id: params.program_id,
+            class_name: params.class_name,
             month: params.month,
             year: params.year,
             total_meetings: params.total_meetings,
@@ -46,7 +46,7 @@ export function useUpsertAttendance() {
             updated_at: new Date().toISOString(),
           },
           {
-            onConflict: 'student_id, program_id, month, year',
+            onConflict: 'student_id, class_name, month, year',
           }
         )
         .select()
@@ -58,7 +58,7 @@ export function useUpsertAttendance() {
     onSuccess: (_, variables) => {
       // Invalidate the query to refresh data
       queryClient.invalidateQueries({
-        queryKey: ['attendance', variables.program_id, variables.month, variables.year],
+        queryKey: ['attendance', variables.class_name, variables.month, variables.year],
       })
     },
   })

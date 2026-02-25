@@ -11,7 +11,7 @@ import { cn } from '@/lib/utils'
 
 interface AttendanceRowProps {
   student: Student
-  programId: string
+  className: string
   month: number
   year: number
   initialAttendance?: AttendanceSummary | null
@@ -19,7 +19,7 @@ interface AttendanceRowProps {
 
 export function AttendanceRow({
   student,
-  programId,
+  className,
   month,
   year,
   initialAttendance
@@ -29,29 +29,21 @@ export function AttendanceRow({
   const [isSaving, setIsSaving] = useState(false)
   const [hasError, setHasError] = useState(false)
 
-  // Ref to track if the current state differs from the last saved/initial state
-  // to avoid unnecessary saves on mount
   const isFirstRender = useRef(true)
 
   const upsertMutation = useUpsertAttendance()
 
-  // Update local state when initialAttendance changes (e.g. month change or refresh)
-  // We only update if the user isn't actively interacting?
-  // For simplicity, we sync, assuming user stops typing for the debounce period.
   useEffect(() => {
     setTotal(initialAttendance?.total_meetings || 0)
     setAttended(initialAttendance?.attended_meetings || 0)
   }, [initialAttendance])
 
-  // Calculate percentage
   const percentage = total > 0 ? (attended / total) * 100 : 0
 
-  // Determine color
   let indicatorColor = "bg-red-500" // < 50%
   if (percentage >= 80) indicatorColor = "bg-green-500"
   else if (percentage >= 50) indicatorColor = "bg-yellow-500"
 
-  // Validation
   useEffect(() => {
     if (attended > total && total > 0) {
       setHasError(true)
@@ -71,7 +63,7 @@ export function AttendanceRow({
       upsertMutation.mutate(
         {
           student_id: student.id,
-          program_id: programId,
+          class_name: className,
           month,
           year,
           total_meetings: newTotal,
@@ -80,7 +72,6 @@ export function AttendanceRow({
         {
           onSuccess: () => {
             setIsSaving(false)
-            // toast.success("Saved") // Optional: too noisy for auto-save
           },
           onError: (error) => {
             setIsSaving(false)
@@ -90,17 +81,15 @@ export function AttendanceRow({
         }
       )
     },
-    [programId, month, year, student.id, upsertMutation]
+    [className, month, year, student.id, upsertMutation]
   )
 
-  // Debounce Logic
   useEffect(() => {
     if (isFirstRender.current) {
       isFirstRender.current = false
       return
     }
 
-    // Don't save if values match props (no change)
     if (
       total === (initialAttendance?.total_meetings || 0) &&
       attended === (initialAttendance?.attended_meetings || 0)
@@ -110,7 +99,7 @@ export function AttendanceRow({
 
     const handler = setTimeout(() => {
       saveData(total, attended)
-    }, 800) // 800ms debounce
+    }, 800)
 
     return () => {
       clearTimeout(handler)

@@ -16,8 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { useActivePrograms } from '@/lib/hooks/use-programs'
-import { useStudentsByProgram } from '@/lib/hooks/use-students-by-program'
+import { useClassList, useStudentsByClass } from '@/lib/hooks/use-students-by-class'
 import { useAttendanceByMonth } from '@/lib/hooks/use-attendance'
 import { AttendanceRow } from './_components/attendance-row'
 import { Loader2 } from 'lucide-react'
@@ -25,28 +24,28 @@ import { Loader2 } from 'lucide-react'
 export default function AttendancePage() {
   const [selectedMonth, setSelectedMonth] = useState<string>('')
   const [selectedYear, setSelectedYear] = useState<string>('')
-  const [selectedProgramId, setSelectedProgramId] = useState<string>('')
+  const [selectedClass, setSelectedClass] = useState<string>('')
 
-  // Fetch Programs
-  const { data: programs, isLoading: isLoadingPrograms } = useActivePrograms()
+  // Fetch Classes
+  const { data: classes, isLoading: isLoadingClasses } = useClassList()
 
   // Derived state for queries
   const monthInt = selectedMonth ? parseInt(selectedMonth) : 0
   const yearInt = selectedYear ? parseInt(selectedYear) : 0
 
-  const isFilterComplete = !!(selectedProgramId && monthInt && yearInt)
+  const isFilterComplete = !!(selectedClass && monthInt && yearInt)
 
   // Fetch Data (only if filters complete)
   const {
     data: students,
     isLoading: isLoadingStudents
-  } = useStudentsByProgram(isFilterComplete ? selectedProgramId : null)
+  } = useStudentsByClass(isFilterComplete ? selectedClass : null)
 
   const {
     data: attendanceRecords,
     isLoading: isLoadingAttendance
   } = useAttendanceByMonth(
-    isFilterComplete ? selectedProgramId : null,
+    isFilterComplete ? selectedClass : null,
     monthInt,
     yearInt
   )
@@ -98,19 +97,19 @@ export default function AttendancePage() {
             </Select>
           </div>
 
-          {/* Program Select */}
+          {/* Class Select */}
           <div className="w-full md:w-1/2">
-            <Select value={selectedProgramId} onValueChange={setSelectedProgramId}>
+            <Select value={selectedClass} onValueChange={setSelectedClass}>
               <SelectTrigger>
-                <SelectValue placeholder="Select Program" />
+                <SelectValue placeholder="Select Class" />
               </SelectTrigger>
               <SelectContent>
-                {isLoadingPrograms ? (
+                {isLoadingClasses ? (
                   <div className="p-2 text-center text-sm text-muted-foreground">Loading...</div>
                 ) : (
-                  programs?.map((program) => (
-                    <SelectItem key={program.id} value={program.id}>
-                      {program.name}
+                  classes?.map((className) => (
+                    <SelectItem key={className} value={className}>
+                      {className}
                     </SelectItem>
                   ))
                 )}
@@ -130,7 +129,7 @@ export default function AttendancePage() {
               </div>
             ) : !students || students.length === 0 ? (
               <div className="text-center p-8 text-muted-foreground">
-                No active students found in this program.
+                No active students found in this class.
               </div>
             ) : (
               <Table>
@@ -154,7 +153,7 @@ export default function AttendancePage() {
                       <AttendanceRow
                         key={student.id}
                         student={student}
-                        programId={selectedProgramId}
+                        className={selectedClass}
                         month={monthInt}
                         year={yearInt}
                         initialAttendance={record}
@@ -168,7 +167,7 @@ export default function AttendancePage() {
         </Card>
       ) : (
         <div className="text-center p-12 border-2 border-dashed rounded-lg text-muted-foreground">
-          Please select Month, Year, and Program to view attendance.
+          Please select Month, Year, and Class to view attendance.
         </div>
       )}
     </div>
