@@ -5,19 +5,19 @@
 DROP VIEW IF EXISTS public.attendance_details_view;
 
 -- 1. Add class_name column
-ALTER TABLE public.attendance_summaries ADD COLUMN class_name VARCHAR(255);
+ALTER TABLE public.attendance_summaries ADD COLUMN IF NOT EXISTS class_name VARCHAR(255);
 
--- 2. Drop program_id dependency
-ALTER TABLE public.attendance_summaries DROP CONSTRAINT attendance_summaries_program_id_fkey;
-ALTER TABLE public.attendance_summaries DROP COLUMN program_id;
+-- 2. Drop program_id dependency (use IF EXISTS to handle partial migrations)
+ALTER TABLE public.attendance_summaries DROP CONSTRAINT IF EXISTS attendance_summaries_program_id_fkey;
+ALTER TABLE public.attendance_summaries DROP COLUMN IF EXISTS program_id;
 
 -- 3. Make class_name NOT NULL (after dealing with existing data if any)
 -- For now, we assume empty table or acceptable data loss/migration.
 -- In production with data, we would update class_name based on program_id lookups first.
 ALTER TABLE public.attendance_summaries ALTER COLUMN class_name SET NOT NULL;
 
--- 4. Update Unique Constraint
-ALTER TABLE public.attendance_summaries DROP CONSTRAINT unique_student_attendance_per_period;
+-- 4. Update Unique Constraint (use IF EXISTS to handle partial migrations)
+ALTER TABLE public.attendance_summaries DROP CONSTRAINT IF EXISTS unique_student_attendance_per_period;
 ALTER TABLE public.attendance_summaries ADD CONSTRAINT unique_student_attendance_per_period UNIQUE (student_id, class_name, month, year);
 
 -- 5. Recreate View with new schema

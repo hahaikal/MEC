@@ -21,22 +21,29 @@ export async function createStudent(data: StudentFormValues) {
     return { error: 'Invalid fields: ' + validatedFields.error.message }
   }
 
+  // Helper function to convert empty string to null for date fields
+  const toDateValue = (value: string | undefined | null): string | null => {
+    if (!value || value === '') return null
+    return value
+  }
+
   const { error } = await supabase.from('students').insert({
     name: validatedFields.data.name,
-    email: validatedFields.data.email,
-    phone_number: validatedFields.data.phone_number,
-    class_name: validatedFields.data.class_name,
-    parent_name: validatedFields.data.parent_name,
-    parent_phone: validatedFields.data.parent_phone,
-    parent_occupation: validatedFields.data.parent_occupation,
+    email: validatedFields.data.email || null,
+    phone_number: validatedFields.data.phone_number || null,
+    class_name: validatedFields.data.class_name || null,
+    parent_name: validatedFields.data.parent_name || null,
+    parent_phone: validatedFields.data.parent_phone || null,
+    parent_occupation: validatedFields.data.parent_occupation || null,
     base_fee: validatedFields.data.base_fee,
-    address: validatedFields.data.address,
-    place_of_birth: validatedFields.data.place_of_birth,
-    date_of_birth: validatedFields.data.date_of_birth,
-    gender: validatedFields.data.gender,
-    religion: validatedFields.data.religion,
-    school_origin: validatedFields.data.school_origin,
-    enrollment_date: validatedFields.data.enrollment_date || new Date().toISOString(),
+    address: validatedFields.data.address || null,
+    place_of_birth: validatedFields.data.place_of_birth || null,
+    date_of_birth: toDateValue(validatedFields.data.date_of_birth),
+    gender: validatedFields.data.gender || 'MALE',
+    religion: validatedFields.data.religion || null,
+    school_origin: validatedFields.data.school_origin || null,
+    enrollment_date: toDateValue(validatedFields.data.enrollment_date) || new Date().toISOString(),
+    status: 'ACTIVE',
     created_by: user.id,
   })
 
@@ -58,22 +65,28 @@ export async function updateStudent(id: string, data: StudentFormValues) {
     return { error: 'Invalid fields: ' + validatedFields.error.message }
   }
 
+  // Helper function to convert empty string to null for date fields
+  const toDateValue = (value: string | undefined | null): string | null => {
+    if (!value || value === '') return null
+    return value
+  }
+
   const updateData = {
     name: validatedFields.data.name,
-    email: validatedFields.data.email,
-    phone_number: validatedFields.data.phone_number,
-    class_name: validatedFields.data.class_name,
-    parent_name: validatedFields.data.parent_name,
-    parent_phone: validatedFields.data.parent_phone,
-    parent_occupation: validatedFields.data.parent_occupation,
+    email: validatedFields.data.email || null,
+    phone_number: validatedFields.data.phone_number || null,
+    class_name: validatedFields.data.class_name || null,
+    parent_name: validatedFields.data.parent_name || null,
+    parent_phone: validatedFields.data.parent_phone || null,
+    parent_occupation: validatedFields.data.parent_occupation || null,
     base_fee: validatedFields.data.base_fee,
-    address: validatedFields.data.address,
-    place_of_birth: validatedFields.data.place_of_birth,
-    date_of_birth: validatedFields.data.date_of_birth,
-    gender: validatedFields.data.gender,
-    religion: validatedFields.data.religion,
-    school_origin: validatedFields.data.school_origin,
-    enrollment_date: validatedFields.data.enrollment_date, // Allow updating this if necessary
+    address: validatedFields.data.address || null,
+    place_of_birth: validatedFields.data.place_of_birth || null,
+    date_of_birth: toDateValue(validatedFields.data.date_of_birth),
+    gender: validatedFields.data.gender || 'MALE',
+    religion: validatedFields.data.religion || null,
+    school_origin: validatedFields.data.school_origin || null,
+    enrollment_date: toDateValue(validatedFields.data.enrollment_date),
     updated_at: new Date().toISOString(),
   }
 
