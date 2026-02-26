@@ -16,7 +16,7 @@ export function useStudentsByClass(className: string | null) {
         .from('students')
         .select('*')
         .eq('class_name', className)
-        .eq('status', 'active')
+        .eq('status', 'ACTIVE')
         .order('name')
 
       if (error) throw error
