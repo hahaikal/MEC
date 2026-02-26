@@ -24,8 +24,12 @@ export function AttendanceRow({
   year,
   initialAttendance
 }: AttendanceRowProps) {
+  // Set default attended to 15 if no record exists
+  // If record exists, use that. If not, default to 15 (but only if total is also unset or 0?)
+  // Requirement: "pertama nilai default Attended adalah 15"
   const [total, setTotal] = useState(initialAttendance?.total_meetings || 0)
-  const [attended, setAttended] = useState(initialAttendance?.attended_meetings || 0)
+  const [attended, setAttended] = useState(initialAttendance?.attended_meetings ?? 15) // Use nullish coalescing to default to 15 if undefined/null
+
   const [isSaving, setIsSaving] = useState(false)
   const [hasError, setHasError] = useState(false)
 
@@ -35,7 +39,8 @@ export function AttendanceRow({
 
   useEffect(() => {
     setTotal(initialAttendance?.total_meetings || 0)
-    setAttended(initialAttendance?.attended_meetings || 0)
+    // If initialAttendance is present, use its value. Otherwise, default to 15.
+    setAttended(initialAttendance?.attended_meetings ?? 15)
   }, [initialAttendance])
 
   const percentage = total > 0 ? (attended / total) * 100 : 0
@@ -54,8 +59,12 @@ export function AttendanceRow({
 
   const saveData = useCallback(
     (newTotal: number, newAttended: number) => {
+      // Input Validation: Prevent save if Attended > Total
       if (newAttended > newTotal && newTotal > 0) {
-         toast.error(`Cannot save: Attended (${newAttended}) > Total (${newTotal})`)
+         // Show alert only if it's not the initial render/load causing this
+         // But here we are inside saveData which is called by debounce.
+         // We should just abort save and show error.
+         // toast.error(`Cannot save: Attended (${newAttended}) > Total (${newTotal})`)
          return
       }
 
@@ -92,12 +101,18 @@ export function AttendanceRow({
 
     if (
       total === (initialAttendance?.total_meetings || 0) &&
-      attended === (initialAttendance?.attended_meetings || 0)
+      attended === (initialAttendance?.attended_meetings ?? 15)
     ) {
       return
     }
 
+    // Debounce save
     const handler = setTimeout(() => {
+      // Validation Check before calling save
+      if (attended > total && total > 0) {
+        toast.error(`Error: Attended (${attended}) cannot be greater than Total (${total})`)
+        return; // Do not save
+      }
       saveData(total, attended)
     }, 800)
 
@@ -110,7 +125,7 @@ export function AttendanceRow({
     <TableRow>
       <TableCell className="font-medium">
         {student.name}
-        {student.status !== 'active' && <span className="text-xs text-muted-foreground ml-2">({student.status})</span>}
+        {student.status?.toUpperCase() !== 'ACTIVE' && <span className="text-xs text-muted-foreground ml-2">({student.status})</span>}
       </TableCell>
       <TableCell>
         <Input
@@ -126,7 +141,10 @@ export function AttendanceRow({
           type="number"
           min="0"
           value={attended}
-          onChange={(e) => setAttended(parseInt(e.target.value) || 0)}
+          onChange={(e) => {
+             const val = parseInt(e.target.value) || 0;
+             setAttended(val);
+          }}
           className={cn("w-20 h-8", hasError && "border-red-500 focus-visible:ring-red-500")}
         />
       </TableCell>

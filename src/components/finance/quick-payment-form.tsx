@@ -35,7 +35,7 @@ const quickPaymentSchema = z.object({
   payment_date: z.date({
     required_error: "Tanggal pembayaran harus diisi",
   }),
-  payment_method: z.enum(['CASH', 'TRANSFER'], {
+  payment_method: z.enum(['cash', 'transfer'], { // Updated to lowercase
     required_error: "Metode pembayaran harus dipilih",
   }),
   discount_amount: z.coerce.number().min(0).default(0),
@@ -79,7 +79,7 @@ export function QuickPaymentForm({ student, month, year, onSuccess }: QuickPayme
         // If target month is in the future, default to start of that month
         return targetDate;
       })(),
-      payment_method: 'CASH',
+      payment_method: 'cash', // Updated to lowercase
     },
   })
 
@@ -225,8 +225,8 @@ export function QuickPaymentForm({ student, month, year, onSuccess }: QuickPayme
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="CASH">Tunai (Cash)</SelectItem>
-                    <SelectItem value="TRANSFER">Transfer Bank</SelectItem>
+                    <SelectItem value="cash">Tunai (Cash)</SelectItem>
+                    <SelectItem value="transfer">Transfer Bank</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
