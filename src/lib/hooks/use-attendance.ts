@@ -24,6 +24,27 @@ export function useAttendanceByMonth(className: string | null, month: number, ye
   })
 }
 
+export function useAttendanceByYear(className: string | null, year: number) {
+  const supabase = createClient()
+
+  return useQuery({
+    queryKey: ['attendance', 'year', className, year],
+    queryFn: async () => {
+      if (!className) return []
+
+      const { data, error } = await supabase
+        .from('attendance_summaries')
+        .select('*')
+        .eq('class_name', className)
+        .eq('year', year)
+
+      if (error) throw error
+      return data as AttendanceSummary[]
+    },
+    enabled: !!className,
+  })
+}
+
 export function useUpsertAttendance() {
   const supabase = createClient()
   const queryClient = useQueryClient()
@@ -59,6 +80,10 @@ export function useUpsertAttendance() {
       // Invalidate the query to refresh data
       queryClient.invalidateQueries({
         queryKey: ['attendance', variables.class_name, variables.month, variables.year],
+      })
+      // Also invalidate yearly cache if it exists
+      queryClient.invalidateQueries({
+        queryKey: ['attendance', 'year', variables.class_name, variables.year],
       })
     },
   })

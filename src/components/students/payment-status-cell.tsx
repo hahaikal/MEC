@@ -29,7 +29,7 @@ import { cn } from "@/lib/utils";
 // import { PaymentEntryForm } from "@/components/finance/payment-entry-form";
 import { QuickPaymentForm } from "@/components/finance/quick-payment-form";
 import { useRouter } from "next/navigation";
-import { usePayments } from "@/lib/hooks/use-payments";
+import { useStudentPaymentsYearly } from "@/lib/hooks/use-payments";
 
 // Define strict types for the props
 interface Payment {
@@ -40,6 +40,7 @@ interface Payment {
   invoice_number?: string;
   notes?: string;
   payment_status: string;
+  month?: number;
 }
 
 interface Student {
@@ -65,17 +66,27 @@ export function PaymentStatusCell({ student, month, year }: PaymentStatusCellPro
 
   const targetDate = new Date(targetYear, targetMonth, 1);
   const monthName = format(targetDate, 'MMMM yyyy');
-  const startOfMonth = new Date(targetYear, targetMonth, 1);
-  const endOfMonth = new Date(targetYear, targetMonth + 1, 0);
+  // const startOfMonth = new Date(targetYear, targetMonth, 1);
+  // const endOfMonth = new Date(targetYear, targetMonth + 1, 0);
 
-  // Fetch payments for current month
-  const { data: paymentsData } = usePayments({
-    studentId: student.id,
-    startDate: startOfMonth.toISOString().split('T')[0],
-    endDate: endOfMonth.toISOString().split('T')[0],
+  // OPTIMIZATION: Fetch ALL payments for the year at once.
+  // React Query will dedupe this call across all cells for the same student/year.
+  const { data: yearlyPayments, isLoading } = useStudentPaymentsYearly(student.id, targetYear);
+
+  // Find payment for this specific month in the cached yearly data
+  // We check if the payment 'month' matches OR if the payment_date falls in the month
+  const payment = yearlyPayments?.find((p: any) => {
+      // 1. Check explicit 'month' column if available (preferred)
+      if (p.month === targetMonth && p.year === targetYear) return true;
+
+      // 2. Fallback: Check payment_date
+      const pDate = new Date(p.payment_date);
+      return pDate.getMonth() === targetMonth && pDate.getFullYear() === targetYear;
   });
 
-  const payment = paymentsData?.data?.[0] || null;
+  if (isLoading) {
+      return <div className="h-8 w-8 rounded-full bg-slate-100 animate-pulse mx-auto" />;
+  }
 
   // If payment exists and is completed/verified
   if (payment && payment.payment_status === 'completed') {
