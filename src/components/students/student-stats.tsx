@@ -1,55 +1,51 @@
+'use client'
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, UserCheck, AlertCircle, Banknote } from "lucide-react";
+import { Users, UserCheck, AlertCircle, Banknote, Loader2 } from "lucide-react";
+import { useDashboardStats } from "@/lib/hooks/use-reports";
 
 interface StudentStatsProps {
-  students: any[];
+  students: any[]; // Kept for prop compatibility, but not used for calculation anymore
 }
 
 export function StudentStats({ students }: StudentStatsProps) {
-  const totalStudents = students.length;
-  const activeStudents = students.filter((s) => s.status === "ACTIVE" || s.status === "active").length;
+  // Use dedicated hook for stats (Server-side aggregation)
+  // This is more efficient than client-side calculation on full student list
+  const { data: stats, isLoading } = useDashboardStats();
 
-  // Hitung pembayaran bulan ini (Logic sederhana berdasarkan payment_date)
-  const currentMonth = new Date().getMonth();
-  const currentYear = new Date().getFullYear();
+  // Loading State (Skeleton)
+  if (isLoading) {
+    return (
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        {[1, 2, 3, 4].map((i) => (
+          <Card key={i}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <div className="h-4 w-24 bg-slate-100 rounded animate-pulse" />
+              <div className="h-4 w-4 bg-slate-100 rounded-full animate-pulse" />
+            </CardHeader>
+            <CardContent>
+              <div className="h-8 w-16 bg-slate-100 rounded animate-pulse mb-1" />
+              <div className="h-3 w-32 bg-slate-100 rounded animate-pulse" />
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    );
+  }
 
-  const totalCollectedThisMonth = students.reduce((acc, student) => {
-    const monthPayments = student.payments?.filter((p: any) => {
-      if (!p.payment_date) return false;
-      const d = new Date(p.payment_date);
-      return d.getMonth() === currentMonth && d.getFullYear() === currentYear && p.payment_status === 'completed';
-    }) || [];
-    
-    const sum = monthPayments.reduce((sum: number, p: any) => sum + (Number(p.amount) || 0), 0);
-    return acc + sum;
-  }, 0);
-
-  // Estimasi siswa menunggak (Sederhana: Status Active tapi belum ada payment bulan ini untuk 'tuition')
-  const studentsWithArrears = students.filter(student => {
-    if (student.status !== 'ACTIVE' && student.status !== 'active') return false;
-    
-    const hasPaidTuitionThisMonth = student.payments?.some((p: any) => {
-      if (!p.payment_date) return false;
-      const d = new Date(p.payment_date);
-      return d.getMonth() === currentMonth && 
-             d.getFullYear() === currentYear && 
-             p.category === 'tuition';
-    });
-    
-    return !hasPaidTuitionThisMonth;
-  }).length;
+  const currentMonthName = new Date().toLocaleString('id-ID', { month: 'long' });
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Total Siswa</CardTitle>
+          <CardTitle className="text-sm font-medium">Total Siswa Aktif</CardTitle>
           <Users className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{totalStudents}</div>
+          <div className="text-2xl font-bold">{stats?.activeStudents || 0}</div>
           <p className="text-xs text-muted-foreground">
-            {activeStudents} siswa aktif
+            Siswa terdaftar aktif
           </p>
         </CardContent>
       </Card>
@@ -60,16 +56,16 @@ export function StudentStats({ students }: StudentStatsProps) {
           <AlertCircle className="h-4 w-4 text-destructive" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-destructive">{studentsWithArrears}</div>
+          <div className="text-2xl font-bold text-destructive">{stats?.outstandingCount || 0}</div>
           <p className="text-xs text-muted-foreground">
-             Belum bayar SPP {new Date().toLocaleString('id-ID', { month: 'long' })}
+             Belum bayar SPP {currentMonthName}
           </p>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Penerimaan Bulan Ini</CardTitle>
+          <CardTitle className="text-sm font-medium">Penerimaan Bulan Ini ({currentMonthName})</CardTitle>
           <Banknote className="h-4 w-4 text-green-600" />
         </CardHeader>
         <CardContent>
@@ -78,7 +74,7 @@ export function StudentStats({ students }: StudentStatsProps) {
               style: "currency",
               currency: "IDR",
               maximumFractionDigits: 0,
-            }).format(totalCollectedThisMonth)}
+            }).format(stats?.totalIncome || 0)}
           </div>
           <p className="text-xs text-muted-foreground">
             Total masuk dari semua kategori
