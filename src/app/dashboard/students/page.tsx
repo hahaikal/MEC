@@ -9,17 +9,35 @@ import { columns } from '@/components/students/columns'
 import { StudentStats } from '@/components/students/student-stats'
 import { AddStudentDialog } from '@/components/students/add-student-dialog'
 import { useStudents } from '@/lib/hooks/use-students'
+import { useClassList } from '@/lib/hooks/use-students-by-class'
 import { Skeleton } from '@/components/ui/skeleton'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
 export default function StudentsPage() {
   const [searchQuery, setSearchQuery] = useState('')
+  const [selectedClass, setSelectedClass] = useState<string>('all') // Default to 'all'
+  
   const { data: students, isLoading, isError } = useStudents()
+  const { data: classes, isLoading: isLoadingClasses } = useClassList()
 
-  // Filter client-side sederhana
-  const filteredStudents = students?.filter(student => 
-    student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    student.nis?.includes(searchQuery)
-  ) || []
+  // Filter client-side
+  const filteredStudents = students?.filter(student => {
+    // 1. Filter by Search Query (Name or NIS)
+    const matchesSearch = 
+      student.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (student.nis?.includes(searchQuery) ?? false);
+
+    // 2. Filter by Class
+    const matchesClass = selectedClass === 'all' || student.class_name === selectedClass;
+
+    return matchesSearch && matchesClass;
+  }) || []
 
   return (
     <div className="space-y-6">
@@ -38,8 +56,9 @@ export default function StudentsPage() {
 
       {/* Data Table Section */}
       <div className="space-y-4">
-        <div className="flex items-center gap-2">
-          <div className="relative flex-1 md:max-w-sm">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+          {/* Search Input */}
+          <div className="relative flex-1 w-full sm:w-auto md:max-w-sm">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Cari nama atau NIS..."
@@ -47,6 +66,27 @@ export default function StudentsPage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
+          </div>
+
+          {/* Class Filter Dropdown */}
+          <div className="w-full sm:w-[200px]">
+            <Select value={selectedClass} onValueChange={setSelectedClass}>
+              <SelectTrigger>
+                <SelectValue placeholder="Semua Kelas" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Semua Kelas</SelectItem>
+                {isLoadingClasses ? (
+                  <div className="p-2 text-center text-sm text-muted-foreground">Loading...</div>
+                ) : (
+                  classes?.map((className) => (
+                    <SelectItem key={className} value={className}>
+                      {className}
+                    </SelectItem>
+                  ))
+                )}
+              </SelectContent>
+            </Select>
           </div>
         </div>
 

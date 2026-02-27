@@ -68,6 +68,37 @@ export function usePayments(filters?: PaymentFilter) {
   });
 }
 
+export function useStudentPaymentsYearly(studentId: string | undefined, year: number) {
+  const supabase = createClient();
+
+  return useQuery({
+    queryKey: ['payments', 'yearly', studentId, year],
+    queryFn: async () => {
+      if (!studentId) return [];
+
+      const startOfYear = `${year}-01-01`;
+      const endOfYear = `${year}-12-31`;
+
+      const { data, error } = await supabase
+        .from('payments')
+        .select('*')
+        .eq('student_id', studentId)
+        .gte('payment_date', startOfYear)
+        .lte('payment_date', endOfYear)
+        .order('payment_date', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching yearly payments:', error);
+        throw error;
+      }
+
+      return data;
+    },
+    enabled: !!studentId,
+    staleTime: 1000 * 60 * 5, // Cache for 5 minutes to avoid redundant calls per cell
+  });
+}
+
 // Hook khusus untuk mendapatkan outstanding balance via Database Function
 export function useStudentOutstanding(studentId: string | undefined) {
   const supabase = createClient();
@@ -112,6 +143,16 @@ export function useCreatePayment() {
       toast.success('Pembayaran berhasil dicatat');
       // Invalidate queries to refresh data
       queryClient.invalidateQueries({ queryKey: ['payments'] });
+      // Invalidate yearly payments for the specific student
+      if (variables.student_id && variables.year) {
+         queryClient.invalidateQueries({ 
+            queryKey: ['payments', 'yearly', variables.student_id, variables.year] 
+         });
+      } else {
+         // Fallback invalidate all yearly if we can't determine specifics easily
+         queryClient.invalidateQueries({ queryKey: ['payments', 'yearly'] });
+      }
+      
       // Refresh outstanding balance for that specific student
       if (variables.student_id) {
         queryClient.invalidateQueries({ queryKey: ['student-outstanding', variables.student_id] });
