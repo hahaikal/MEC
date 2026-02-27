@@ -16,7 +16,7 @@ export interface Expense {
 
 export type NewExpense = Omit<Expense, 'id' | 'created_at' | 'created_by'>
 
-export function useExpenses(filters?: { startDate?: string; endDate?: string }) {
+export function useExpenses(filters?: { startDate?: string; endDate?: string; category?: string }) {
   const supabase = createClient()
 
   return useQuery({
@@ -32,6 +32,9 @@ export function useExpenses(filters?: { startDate?: string; endDate?: string }) 
       }
       if (filters?.endDate) {
         query = query.lte('date', filters.endDate)
+      }
+      if (filters?.category && filters.category !== 'all') {
+        query = query.eq('category', filters.category)
       }
 
       const { data, error } = await query

@@ -45,8 +45,16 @@ const CATEGORY_COLORS: Record<string, "default" | "secondary" | "destructive" | 
   other: 'secondary',
 }
 
-export function ExpensesList() {
-  const { data: expenses, isLoading } = useExpenses()
+interface ExpensesListProps {
+  filters?: {
+    startDate?: string
+    endDate?: string
+    category?: string
+  }
+}
+
+export function ExpensesList({ filters }: ExpensesListProps) {
+  const { data: expenses, isLoading } = useExpenses(filters)
   const { mutate: deleteExpense } = useDeleteExpense()
 
   if (isLoading) {

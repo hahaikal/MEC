@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/table"
 import { Download, TrendingUp, TrendingDown, Percent, Loader2 } from "lucide-react"
 import { formatRupiah } from "@/lib/utils"
-// import { useReports } from "@/lib/hooks/use-reports"
+import { useReports } from "@/lib/hooks/use-reports"
 
 export default function ReportsPage() {
   const currentYear = new Date().getFullYear();

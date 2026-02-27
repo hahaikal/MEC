@@ -8,6 +8,7 @@ import {
   Users,
   ClipboardList,
   CreditCard,
+  Receipt,
   BarChart3,
   Settings,
   LogOut,
@@ -24,6 +25,7 @@ const navItems = [
   { icon: Users, label: 'Students', href: '/dashboard/students' },
   { icon: ClipboardList, label: 'Attendance', href: '/dashboard/attendance' },
   { icon: CreditCard, label: 'Payments', href: '/dashboard/payments' },
+  { icon: Receipt, label: 'Expenses', href: '/dashboard/expenses' },
   { icon: BarChart3, label: 'Reports', href: '/dashboard/reports' },
   { icon: Settings, label: 'Settings', href: '/dashboard/settings' },
 ]
