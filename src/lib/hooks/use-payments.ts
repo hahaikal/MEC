@@ -157,6 +157,9 @@ export function useCreatePayment() {
       if (variables.student_id) {
         queryClient.invalidateQueries({ queryKey: ['student-outstanding', variables.student_id] });
       }
+
+      // INVALIDATE DASHBOARD STATS
+      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
     },
     onError: (error) => {
       toast.error(`Gagal mencatat pembayaran: ${error.message}`);

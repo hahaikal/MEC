@@ -12,11 +12,13 @@ export function useStudentsByClass(className: string | null) {
     queryFn: async () => {
       if (!className) return []
 
+      // Fetch students with status 'active' OR 'ACTIVE'
+      // Using .or() to handle both cases
       const { data, error } = await supabase
         .from('students')
         .select('*')
         .eq('class_name', className)
-        .eq('status', 'ACTIVE')
+        .or('status.eq.active,status.eq.ACTIVE')
         .order('name')
 
       if (error) throw error
