@@ -6,10 +6,12 @@ export interface AttendanceSummary {
   id: string
   student_id: string
   class_name: string
-  month: number
+  semester: number
   year: number
   total_meetings: number
-  attended_meetings: number
+  sick: number
+  leave: number
+  alpha: number
   created_by?: string | null
   created_at?: string
   updated_at?: string
@@ -17,6 +19,7 @@ export interface AttendanceSummary {
 
 export interface AttendanceDetail extends AttendanceSummary {
   student_name: string
+  attended_meetings: number
   attendance_percentage: number
 }
 
@@ -29,8 +32,10 @@ export interface StudentAttendanceRow {
 export interface UpsertAttendanceParams {
   student_id: string
   class_name: string
-  month: number
+  semester: number
   year: number
   total_meetings: number
-  attended_meetings: number
+  sick: number
+  leave: number
+  alpha: number
 }

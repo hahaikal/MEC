@@ -12,7 +12,7 @@ import { cn } from '@/lib/utils'
 interface AttendanceRowProps {
   student: Student
   className: string
-  month: number
+  semester: number
   year: number
   initialAttendance?: AttendanceSummary | null
 }
@@ -20,15 +20,15 @@ interface AttendanceRowProps {
 export function AttendanceRow({
   student,
   className,
-  month,
+  semester,
   year,
   initialAttendance
 }: AttendanceRowProps) {
-  // Set default attended to 15 if no record exists
-  // If record exists, use that. If not, default to 15 (but only if total is also unset or 0?)
-  // Requirement: "pertama nilai default Attended adalah 15"
+
   const [total, setTotal] = useState(initialAttendance?.total_meetings || 0)
-  const [attended, setAttended] = useState(initialAttendance?.attended_meetings ?? 15) // Use nullish coalescing to default to 15 if undefined/null
+  const [sick, setSick] = useState(initialAttendance?.sick || 0)
+  const [leave, setLeave] = useState(initialAttendance?.leave || 0)
+  const [alpha, setAlpha] = useState(initialAttendance?.alpha || 0)
   
   const [isSaving, setIsSaving] = useState(false)
   const [hasError, setHasError] = useState(false)
@@ -39,10 +39,12 @@ export function AttendanceRow({
 
   useEffect(() => {
     setTotal(initialAttendance?.total_meetings || 0)
-    // If initialAttendance is present, use its value. Otherwise, default to 15.
-    setAttended(initialAttendance?.attended_meetings ?? 15)
+    setSick(initialAttendance?.sick || 0)
+    setLeave(initialAttendance?.leave || 0)
+    setAlpha(initialAttendance?.alpha || 0)
   }, [initialAttendance])
 
+  const attended = Math.max(0, total - sick - leave - alpha)
   const percentage = total > 0 ? (attended / total) * 100 : 0
 
   let indicatorColor = "bg-red-500" // < 50%
@@ -50,21 +52,17 @@ export function AttendanceRow({
   else if (percentage >= 50) indicatorColor = "bg-yellow-500"
 
   useEffect(() => {
-    if (attended > total && total > 0) {
+    if ((sick + leave + alpha) > total && total > 0) {
       setHasError(true)
     } else {
       setHasError(false)
     }
-  }, [total, attended])
+  }, [total, sick, leave, alpha])
 
   const saveData = useCallback(
-    (newTotal: number, newAttended: number) => {
-      // Input Validation: Prevent save if Attended > Total
-      if (newAttended > newTotal && newTotal > 0) {
-         // Show alert only if it's not the initial render/load causing this
-         // But here we are inside saveData which is called by debounce.
-         // We should just abort save and show error.
-         // toast.error(`Cannot save: Attended (${newAttended}) > Total (${newTotal})`)
+    (newTotal: number, newSick: number, newLeave: number, newAlpha: number) => {
+      // Input Validation: Prevent save if absenses > Total
+      if ((newSick + newLeave + newAlpha) > newTotal && newTotal > 0) {
          return
       }
 
@@ -73,10 +71,12 @@ export function AttendanceRow({
         {
           student_id: student.id,
           class_name: className,
-          month,
+          semester,
           year,
           total_meetings: newTotal,
-          attended_meetings: newAttended
+          sick: newSick,
+          leave: newLeave,
+          alpha: newAlpha
         },
         {
           onSuccess: () => {
@@ -90,7 +90,7 @@ export function AttendanceRow({
         }
       )
     },
-    [className, month, year, student.id, upsertMutation]
+    [className, semester, year, student.id, upsertMutation]
   )
 
   useEffect(() => {
@@ -101,7 +101,9 @@ export function AttendanceRow({
 
     if (
       total === (initialAttendance?.total_meetings || 0) &&
-      attended === (initialAttendance?.attended_meetings ?? 15)
+      sick === (initialAttendance?.sick || 0) &&
+      leave === (initialAttendance?.leave || 0) &&
+      alpha === (initialAttendance?.alpha || 0)
     ) {
       return
     }
@@ -109,17 +111,17 @@ export function AttendanceRow({
     // Debounce save
     const handler = setTimeout(() => {
       // Validation Check before calling save
-      if (attended > total && total > 0) {
-        toast.error(`Error: Attended (${attended}) cannot be greater than Total (${total})`)
+      if ((sick + leave + alpha) > total && total > 0) {
+        toast.error(`Error: Total absensi (${sick + leave + alpha}) melebihi total pertemuan (${total})`)
         return; // Do not save
       }
-      saveData(total, attended)
+      saveData(total, sick, leave, alpha)
     }, 800)
 
     return () => {
       clearTimeout(handler)
     }
-  }, [total, attended, saveData, initialAttendance])
+  }, [total, sick, leave, alpha, saveData, initialAttendance])
 
   return (
     <TableRow>
@@ -133,28 +135,46 @@ export function AttendanceRow({
           min="0"
           value={total}
           onChange={(e) => setTotal(parseInt(e.target.value) || 0)}
-          className="w-20 h-8"
+          className="w-16 h-8 text-center"
         />
       </TableCell>
       <TableCell>
         <Input
           type="number"
           min="0"
-          value={attended}
-          onChange={(e) => {
-             const val = parseInt(e.target.value) || 0;
-             setAttended(val);
-          }}
-          className={cn("w-20 h-8", hasError && "border-red-500 focus-visible:ring-red-500")}
+          value={sick}
+          onChange={(e) => setSick(parseInt(e.target.value) || 0)}
+          className={cn("w-16 h-8 text-center", hasError && "border-red-500 focus-visible:ring-red-500")}
         />
       </TableCell>
-      <TableCell className="w-[200px]">
-        <div className="flex items-center gap-2">
-          <Progress value={percentage} className="h-2" indicatorClassName={indicatorColor} />
-          <span className="text-xs w-12 text-right">{percentage.toFixed(0)}%</span>
-        </div>
+      <TableCell>
+        <Input
+          type="number"
+          min="0"
+          value={leave}
+          onChange={(e) => setLeave(parseInt(e.target.value) || 0)}
+          className={cn("w-16 h-8 text-center", hasError && "border-red-500 focus-visible:ring-red-500")}
+        />
       </TableCell>
       <TableCell>
+        <Input
+          type="number"
+          min="0"
+          value={alpha}
+          onChange={(e) => setAlpha(parseInt(e.target.value) || 0)}
+          className={cn("w-16 h-8 text-center", hasError && "border-red-500 focus-visible:ring-red-500")}
+        />
+      </TableCell>
+      <TableCell className="text-right font-semibold">
+        {attended}
+      </TableCell>
+      <TableCell className="w-[150px]">
+        <div className="flex items-center gap-2">
+          <Progress value={percentage} className="h-2" indicatorClassName={indicatorColor} />
+          <span className="text-xs w-10 text-right">{percentage.toFixed(0)}%</span>
+        </div>
+      </TableCell>
+      <TableCell className="text-center">
         {isSaving ? <span className="text-xs text-muted-foreground animate-pulse">Saving...</span> :
          hasError ? <span className="text-xs text-red-500">Invalid</span> : null}
       </TableCell>

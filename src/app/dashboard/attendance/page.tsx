@@ -16,27 +16,24 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useClassList, useStudentsByClass } from '@/lib/hooks/use-students-by-class'
-import { useAttendanceByMonth, useAttendanceByYear } from '@/lib/hooks/use-attendance'
+import { useAttendanceBySemester } from '@/lib/hooks/use-attendance'
 import { AttendanceRow } from './_components/attendance-row'
-import { AttendanceYearView } from './_components/attendance-year-view'
 import { Loader2 } from 'lucide-react'
 
 export default function AttendancePage() {
-  const [selectedMonth, setSelectedMonth] = useState<string>('')
+  const [selectedSemester, setSelectedSemester] = useState<string>('')
   const [selectedYear, setSelectedYear] = useState<string>('')
   const [selectedClass, setSelectedClass] = useState<string>('')
-  const [activeTab, setActiveTab] = useState("monthly")
 
   // Fetch Classes
   const { data: classes, isLoading: isLoadingClasses } = useClassList()
 
   // Derived state for queries
-  const monthInt = selectedMonth ? parseInt(selectedMonth) : 0
+  const semesterInt = selectedSemester ? parseInt(selectedSemester) : 0
   const yearInt = selectedYear ? parseInt(selectedYear) : 0
 
-  const isFilterComplete = !!(selectedClass && yearInt && (activeTab === 'yearly' || monthInt))
+  const isFilterComplete = !!(selectedClass && yearInt && semesterInt)
 
   // Fetch Data (only if filters complete)
   const {
@@ -45,23 +42,15 @@ export default function AttendancePage() {
   } = useStudentsByClass(selectedClass || null)
 
   const {
-    data: attendanceRecordsMonth,
-    isLoading: isLoadingAttendanceMonth
-  } = useAttendanceByMonth(
-    activeTab === 'monthly' && isFilterComplete ? selectedClass : null,
-    monthInt,
+    data: attendanceRecordsSemester,
+    isLoading: isLoadingAttendanceSemester
+  } = useAttendanceBySemester(
+    isFilterComplete ? selectedClass : null,
+    semesterInt,
     yearInt
   )
 
-  const {
-    data: attendanceRecordsYear,
-    isLoading: isLoadingAttendanceYear
-  } = useAttendanceByYear(
-    activeTab === 'yearly' && isFilterComplete ? selectedClass : null,
-    yearInt
-  )
-
-  const isLoadingData = (activeTab === 'monthly' ? isLoadingAttendanceMonth : isLoadingAttendanceYear) || isLoadingStudents
+  const isLoadingData = isLoadingAttendanceSemester || isLoadingStudents
 
   // Generate Year Options (Current Year - 2 to + 2)
   const currentYear = new Date().getFullYear()
@@ -96,23 +85,18 @@ export default function AttendancePage() {
                     </Select>
                   </div>
 
-                  {/* Month Select - Only for Monthly Tab */}
-                  {activeTab === 'monthly' && (
-                    <div className="w-full md:w-1/4">
-                      <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select Month" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {Array.from({ length: 12 }, (_, i) => (
-                            <SelectItem key={i + 1} value={(i + 1).toString()}>
-                              {new Date(0, i).toLocaleString('default', { month: 'long' })}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  )}
+                  {/* Semester Select */}
+                  <div className="w-full md:w-1/4">
+                    <Select value={selectedSemester} onValueChange={setSelectedSemester}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select Semester" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="1">Semester 1 (Jan - Jun)</SelectItem>
+                        <SelectItem value="2">Semester 2 (Jul - Des)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
 
                   {/* Class Select - Always needed */}
                   <div className="w-full md:w-1/2">
@@ -136,76 +120,62 @@ export default function AttendancePage() {
               </div>
             </div>
             
-            <Tabs defaultValue="monthly" value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="monthly">Monthly Entry</TabsTrigger>
-                <TabsTrigger value="yearly">Yearly Overview</TabsTrigger>
-              </TabsList>
-              
-              <div className="mt-4">
-                  {/* Validation Message */}
-                  {!isFilterComplete ? (
-                    <div className="text-center p-12 border-2 border-dashed rounded-lg text-muted-foreground">
-                      Please select {activeTab === 'monthly' ? 'Year, Month,' : 'Year'} and Class to view attendance.
-                    </div>
-                  ) : isLoadingData ? (
-                    <div className="flex justify-center p-8">
-                      <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                    </div>
-                  ) : !students || students.length === 0 ? (
-                    <div className="text-center p-8 text-muted-foreground">
-                      No active students found in this class.
-                    </div>
-                  ) : (
-                    <>
-                      <TabsContent value="monthly" className="m-0">
-                          <Card>
-                            <CardContent className="p-0">
-                                <Table>
-                                  <TableHeader>
-                                    <TableRow>
-                                      <TableHead>Student Name</TableHead>
-                                      <TableHead>Total Meetings</TableHead>
-                                      <TableHead>Attended</TableHead>
-                                      <TableHead>Percentage</TableHead>
-                                      <TableHead>Status</TableHead>
-                                    </TableRow>
-                                  </TableHeader>
-                                  <TableBody>
-                                    {students.map((student) => {
-                                      // Find existing attendance record
-                                      const record = attendanceRecordsMonth?.find(
-                                        (r) => r.student_id === student.id
-                                      )
+            <div className="mt-4">
+                {/* Validation Message */}
+                {!isFilterComplete ? (
+                  <div className="text-center p-12 border-2 border-dashed rounded-lg text-muted-foreground">
+                    Please select Year, Semester, and Class to view attendance.
+                  </div>
+                ) : isLoadingData ? (
+                  <div className="flex justify-center p-8">
+                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                  </div>
+                ) : !students || students.length === 0 ? (
+                  <div className="text-center p-8 text-muted-foreground">
+                    No active students found in this class.
+                  </div>
+                ) : (
+                  <Card>
+                    <CardContent className="p-0">
+                        <div className="overflow-x-auto">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Student Name</TableHead>
+                              <TableHead className="w-24">Total</TableHead>
+                              <TableHead className="w-24">Sakit</TableHead>
+                              <TableHead className="w-24">Izin</TableHead>
+                              <TableHead className="w-24">Alpha</TableHead>
+                              <TableHead className="text-right">Hadir</TableHead>
+                              <TableHead className="text-right">%</TableHead>
+                              <TableHead className="text-center">Status</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {students.map((student) => {
+                              // Find existing attendance record
+                              const record = attendanceRecordsSemester?.find(
+                                (r) => r.student_id === student.id
+                              )
 
-                                      return (
-                                        <AttendanceRow
-                                          key={student.id}
-                                          student={student}
-                                          className={selectedClass}
-                                          month={monthInt}
-                                          year={yearInt}
-                                          initialAttendance={record}
-                                        />
-                                      )
-                                    })}
-                                  </TableBody>
-                                </Table>
-                            </CardContent>
-                          </Card>
-                      </TabsContent>
-                      
-                      <TabsContent value="yearly" className="m-0">
-                        <AttendanceYearView 
-                            students={students} 
-                            attendanceRecords={attendanceRecordsYear} 
-                            year={yearInt} 
-                        />
-                      </TabsContent>
-                    </>
-                  )}
-              </div>
-            </Tabs>
+                              return (
+                                <AttendanceRow
+                                  key={student.id}
+                                  student={student}
+                                  className={selectedClass}
+                                  semester={semesterInt}
+                                  year={yearInt}
+                                  initialAttendance={record}
+                                />
+                              )
+                            })}
+                          </TableBody>
+                        </Table>
+                        </div>
+                    </CardContent>
+                  </Card>
+                )}
+            </div>
 
         </CardContent>
       </Card>
