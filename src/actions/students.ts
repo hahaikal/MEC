@@ -108,8 +108,26 @@ export async function deleteStudent(id: string) {
   const supabase = await createClient()
   
   // Note: Ensure foreign key constraints (like payments) are handled.
-  // If ON DELETE CASCADE is set in DB, this works. Otherwise, we might need to delete payments first.
-  // Assuming CASCADE based on user's request to just "delete it".
+  // We need to delete dependent records first to avoid foreign key violation
+  const { error: paymentsError } = await supabase
+    .from('payments')
+    .delete()
+    .eq('student_id', id)
+
+  if (paymentsError) {
+    console.error('Delete Payments Error:', paymentsError)
+    return { error: 'Failed to delete related payments.' }
+  }
+
+  const { error: attendanceError } = await supabase
+    .from('attendance_summaries')
+    .delete()
+    .eq('student_id', id)
+
+  if (attendanceError) {
+    console.error('Delete Attendance Error:', attendanceError)
+    return { error: 'Failed to delete related attendance records.' }
+  }
 
   const { error } = await supabase
     .from('students')
@@ -117,7 +135,7 @@ export async function deleteStudent(id: string) {
     .eq('id', id)
 
   if (error) {
-    console.error('Delete Error:', error)
+    console.error('Delete Student Error:', error)
     return { error: error.message }
   }
 

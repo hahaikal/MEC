@@ -11,17 +11,26 @@ import { AddStudentDialog } from '@/components/students/add-student-dialog'
 import { useStudents } from '@/lib/hooks/use-students'
 import { useClassList } from '@/lib/hooks/use-students-by-class'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Check, ChevronsUpDown } from 'lucide-react'
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command'
+import { cn } from '@/lib/utils'
 
 export default function StudentsPage() {
   const [searchQuery, setSearchQuery] = useState('')
-  const [selectedClass, setSelectedClass] = useState<string>('all') // Default to 'all'
+  const [selectedClasses, setSelectedClasses] = useState<string[]>([])
+  const [openClassFilter, setOpenClassFilter] = useState(false)
   
   const { data: students, isLoading, isError } = useStudents()
   const { data: classes, isLoading: isLoadingClasses } = useClassList()
@@ -34,10 +43,19 @@ export default function StudentsPage() {
       (student.nis?.includes(searchQuery) ?? false);
 
     // 2. Filter by Class
-    const matchesClass = selectedClass === 'all' || student.class_name === selectedClass;
+    const matchesClass = selectedClasses.length === 0 ||
+      (student.class_name && selectedClasses.includes(student.class_name));
 
     return matchesSearch && matchesClass;
   }) || []
+
+  const toggleClass = (className: string) => {
+    setSelectedClasses(current =>
+      current.includes(className)
+        ? current.filter(c => c !== className)
+        : [...current, className]
+    )
+  }
 
   return (
     <div className="space-y-6">
@@ -68,25 +86,49 @@ export default function StudentsPage() {
             />
           </div>
 
-          {/* Class Filter Dropdown */}
-          <div className="w-full sm:w-[200px]">
-            <Select value={selectedClass} onValueChange={setSelectedClass}>
-              <SelectTrigger>
-                <SelectValue placeholder="Semua Kelas" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Semua Kelas</SelectItem>
-                {isLoadingClasses ? (
-                  <div className="p-2 text-center text-sm text-muted-foreground">Loading...</div>
-                ) : (
-                  classes?.map((className) => (
-                    <SelectItem key={className} value={className}>
-                      {className}
-                    </SelectItem>
-                  ))
-                )}
-              </SelectContent>
-            </Select>
+          {/* Multi-Class Filter */}
+          <div className="w-full sm:w-[250px]">
+            <Popover open={openClassFilter} onOpenChange={setOpenClassFilter}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={openClassFilter}
+                  className="w-full justify-between"
+                  disabled={isLoadingClasses}
+                >
+                  {selectedClasses.length === 0
+                    ? "Semua Kelas"
+                    : `${selectedClasses.length} Kelas Dipilih`}
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[250px] p-0">
+                <Command>
+                  <CommandInput placeholder="Cari kelas..." />
+                  <CommandList>
+                    <CommandEmpty>Kelas tidak ditemukan.</CommandEmpty>
+                    <CommandGroup>
+                      {classes?.map((className) => (
+                        <CommandItem
+                          key={className}
+                          value={className}
+                          onSelect={() => toggleClass(className)}
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              selectedClasses.includes(className) ? "opacity-100" : "opacity-0"
+                            )}
+                          />
+                          {className}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
           </div>
         </div>
 

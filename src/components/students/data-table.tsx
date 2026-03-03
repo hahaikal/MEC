@@ -32,10 +32,43 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ChevronDown, Search } from "lucide-react";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { cn } from "@/lib/utils";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+}
+
+// Helper to determine row color based on student data completeness
+function getRowColorClass(data: any) {
+  if (!data) return "";
+
+  const hasName = !!data.name && data.name.trim() !== "";
+  const hasClass = !!data.class_name && data.class_name.trim() !== "";
+  const hasFee = data.base_fee !== undefined && data.base_fee !== null && data.base_fee > 0;
+  const hasGender = !!data.gender && data.gender.trim() !== "";
+
+  // Merah: Nama, kelas, SPP Fee, Jenis Kelamin tidak terisi (salah satu tidak ada)
+  if (!hasName || !hasClass || !hasFee || !hasGender) {
+    return "bg-red-50 hover:bg-red-100/50";
+  }
+
+  // Cek field lainnya untuk kelengkapan penuh (Hijau)
+  const isComplete =
+    hasName && hasClass && hasFee && hasGender &&
+    !!data.phone_number && data.phone_number.trim() !== "" &&
+    !!data.parent_name && data.parent_name.trim() !== "" &&
+    !!data.address && data.address.trim() !== "" &&
+    !!data.date_of_birth && data.date_of_birth.trim() !== "" &&
+    !!data.place_of_birth && data.place_of_birth.trim() !== "" &&
+    !!data.religion && data.religion.trim() !== "";
+
+  if (isComplete) {
+    return "bg-green-50 hover:bg-green-100/50";
+  }
+
+  // Kuning: Field utama terisi, tapi field pendukung ada yang kosong
+  return "bg-yellow-50 hover:bg-yellow-100/50";
 }
 
 export function DataTable<TData, TValue>({
@@ -144,7 +177,7 @@ export function DataTable<TData, TValue>({
                   <TableRow
                     key={row.id}
                     data-state={row.getIsSelected() && "selected"}
-                    className="group"
+                    className={cn("group", getRowColorClass(row.original))}
                   >
                     {row.getVisibleCells().map((cell) => (
                       <TableCell key={cell.id} className="py-3">
