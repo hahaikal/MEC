@@ -107,35 +107,17 @@ export async function updateStudent(id: string, data: StudentFormValues) {
 export async function deleteStudent(id: string) {
   const supabase = await createClient()
   
-  // Note: Ensure foreign key constraints (like payments) are handled.
-  // We need to delete dependent records first to avoid foreign key violation
-  const { error: paymentsError } = await supabase
-    .from('payments')
-    .delete()
-    .eq('student_id', id)
-
-  if (paymentsError) {
-    console.error('Delete Payments Error:', paymentsError)
-    return { error: 'Failed to delete related payments.' }
-  }
-
-  const { error: attendanceError } = await supabase
-    .from('attendance_summaries')
-    .delete()
-    .eq('student_id', id)
-
-  if (attendanceError) {
-    console.error('Delete Attendance Error:', attendanceError)
-    return { error: 'Failed to delete related attendance records.' }
-  }
-
+  // Instead of hard deleting, we soft delete the student by setting status to 'INACTIVE'
   const { error } = await supabase
     .from('students')
-    .delete()
+    .update({
+      status: 'INACTIVE',
+      updated_at: new Date().toISOString(),
+    })
     .eq('id', id)
 
   if (error) {
-    console.error('Delete Student Error:', error)
+    console.error('Update Student Status Error:', error)
     return { error: error.message }
   }
 

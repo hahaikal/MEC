@@ -43,6 +43,11 @@ interface DataTableProps<TData, TValue> {
 function getRowColorClass(data: any) {
   if (!data) return "";
 
+  // If student is INACTIVE, return black background with white text
+  if (data.status === 'INACTIVE' || data.status === 'inactive') {
+    return "bg-black text-white hover:bg-black/90";
+  }
+
   const hasName = !!data.name && data.name.trim() !== "";
   const hasClass = !!data.class_name && data.class_name.trim() !== "";
   const hasFee = data.base_fee !== undefined && data.base_fee !== null && data.base_fee > 0;

@@ -204,7 +204,7 @@ export const columns: ColumnDef<Student>[] = [
                 onClick={() => setShowDeleteAlert(true)}
               >
                 <Trash2 className="mr-2 h-4 w-4" />
-                Hapus Siswa
+                Nonaktifkan Siswa
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -214,7 +214,7 @@ export const columns: ColumnDef<Student>[] = [
               <AlertDialogHeader>
                 <AlertDialogTitle>Apakah anda yakin?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Tindakan ini tidak dapat dibatalkan. Data siswa beserta riwayat pembayarannya akan dihapus permanen.
+                  Data siswa ini akan dinonaktifkan. Data siswa dan riwayat pembayarannya tetap tersimpan.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
@@ -223,7 +223,7 @@ export const columns: ColumnDef<Student>[] = [
                   className="bg-red-600 hover:bg-red-700"
                   onClick={() => deleteStudent.mutate(student.id)}
                 >
-                  Hapus
+                  Nonaktifkan
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
