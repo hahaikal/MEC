@@ -55,12 +55,12 @@ type Payment = {
 };
 
 const MONTHS = [
-  "January", "February", "March", "April", "May", "June",
+  "Registration", "January", "February", "March", "April", "May", "June",
   "July", "August", "September", "October", "November", "December"
 ];
 
 const SHORT_MONTHS = [
-  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Reg", "Jan", "Feb", "Mar", "Apr", "May", "Jun",
   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
 ];
 
@@ -99,8 +99,9 @@ export function TuitionMatrixTable() {
 
       const { data: paymentsData, error: paymentsError } = await supabase
         .from("payments")
-        .select("id, student_id, amount, payment_date, payment_for_month, payment_status, invoice_number")
-        .eq("category", "tuition") // Only fetch Tuition payments for the matrix
+        .select("id, student_id, amount, payment_date, payment_for_month, payment_status, invoice_number, category")
+        // Fetch both tuition and registration
+        .in("category", ["tuition", "registration"])
         .gte("payment_date", startOfYear)
         .lte("payment_date", endOfYear);
 
@@ -132,10 +133,20 @@ export function TuitionMatrixTable() {
   // --- Helpers ---
   const getPaymentForCell = (studentId: string, monthIndex: number) => {
     const monthName = MONTHS[monthIndex];
+    if (monthName === "Registration") {
+      return payments.find(
+        (p) =>
+          p.student_id === studentId &&
+          (p.category === 'registration' || p.payment_for_month?.toLowerCase() === 'registration') &&
+          p.payment_status === 'completed'
+      );
+    }
+
     // Find payment for this student, this month (case insensitive check usually safer)
     return payments.find(
       (p) =>
         p.student_id === studentId &&
+        p.category === 'tuition' &&
         p.payment_for_month?.toLowerCase() === monthName.toLowerCase() &&
         p.payment_status === 'completed'
     );

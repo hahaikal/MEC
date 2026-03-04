@@ -51,11 +51,12 @@ interface Student {
 
 interface PaymentStatusCellProps {
   student: Student;
-  month?: number; // 0-11
+  month?: number; // 0-11, or -1 for Registration
   year?: number;
+  isRegistration?: boolean;
 }
 
-export function PaymentStatusCell({ student, month, year }: PaymentStatusCellProps) {
+export function PaymentStatusCell({ student, month, year, isRegistration = false }: PaymentStatusCellProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const router = useRouter();
 
@@ -64,10 +65,8 @@ export function PaymentStatusCell({ student, month, year }: PaymentStatusCellPro
   const targetMonth = month ?? currentDate.getMonth();
   const targetYear = year ?? currentDate.getFullYear();
 
-  const targetDate = new Date(targetYear, targetMonth, 1);
-  const monthName = format(targetDate, 'MMMM yyyy');
-  // const startOfMonth = new Date(targetYear, targetMonth, 1);
-  // const endOfMonth = new Date(targetYear, targetMonth + 1, 0);
+  const targetDate = isRegistration ? currentDate : new Date(targetYear, targetMonth, 1);
+  const monthName = isRegistration ? 'Registration' : format(targetDate, 'MMMM yyyy');
 
   // OPTIMIZATION: Fetch ALL payments for the year at once.
   // React Query will dedupe this call across all cells for the same student/year.
@@ -76,12 +75,17 @@ export function PaymentStatusCell({ student, month, year }: PaymentStatusCellPro
   // Find payment for this specific month in the cached yearly data
   // We check if the payment 'month' matches OR if the payment_date falls in the month
   const payment = yearlyPayments?.find((p: any) => {
+      if (isRegistration) {
+          // Check if category is registration (case insensitive usually better)
+          return p.category === 'registration';
+      }
+
       // 1. Check explicit 'month' column if available (preferred)
-      if (p.month === targetMonth && p.year === targetYear) return true;
+      if (p.month === targetMonth && p.year === targetYear && p.category !== 'registration') return true;
       
       // 2. Fallback: Check payment_date
       const pDate = new Date(p.payment_date);
-      return pDate.getMonth() === targetMonth && pDate.getFullYear() === targetYear;
+      return pDate.getMonth() === targetMonth && pDate.getFullYear() === targetYear && p.category !== 'registration';
   });
 
   if (isLoading) {
@@ -110,7 +114,7 @@ export function PaymentStatusCell({ student, month, year }: PaymentStatusCellPro
                 <span>Payment Completed</span>
               </div>
               <p className="text-xs text-green-600">
-                Tuition for {monthName}
+                {isRegistration ? 'Registration Fee' : `Tuition for ${monthName}`}
               </p>
             </div>
             
@@ -187,9 +191,9 @@ export function PaymentStatusCell({ student, month, year }: PaymentStatusCellPro
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Record Payment</DialogTitle>
+          <DialogTitle>{isRegistration ? 'Record Registration Payment' : 'Record Payment'}</DialogTitle>
           <DialogDescription>
-            Enter tuition payment details for <strong>{student.name}</strong> for the month of <strong>{monthName}</strong>.
+            Enter {isRegistration ? 'registration' : 'tuition'} payment details for <strong>{student.name}</strong>{isRegistration ? '.' : ` for the month of `}<strong>{!isRegistration && monthName}</strong>.
           </DialogDescription>
         </DialogHeader>
         
@@ -199,6 +203,7 @@ export function PaymentStatusCell({ student, month, year }: PaymentStatusCellPro
             student={student}
             month={targetMonth}
             year={targetYear}
+            isRegistration={isRegistration}
             onSuccess={() => setIsDialogOpen(false)}
           />
         </div>

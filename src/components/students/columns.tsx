@@ -104,6 +104,12 @@ export const columns: ColumnDef<Student>[] = [
     },
   },
   {
+    id: 'registration',
+    header: () => <div className="w-20 text-center text-xs font-medium">Reg</div>,
+    size: 80,
+    cell: ({ row }) => <PaymentStatusCell student={row.original} isRegistration={true} month={-1} />,
+  },
+  {
     id: 'januari',
     header: () => <div className="w-20 text-center text-xs font-medium">Jan</div>,
     size: 80,

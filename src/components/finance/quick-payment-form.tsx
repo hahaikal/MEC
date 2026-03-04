@@ -51,10 +51,11 @@ interface QuickPaymentFormProps {
   }
   month: number
   year: number
+  isRegistration?: boolean
   onSuccess?: () => void
 }
 
-export function QuickPaymentForm({ student, month, year, onSuccess }: QuickPaymentFormProps) {
+export function QuickPaymentForm({ student, month, year, isRegistration = false, onSuccess }: QuickPaymentFormProps) {
   const { mutate: createPayment, isPending } = useCreatePayment()
 
   const form = useForm<QuickPaymentFormValues>({
@@ -63,6 +64,8 @@ export function QuickPaymentForm({ student, month, year, onSuccess }: QuickPayme
       discount_amount: 0,
       payment_date: (() => {
         const now = new Date();
+        if (isRegistration) return now;
+
         const targetDate = new Date(year, month, 1);
         const endOfMonth = new Date(year, month + 1, 0);
 
@@ -83,11 +86,11 @@ export function QuickPaymentForm({ student, month, year, onSuccess }: QuickPayme
     },
   })
 
-  const monthName = format(new Date(year, month, 1), 'MMMM yyyy', { locale: idLocale })
+  const monthName = isRegistration ? 'Registration' : format(new Date(year, month, 1), 'MMMM yyyy', { locale: idLocale })
 
   // Kalkulasi Total
   const discount = form.watch("discount_amount") || 0;
-  const baseFee = student.base_fee || 0;
+  const baseFee = isRegistration ? 300000 : (student.base_fee || 0);
   const finalAmount = Math.max(0, baseFee - discount);
 
   function onSubmit(data: QuickPaymentFormValues) {
@@ -98,10 +101,11 @@ export function QuickPaymentForm({ student, month, year, onSuccess }: QuickPayme
       discount_amount: data.discount_amount, // Store discount for record
       payment_date: data.payment_date.toISOString(),
       payment_method: data.payment_method,
-      month: month, // Store target month
-      year: year,   // Store target year
+      month: isRegistration ? null : month, // Store target month
+      year: isRegistration ? new Date(data.payment_date).getFullYear() : year,   // Store target year
+      category: isRegistration ? 'registration' : 'tuition',
       payment_status: 'completed',
-      notes: `Pembayaran SPP ${monthName}`,
+      notes: isRegistration ? 'Biaya Registrasi' : `Pembayaran SPP ${monthName}`,
       created_at: new Date().toISOString(),
     }
 
@@ -124,12 +128,20 @@ export function QuickPaymentForm({ student, month, year, onSuccess }: QuickPayme
                 <span className="text-muted-foreground">Siswa:</span>
                 <span className="font-medium">{student.name}</span>
              </div>
-             <div className="flex justify-between">
-                <span className="text-muted-foreground">Pembayaran Bulan:</span>
-                <span className="font-medium capitalize">{monthName}</span>
-             </div>
+             {!isRegistration && (
+               <div className="flex justify-between">
+                  <span className="text-muted-foreground">Pembayaran Bulan:</span>
+                  <span className="font-medium capitalize">{monthName}</span>
+               </div>
+             )}
+             {isRegistration && (
+               <div className="flex justify-between">
+                  <span className="text-muted-foreground">Tipe Pembayaran:</span>
+                  <span className="font-medium capitalize">Registration</span>
+               </div>
+             )}
              <div className="flex justify-between border-t pt-2 mt-2">
-                <span className="text-muted-foreground">Nominal (SPP):</span>
+                <span className="text-muted-foreground">Nominal{isRegistration ? ' Registrasi' : ' (SPP)'}:</span>
                 <span className="font-medium">
                   {new Intl.NumberFormat('id-ID', {
                     style: 'currency',

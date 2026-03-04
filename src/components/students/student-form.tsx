@@ -243,7 +243,7 @@ export function StudentForm({ initialData, onSuccess }: StudentFormProps) {
                 <FormItem>
                   <FormLabel>Kelas Saat Ini (Masuk)</FormLabel>
                   <FormControl>
-                    <Input placeholder="Contoh: 10 IPA 1" {...field} />
+                    <Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Pilih Kelas" /></SelectTrigger></FormControl><SelectContent><SelectItem value="10 IPA 1">10 IPA 1</SelectItem><SelectItem value="10 IPS 1">10 IPS 1</SelectItem><SelectItem value="11 IPA 1">11 IPA 1</SelectItem><SelectItem value="11 IPS 1">11 IPS 1</SelectItem><SelectItem value="12 IPA 1">12 IPA 1</SelectItem><SelectItem value="12 IPS 1">12 IPS 1</SelectItem></SelectContent></Select>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
