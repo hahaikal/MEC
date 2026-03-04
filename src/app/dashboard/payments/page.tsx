@@ -17,8 +17,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { Plus, Download, Eye, CheckCircle2, Clock, XCircle, Loader2, ChevronDown, ChevronRight } from "lucide-react"
-import { formatCurrency, formatRupiah } from "@/lib/utils"
+import { Plus, Download, Eye, CheckCircle2, Clock, XCircle, Loader2, ChevronDown } from "lucide-react"
+import { cn, formatCurrency, formatRupiah } from "@/lib/utils"
 import { usePayments } from "@/lib/hooks/use-payments"
 import { format } from "date-fns"
 import { id as idLocale } from "date-fns/locale"
@@ -114,16 +114,8 @@ export default function PaymentsPage() {
         </p>
       </div>
 
-      {/* Action Buttons & Filters */}
-      <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center bg-white dark:bg-slate-900 p-4 rounded-lg border shadow-sm">
-        <div className="flex items-center gap-2">
-           <DatePickerWithRange date={dateRange} setDate={setDateRange} />
-           {(dateRange?.from || dateRange?.to) && (
-             <Button variant="ghost" onClick={() => setDateRange(undefined)} size="sm">
-               Reset Filter
-             </Button>
-           )}
-        </div>
+      {/* Action Buttons */}
+      <div className="flex flex-col sm:flex-row gap-4 justify-end items-start sm:items-center bg-white dark:bg-slate-900 p-4 rounded-lg border shadow-sm">
         <div className="flex gap-2 flex-wrap">
           <Button className="gap-2">
             <Plus className="h-4 w-4" />
@@ -219,12 +211,20 @@ export default function PaymentsPage() {
 
       {/* Payment History Table */}
       <Card className="border-0 shadow-sm">
-        <CardHeader className="pb-4 border-b">
+        <CardHeader className="pb-4 border-b flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <CardTitle className="text-xl">Riwayat Pembayaran Detail</CardTitle>
             <CardDescription className="mt-1">
               Daftar lengkap semua transaksi pembayaran SPP siswa
             </CardDescription>
+          </div>
+          <div className="flex items-center gap-2">
+            <DatePickerWithRange date={dateRange} setDate={setDateRange} />
+            {(dateRange?.from || dateRange?.to) && (
+              <Button variant="ghost" onClick={() => setDateRange(undefined)} size="sm">
+                Reset Filter
+              </Button>
+            )}
           </div>
         </CardHeader>
         <CardContent className="pt-4">
@@ -278,7 +278,7 @@ export default function PaymentsPage() {
                                 onClick={() => toggleMonth(monthKey)}
                               >
                                 <div className="flex items-center gap-2">
-                                  {isMonthExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                                  <ChevronDown className={cn("h-4 w-4 transition-transform duration-200", !isMonthExpanded && "-rotate-90")} />
                                   <span className="text-base">{monthDisplay}</span>
                                 </div>
                                 <div className="text-emerald-600 font-bold">
@@ -288,8 +288,8 @@ export default function PaymentsPage() {
                             </TableCell>
                           </TableRow>
 
-                          {/* Day Rows (if month is expanded) */}
-                          {isMonthExpanded && Object.entries(daysMap)
+                          {/* Day Rows (always rendered, visibility toggled by class) */}
+                          {Object.entries(daysMap)
                             .sort(([a], [b]) => b.localeCompare(a)) // Sort days descending
                             .map(([dayKey, dailyPayments]) => {
                               const dayDate = new Date(dayKey);
@@ -300,7 +300,7 @@ export default function PaymentsPage() {
                               return (
                                 <React.Fragment key={dayKey}>
                                   {/* Day Header Row */}
-                                  <TableRow className="bg-slate-50 dark:bg-slate-900/30">
+                                  <TableRow className={cn("bg-slate-50 dark:bg-slate-900/30 border-0", !isMonthExpanded && "hidden")}>
                                     <TableCell colSpan={7} className="p-0">
                                       <Button
                                         variant="ghost"
@@ -308,7 +308,7 @@ export default function PaymentsPage() {
                                         onClick={() => toggleDay(dayKey)}
                                       >
                                         <div className="flex items-center gap-2">
-                                          {isDayExpanded ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
+                                          <ChevronDown className={cn("h-3.5 w-3.5 transition-transform duration-200", !isDayExpanded && "-rotate-90")} />
                                           <span className="text-sm font-medium">{dayDisplay}</span>
                                           <span className="text-xs bg-slate-200 dark:bg-slate-700 px-2 py-0.5 rounded-full ml-2">
                                             {dailyPayments.length} trx
@@ -321,22 +321,28 @@ export default function PaymentsPage() {
                                     </TableCell>
                                   </TableRow>
 
-                                  {/* Transaction Rows (if day is expanded) */}
-                                  {isDayExpanded && dailyPayments.map((payment: any) => {
+                                  {/* Transaction Rows (always rendered, visibility toggled by class) */}
+                                  {dailyPayments.map((payment: any) => {
                                     const paymentMonthName = payment.category === 'registration'
                                       ? 'Registrasi'
                                       : (payment.month != null ? format(new Date(payment.year, payment.month, 1), 'MMMM yyyy', { locale: idLocale }) : '-');
 
                                     return (
-                                      <TableRow key={payment.id} className="hover:bg-muted/30 transition-colors group">
-                                        <TableCell className="px-6 pl-14 font-medium">
-                                          <div className="flex flex-col">
+                                      <TableRow
+                                        key={payment.id}
+                                        className={cn(
+                                          "hover:bg-muted/30 transition-colors group",
+                                          (!isMonthExpanded || !isDayExpanded) && "hidden"
+                                        )}
+                                      >
+                                        <TableCell className="px-6 pl-14 font-medium py-3">
+                                          <div className="flex flex-col animate-in fade-in zoom-in duration-200">
                                             <span>{payment.students?.name || 'Unknown'}</span>
                                             <span className="text-xs text-muted-foreground">{payment.students?.email}</span>
                                           </div>
                                         </TableCell>
-                                        <TableCell className="text-sm capitalize">{paymentMonthName}</TableCell>
-                                        <TableCell className="text-right font-semibold text-emerald-600">
+                                        <TableCell className="text-sm capitalize py-3">{paymentMonthName}</TableCell>
+                                        <TableCell className="text-right font-semibold text-emerald-600 py-3">
                                           {formatRupiah(Number(payment.amount))}
                                           {payment.discount_amount > 0 && (
                                              <div className="text-xs text-muted-foreground line-through decoration-red-400">
@@ -344,11 +350,11 @@ export default function PaymentsPage() {
                                              </div>
                                           )}
                                         </TableCell>
-                                        <TableCell className="text-sm capitalize">{payment.payment_method?.replace('_', ' ')}</TableCell>
-                                        <TableCell className="text-sm text-muted-foreground">
+                                        <TableCell className="text-sm capitalize py-3">{payment.payment_method?.replace('_', ' ')}</TableCell>
+                                        <TableCell className="text-sm text-muted-foreground py-3">
                                           {payment.payment_date ? format(new Date(payment.payment_date), 'HH:mm') : '-'}
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell className="py-3">
                                           <div className="flex items-center gap-2">
                                             {getStatusIcon(payment.payment_status)}
                                             <span className={`inline-block px-2 py-1 text-xs font-medium rounded capitalize ${getStatusColor(payment.payment_status)}`}>
@@ -356,7 +362,7 @@ export default function PaymentsPage() {
                                             </span>
                                           </div>
                                         </TableCell>
-                                        <TableCell className="text-right pr-6">
+                                        <TableCell className="text-right pr-6 py-3">
                                           <Button variant="ghost" size="sm" className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity">
                                             <Eye className="h-4 w-4" />
                                           </Button>
