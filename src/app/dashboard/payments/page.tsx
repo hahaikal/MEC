@@ -17,13 +17,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { Plus, Download, Eye, CheckCircle2, Clock, XCircle, Loader2 } from "lucide-react"
+import { Plus, Download, Eye, CheckCircle2, Clock, XCircle, Loader2, ChevronDown, ChevronRight } from "lucide-react"
 import { formatCurrency, formatRupiah } from "@/lib/utils"
 import { usePayments } from "@/lib/hooks/use-payments"
 import { format } from "date-fns"
 import { id as idLocale } from "date-fns/locale"
-
-// Mock payment data removed
+import { DateRange } from "react-day-picker"
+import { DatePickerWithRange } from "@/components/ui/date-picker-with-range"
 
 const getStatusIcon = (status: string) => {
   switch (status?.toLowerCase()) {
@@ -52,8 +52,49 @@ const getStatusColor = (status: string) => {
 }
 
 export default function PaymentsPage() {
-  const { data, isLoading } = usePayments()
+  const [dateRange, setDateRange] = useState<DateRange | undefined>()
+  const [expandedMonths, setExpandedMonths] = useState<Record<string, boolean>>({})
+  const [expandedDays, setExpandedDays] = useState<Record<string, boolean>>({})
+
+  // Format dates for Supabase
+  const startDate = dateRange?.from ? format(dateRange.from, 'yyyy-MM-dd') : undefined
+  const endDate = dateRange?.to ? format(dateRange.to, 'yyyy-MM-dd') : undefined
+
+  const { data, isLoading } = usePayments({ startDate, endDate })
   const payments = data?.data || []
+
+  // Group payments by Month and then by Day
+  const groupedPayments = React.useMemo(() => {
+    const grouped: Record<string, Record<string, any[]>> = {}
+
+    payments.forEach((payment: any) => {
+      if (!payment.payment_date) return
+
+      const dateObj = new Date(payment.payment_date)
+      // Gunakan local timezone untuk konsistensi di UI
+      const monthKey = format(dateObj, 'yyyy-MM', { locale: idLocale })
+      const dayKey = format(dateObj, 'yyyy-MM-dd', { locale: idLocale })
+
+      if (!grouped[monthKey]) {
+        grouped[monthKey] = {}
+      }
+      if (!grouped[monthKey][dayKey]) {
+        grouped[monthKey][dayKey] = []
+      }
+
+      grouped[monthKey][dayKey].push(payment)
+    })
+
+    return grouped
+  }, [payments])
+
+  const toggleMonth = (monthKey: string) => {
+    setExpandedMonths(prev => ({ ...prev, [monthKey]: !prev[monthKey] }))
+  }
+
+  const toggleDay = (dayKey: string) => {
+    setExpandedDays(prev => ({ ...prev, [dayKey]: !prev[dayKey] }))
+  }
 
   // Calculate statistics
   const totalPayments = payments.length
@@ -73,16 +114,26 @@ export default function PaymentsPage() {
         </p>
       </div>
 
-      {/* Action Buttons */}
-      <div className="flex gap-2 flex-wrap">
-        <Button className="gap-2">
-          <Plus className="h-4 w-4" />
-          Catat Pembayaran Baru
-        </Button>
-        <Button variant="outline" className="gap-2">
-          <Download className="h-4 w-4" />
-          Export
-        </Button>
+      {/* Action Buttons & Filters */}
+      <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center bg-white dark:bg-slate-900 p-4 rounded-lg border shadow-sm">
+        <div className="flex items-center gap-2">
+           <DatePickerWithRange date={dateRange} setDate={setDateRange} />
+           {(dateRange?.from || dateRange?.to) && (
+             <Button variant="ghost" onClick={() => setDateRange(undefined)} size="sm">
+               Reset Filter
+             </Button>
+           )}
+        </div>
+        <div className="flex gap-2 flex-wrap">
+          <Button className="gap-2">
+            <Plus className="h-4 w-4" />
+            Catat Pembayaran Baru
+          </Button>
+          <Button variant="outline" className="gap-2">
+            <Download className="h-4 w-4" />
+            Export
+          </Button>
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -201,52 +252,125 @@ export default function PaymentsPage() {
                       </div>
                     </TableCell>
                   </TableRow>
-                ) : payments.length === 0 ? (
+                ) : Object.keys(groupedPayments).length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
                       Belum ada data pembayaran
                     </TableCell>
                   </TableRow>
                 ) : (
-                  payments.map((payment: any) => {
-                    const monthName = format(new Date(payment.year, payment.month, 1), 'MMMM yyyy', { locale: idLocale });
-                    return (
-                      <TableRow key={payment.id} className="hover:bg-muted/30 transition-colors">
-                        <TableCell className="px-6 font-medium">
-                          <div className="flex flex-col">
-                            <span>{payment.students?.name || 'Unknown'}</span>
-                            <span className="text-xs text-muted-foreground">{payment.students?.email}</span>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-sm capitalize">{monthName}</TableCell>
-                        <TableCell className="text-right font-semibold text-emerald-600">
-                          {formatRupiah(Number(payment.amount))}
-                          {payment.discount_amount > 0 && (
-                             <div className="text-xs text-muted-foreground line-through decoration-red-400">
-                               Disc: {formatRupiah(Number(payment.discount_amount))}
-                             </div>
-                          )}
-                        </TableCell>
-                        <TableCell className="text-sm capitalize">{payment.payment_method?.replace('_', ' ')}</TableCell>
-                        <TableCell className="text-sm">
-                          {payment.payment_date ? format(new Date(payment.payment_date), 'dd MMM yyyy') : '-'}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            {getStatusIcon(payment.payment_status)}
-                            <span className={`inline-block px-2 py-1 text-xs font-medium rounded capitalize ${getStatusColor(payment.payment_status)}`}>
-                              {payment.payment_status}
-                            </span>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-right pr-6">
-                          <Button variant="ghost" size="sm" className="h-8 px-2">
-                            <Eye className="h-4 w-4" />
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    )
-                  })
+                  Object.entries(groupedPayments)
+                    .sort(([a], [b]) => b.localeCompare(a)) // Sort months descending
+                    .map(([monthKey, daysMap]) => {
+                      const monthDate = new Date(`${monthKey}-01`);
+                      const monthDisplay = format(monthDate, 'MMMM yyyy', { locale: idLocale });
+                      const isMonthExpanded = expandedMonths[monthKey] ?? true; // Default expanded
+                      const monthlyTotal = Object.values(daysMap).flat().reduce((sum, p) => sum + Number(p.amount), 0);
+
+                      return (
+                        <React.Fragment key={monthKey}>
+                          {/* Month Header Row */}
+                          <TableRow className="bg-slate-100/80 dark:bg-slate-800/50 hover:bg-slate-100/80">
+                            <TableCell colSpan={7} className="p-0">
+                              <Button
+                                variant="ghost"
+                                className="w-full justify-between rounded-none h-12 px-6 font-semibold hover:bg-slate-200/50 dark:hover:bg-slate-700/50"
+                                onClick={() => toggleMonth(monthKey)}
+                              >
+                                <div className="flex items-center gap-2">
+                                  {isMonthExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                                  <span className="text-base">{monthDisplay}</span>
+                                </div>
+                                <div className="text-emerald-600 font-bold">
+                                  {formatRupiah(monthlyTotal)}
+                                </div>
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+
+                          {/* Day Rows (if month is expanded) */}
+                          {isMonthExpanded && Object.entries(daysMap)
+                            .sort(([a], [b]) => b.localeCompare(a)) // Sort days descending
+                            .map(([dayKey, dailyPayments]) => {
+                              const dayDate = new Date(dayKey);
+                              const dayDisplay = format(dayDate, 'EEEE, dd MMMM yyyy', { locale: idLocale });
+                              const isDayExpanded = expandedDays[dayKey] ?? true; // Default expanded
+                              const dailyTotal = dailyPayments.reduce((sum, p) => sum + Number(p.amount), 0);
+
+                              return (
+                                <React.Fragment key={dayKey}>
+                                  {/* Day Header Row */}
+                                  <TableRow className="bg-slate-50 dark:bg-slate-900/30">
+                                    <TableCell colSpan={7} className="p-0">
+                                      <Button
+                                        variant="ghost"
+                                        className="w-full justify-between rounded-none h-10 px-6 pl-12 text-muted-foreground hover:bg-slate-100 dark:hover:bg-slate-800/50"
+                                        onClick={() => toggleDay(dayKey)}
+                                      >
+                                        <div className="flex items-center gap-2">
+                                          {isDayExpanded ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
+                                          <span className="text-sm font-medium">{dayDisplay}</span>
+                                          <span className="text-xs bg-slate-200 dark:bg-slate-700 px-2 py-0.5 rounded-full ml-2">
+                                            {dailyPayments.length} trx
+                                          </span>
+                                        </div>
+                                        <div className="text-sm font-semibold">
+                                          {formatRupiah(dailyTotal)}
+                                        </div>
+                                      </Button>
+                                    </TableCell>
+                                  </TableRow>
+
+                                  {/* Transaction Rows (if day is expanded) */}
+                                  {isDayExpanded && dailyPayments.map((payment: any) => {
+                                    const paymentMonthName = payment.category === 'registration'
+                                      ? 'Registrasi'
+                                      : (payment.month != null ? format(new Date(payment.year, payment.month, 1), 'MMMM yyyy', { locale: idLocale }) : '-');
+
+                                    return (
+                                      <TableRow key={payment.id} className="hover:bg-muted/30 transition-colors group">
+                                        <TableCell className="px-6 pl-14 font-medium">
+                                          <div className="flex flex-col">
+                                            <span>{payment.students?.name || 'Unknown'}</span>
+                                            <span className="text-xs text-muted-foreground">{payment.students?.email}</span>
+                                          </div>
+                                        </TableCell>
+                                        <TableCell className="text-sm capitalize">{paymentMonthName}</TableCell>
+                                        <TableCell className="text-right font-semibold text-emerald-600">
+                                          {formatRupiah(Number(payment.amount))}
+                                          {payment.discount_amount > 0 && (
+                                             <div className="text-xs text-muted-foreground line-through decoration-red-400">
+                                               Disc: {formatRupiah(Number(payment.discount_amount))}
+                                             </div>
+                                          )}
+                                        </TableCell>
+                                        <TableCell className="text-sm capitalize">{payment.payment_method?.replace('_', ' ')}</TableCell>
+                                        <TableCell className="text-sm text-muted-foreground">
+                                          {payment.payment_date ? format(new Date(payment.payment_date), 'HH:mm') : '-'}
+                                        </TableCell>
+                                        <TableCell>
+                                          <div className="flex items-center gap-2">
+                                            {getStatusIcon(payment.payment_status)}
+                                            <span className={`inline-block px-2 py-1 text-xs font-medium rounded capitalize ${getStatusColor(payment.payment_status)}`}>
+                                              {payment.payment_status}
+                                            </span>
+                                          </div>
+                                        </TableCell>
+                                        <TableCell className="text-right pr-6">
+                                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <Eye className="h-4 w-4" />
+                                          </Button>
+                                        </TableCell>
+                                      </TableRow>
+                                    )
+                                  })}
+                                </React.Fragment>
+                              )
+                            })
+                          }
+                        </React.Fragment>
+                      )
+                    })
                 )}
               </TableBody>
             </Table>
