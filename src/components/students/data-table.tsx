@@ -43,9 +43,9 @@ interface DataTableProps<TData, TValue> {
 function getRowColorClass(data: any) {
   if (!data) return "";
 
-  // If student is INACTIVE, return black background with white text
+  // If student is INACTIVE, return dark gray background with white text
   if (data.status === 'INACTIVE' || data.status === 'inactive') {
-    return "bg-black text-white hover:bg-black/90";
+    return "bg-gray-800 text-white";
   }
 
   const hasName = !!data.name && data.name.trim() !== "";
@@ -55,7 +55,7 @@ function getRowColorClass(data: any) {
 
   // Merah: Nama, kelas, SPP Fee, Jenis Kelamin tidak terisi (salah satu tidak ada)
   if (!hasName || !hasClass || !hasFee || !hasGender) {
-    return "bg-red-50 hover:bg-red-100/50";
+    return "bg-red-100 hover:bg-red-100/50";
   }
 
   // Cek field lainnya untuk kelengkapan penuh (Hijau)
@@ -69,11 +69,11 @@ function getRowColorClass(data: any) {
     !!data.religion && data.religion.trim() !== "";
 
   if (isComplete) {
-    return "bg-green-50 hover:bg-green-100/50";
+    return "bg-green-100 hover:bg-green-100/50";
   }
 
   // Kuning: Field utama terisi, tapi field pendukung ada yang kosong
-  return "bg-yellow-50 hover:bg-yellow-100/50";
+  return "bg-yellow-100 hover:bg-yellow-100/50";
 }
 
 export function DataTable<TData, TValue>({
