@@ -95,17 +95,18 @@ export function PaymentStatusCell({ student, month, year, isRegistration = false
   // If payment exists and is completed/verified
   if (payment && payment.payment_status === 'completed') {
     return (
-      <Popover>
-        <PopoverTrigger asChild>
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="h-8 w-8 hover:bg-green-50 text-green-600 hover:text-green-700"
-          >
-            <CheckCircle2 className="h-5 w-5" />
-          <span className="sr-only">Paid {monthName}</span>
-          </Button>
-        </PopoverTrigger>
+      <div className="flex justify-center w-full">
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 hover:bg-green-50 text-green-600 hover:text-green-700"
+            >
+              <CheckCircle2 className="h-5 w-5" />
+            <span className="sr-only">Paid {monthName}</span>
+            </Button>
+          </PopoverTrigger>
         <PopoverContent className="w-80 p-0" align="center">
           <div className="flex flex-col">
             <div className="bg-green-50 p-4 border-b border-green-100">
@@ -149,25 +150,26 @@ export function PaymentStatusCell({ student, month, year, isRegistration = false
                 )}
               </div>
 
-              {payment.notes && (
-                <>
-                  <Separator />
-                  <div className="text-xs text-muted-foreground italic">
-                    "{payment.notes}"
-                  </div>
-                </>
-              )}
+                {payment.notes && (
+                  <>
+                    <Separator />
+                    <div className="text-xs text-muted-foreground italic">
+                      "{payment.notes}"
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
-          </div>
-        </PopoverContent>
-      </Popover>
+          </PopoverContent>
+        </Popover>
+      </div>
     );
   }
 
   // Pending State
   if (payment && payment.payment_status === 'pending') {
     return (
-      <div className="flex justify-center">
+      <div className="flex justify-center w-full">
         <Badge variant="outline" className="bg-yellow-50 text-yellow-600 border-yellow-200 hover:bg-yellow-100">
           <Loader2 className="h-3 w-3 mr-1 animate-spin" />
           Pending
@@ -178,17 +180,18 @@ export function PaymentStatusCell({ student, month, year, isRegistration = false
 
   // Not Paid State
   return (
-    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-      <DialogTrigger asChild>
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
-        >
-          <Calendar className="h-4 w-4" />
-          <span className="sr-only">Pay for {monthName}</span>
-        </Button>
-      </DialogTrigger>
+    <div className="flex justify-center w-full">
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+          >
+            <Calendar className="h-4 w-4" />
+            <span className="sr-only">Pay for {monthName}</span>
+          </Button>
+        </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>{isRegistration ? 'Record Registration Payment' : 'Record Payment'}</DialogTitle>
@@ -197,17 +200,18 @@ export function PaymentStatusCell({ student, month, year, isRegistration = false
           </DialogDescription>
         </DialogHeader>
         
-        {/* We use the simplified QuickPaymentForm */}
-        <div className="mt-4">
-          <QuickPaymentForm
-            student={student}
-            month={targetMonth}
-            year={targetYear}
-            isRegistration={isRegistration}
-            onSuccess={() => setIsDialogOpen(false)}
-          />
-        </div>
-      </DialogContent>
-    </Dialog>
+          {/* We use the simplified QuickPaymentForm */}
+          <div className="mt-4">
+            <QuickPaymentForm
+              student={student}
+              month={targetMonth}
+              year={targetYear}
+              isRegistration={isRegistration}
+              onSuccess={() => setIsDialogOpen(false)}
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 }
