@@ -241,9 +241,40 @@ export function StudentForm({ initialData, onSuccess }: StudentFormProps) {
               name="class_name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Kelas Saat Ini (Masuk)</FormLabel>
+                  <FormLabel>Class</FormLabel>
                   <FormControl>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Pilih Kelas" /></SelectTrigger></FormControl><SelectContent><SelectItem value="10 IPA 1">10 IPA 1</SelectItem><SelectItem value="10 IPS 1">10 IPS 1</SelectItem><SelectItem value="11 IPA 1">11 IPA 1</SelectItem><SelectItem value="11 IPS 1">11 IPS 1</SelectItem><SelectItem value="12 IPA 1">12 IPA 1</SelectItem><SelectItem value="12 IPS 1">12 IPS 1</SelectItem></SelectContent></Select>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Pilih Kelas" />
+                        </SelectTrigger>
+                      </FormControl>
+                        <SelectContent>
+                          <SelectItem value="10 IPA 1">Nursery</SelectItem>
+                          <SelectItem value="10 IPS 1">Prescool</SelectItem>
+                          <SelectItem value="11 IPA 1">Pre-Kindergarten</SelectItem>
+                          <SelectItem value="11 IPS 1">Kindergarten</SelectItem>
+                          <SelectItem value="12 IPA 1">Pre-basic</SelectItem>
+                          <SelectItem value="12 IPS 1">Basic 1</SelectItem>
+                          <SelectItem value="12 IPS 1">Basic 2</SelectItem>
+                          <SelectItem value="12 IPS 1">Basic 3</SelectItem>
+                          <SelectItem value="12 IPS 1">Starter 1</SelectItem>
+                          <SelectItem value="12 IPS 1">Starter 2</SelectItem>
+                          <SelectItem value="12 IPS 1">Starter 3</SelectItem>
+                          <SelectItem value="12 IPS 1">Starter 4</SelectItem>
+                          <SelectItem value="12 IPS 1">Starter 5</SelectItem>
+                          <SelectItem value="12 IPS 1">Starter 6</SelectItem>
+                          <SelectItem value="12 IPS 1">Starter 7</SelectItem>
+                          <SelectItem value="12 IPS 1">Waystage 1</SelectItem>
+                          <SelectItem value="12 IPS 1">Waystage 2</SelectItem>
+                          <SelectItem value="12 IPS 1">Waystage 3</SelectItem>
+                          <SelectItem value="12 IPS 1">Waystage 4</SelectItem>
+                          <SelectItem value="12 IPS 1">Waystage 5</SelectItem>
+                          <SelectItem value="12 IPS 1">Waystage 6</SelectItem>
+                          <SelectItem value="12 IPS 1">Waystage 7</SelectItem>
+                          <SelectItem value="12 IPS 1">Waystage 8</SelectItem>
+                        </SelectContent>
+                    </Select>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
