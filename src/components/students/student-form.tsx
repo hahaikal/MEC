@@ -250,29 +250,29 @@ export function StudentForm({ initialData, onSuccess }: StudentFormProps) {
                         </SelectTrigger>
                       </FormControl>
                         <SelectContent>
-                          <SelectItem value="10 IPA 1">Nursery</SelectItem>
-                          <SelectItem value="10 IPS 1">Prescool</SelectItem>
-                          <SelectItem value="11 IPA 1">Pre-Kindergarten</SelectItem>
-                          <SelectItem value="11 IPS 1">Kindergarten</SelectItem>
-                          <SelectItem value="12 IPA 1">Pre-basic</SelectItem>
-                          <SelectItem value="12 IPS 1">Basic 1</SelectItem>
-                          <SelectItem value="12 IPS 1">Basic 2</SelectItem>
-                          <SelectItem value="12 IPS 1">Basic 3</SelectItem>
-                          <SelectItem value="12 IPS 1">Starter 1</SelectItem>
-                          <SelectItem value="12 IPS 1">Starter 2</SelectItem>
-                          <SelectItem value="12 IPS 1">Starter 3</SelectItem>
-                          <SelectItem value="12 IPS 1">Starter 4</SelectItem>
-                          <SelectItem value="12 IPS 1">Starter 5</SelectItem>
-                          <SelectItem value="12 IPS 1">Starter 6</SelectItem>
-                          <SelectItem value="12 IPS 1">Starter 7</SelectItem>
-                          <SelectItem value="12 IPS 1">Waystage 1</SelectItem>
-                          <SelectItem value="12 IPS 1">Waystage 2</SelectItem>
-                          <SelectItem value="12 IPS 1">Waystage 3</SelectItem>
-                          <SelectItem value="12 IPS 1">Waystage 4</SelectItem>
-                          <SelectItem value="12 IPS 1">Waystage 5</SelectItem>
-                          <SelectItem value="12 IPS 1">Waystage 6</SelectItem>
-                          <SelectItem value="12 IPS 1">Waystage 7</SelectItem>
-                          <SelectItem value="12 IPS 1">Waystage 8</SelectItem>
+                          <SelectItem value="Nursery">Nursery</SelectItem>
+                          <SelectItem value="Prescool">Prescool</SelectItem>
+                          <SelectItem value="Pre-Kindergarten">Pre-Kindergarten</SelectItem>
+                          <SelectItem value="Kindergarten">Kindergarten</SelectItem>
+                          <SelectItem value="Pre-basic">Pre-basic</SelectItem>
+                          <SelectItem value="Basic 1">Basic 1</SelectItem>
+                          <SelectItem value="Basic 2">Basic 2</SelectItem>
+                          <SelectItem value="Basic 3">Basic 3</SelectItem>
+                          <SelectItem value="Starter 1">Starter 1</SelectItem>
+                          <SelectItem value="Starter 2">Starter 2</SelectItem>
+                          <SelectItem value="Starter 3">Starter 3</SelectItem>
+                          <SelectItem value="Starter 4">Starter 4</SelectItem>
+                          <SelectItem value="Starter 5">Starter 5</SelectItem>
+                          <SelectItem value="Starter 6">Starter 6</SelectItem>
+                          <SelectItem value="Starter 7">Starter 7</SelectItem>
+                          <SelectItem value="Waystage 1">Waystage 1</SelectItem>
+                          <SelectItem value="Waystage 2">Waystage 2</SelectItem>
+                          <SelectItem value="Waystage 3">Waystage 3</SelectItem>
+                          <SelectItem value="Waystage 4">Waystage 4</SelectItem>
+                          <SelectItem value="Waystage 5">Waystage 5</SelectItem>
+                          <SelectItem value="Waystage 6">Waystage 6</SelectItem>
+                          <SelectItem value="Waystage 7">Waystage 7</SelectItem>
+                          <SelectItem value="Waystage 8">Waystage 8</SelectItem>
                         </SelectContent>
                     </Select>
                   </FormControl>
