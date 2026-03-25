@@ -258,12 +258,16 @@ export function StudentForm({ initialData, onSuccess }: StudentFormProps) {
                           <SelectItem value="Basic 1">Basic 1</SelectItem>
                           <SelectItem value="Basic 2">Basic 2</SelectItem>
                           <SelectItem value="Basic 3">Basic 3</SelectItem>
+                          <SelectItem value="Basic Extension">Basic Extension</SelectItem>
                           <SelectItem value="Starter 1">Starter 1</SelectItem>
                           <SelectItem value="Starter 2">Starter 2</SelectItem>
                           <SelectItem value="Starter 3">Starter 3</SelectItem>
                           <SelectItem value="Starter 4">Starter 4</SelectItem>
+                          <SelectItem value="Starter 4 Plus">Starter 4 Plus</SelectItem>
                           <SelectItem value="Starter 5">Starter 5</SelectItem>
+                          <SelectItem value="Starter 5 Plus">Starter 5 Plus</SelectItem>
                           <SelectItem value="Starter 6">Starter 6</SelectItem>
+                          <SelectItem value="Starter 6 Plus">Starter 6 Plus</SelectItem>
                           <SelectItem value="Starter 7">Starter 7</SelectItem>
                           <SelectItem value="Waystage 1">Waystage 1</SelectItem>
                           <SelectItem value="Waystage 2">Waystage 2</SelectItem>
