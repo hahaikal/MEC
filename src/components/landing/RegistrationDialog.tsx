@@ -17,7 +17,7 @@ export function RegistrationDialog({ children }: { children: React.ReactNode }) 
 
   // You can replace this with the actual WhatsApp number of the admin
   const whatsappNumber = '6281234567890';
-  const message = encodeURIComponent('Halo Admin, saya tertarik untuk mendaftar di My English Course. Boleh minta informasi pendaftaran lebih lanjut?');
+  const message = encodeURIComponent('Hello Admin, I am interested in registering at My English Course & Academy. Could I get more registration information?');
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${message}`;
 
   return (
@@ -27,9 +27,9 @@ export function RegistrationDialog({ children }: { children: React.ReactNode }) 
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-xl">Pendaftaran Siswa Baru</DialogTitle>
+          <DialogTitle className="text-xl">New Student Registration</DialogTitle>
           <DialogDescription>
-            Pendaftaran siswa baru My English Course saat ini dilayani melalui WhatsApp. Admin kami akan dengan senang hati membantu proses pendaftaran Anda.
+            New student registration for My English Course & Academy is currently handled via WhatsApp. Our admin will be happy to assist you with the registration process.
           </DialogDescription>
         </DialogHeader>
 
@@ -39,7 +39,7 @@ export function RegistrationDialog({ children }: { children: React.ReactNode }) 
           </div>
 
           <p className="text-center text-slate-600 mb-2">
-            Klik tombol di bawah ini untuk terhubung dengan Admin kami via WhatsApp.
+            Click the button below to connect with our Admin via WhatsApp.
           </p>
 
           <Button
@@ -47,7 +47,7 @@ export function RegistrationDialog({ children }: { children: React.ReactNode }) 
             onClick={() => window.open(whatsappUrl, '_blank')}
           >
             <MessageCircle className="h-5 w-5" />
-            Hubungi Admin (WhatsApp)
+            Contact Admin (WhatsApp)
           </Button>
         </div>
       </DialogContent>

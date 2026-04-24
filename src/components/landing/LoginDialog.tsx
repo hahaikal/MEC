@@ -39,9 +39,9 @@ export function LoginDialog() {
         {mode === 'selection' ? (
           <>
             <DialogHeader>
-              <DialogTitle className="text-center text-xl">Masuk ke Sistem</DialogTitle>
+              <DialogTitle className="text-center text-xl">System Login</DialogTitle>
               <DialogDescription className="text-center">
-                Silahkan pilih metode masuk sesuai dengan peran Anda.
+                Please select your login method based on your role.
               </DialogDescription>
             </DialogHeader>
             <div className="flex flex-col gap-4 py-4">
@@ -54,8 +54,8 @@ export function LoginDialog() {
                   <User className="h-5 w-5 text-blue-600" />
                 </div>
                 <div className="text-left">
-                  <div className="font-semibold text-slate-800">Login sebagai Siswa</div>
-                  <div className="text-xs text-slate-500">Untuk melihat jadwal, e-learning, & tagihan</div>
+                  <div className="font-semibold text-slate-800">Login as Student</div>
+                  <div className="text-xs text-slate-500">View schedules, e-learning, & bills</div>
                 </div>
               </Button>
 
@@ -68,8 +68,8 @@ export function LoginDialog() {
                   <Lock className="h-5 w-5 text-slate-600" />
                 </div>
                 <div className="text-left">
-                  <div className="font-semibold text-slate-800">Login sebagai Staff</div>
-                  <div className="text-xs text-slate-500">Untuk Admin, Teacher & Direktur</div>
+                  <div className="font-semibold text-slate-800">Login as Staff</div>
+                  <div className="text-xs text-slate-500">For Admins, Teachers & Directors</div>
                 </div>
               </Button>
             </div>
@@ -77,24 +77,24 @@ export function LoginDialog() {
         ) : (
           <>
             <DialogHeader>
-              <DialogTitle className="text-xl">Login Siswa</DialogTitle>
+              <DialogTitle className="text-xl">Student Login</DialogTitle>
               <DialogDescription>
-                Fitur ini sedang dalam tahap pengembangan. Silahkan hubungi admin untuk informasi lebih lanjut.
+                This feature is currently under development. Please contact the admin for more information.
               </DialogDescription>
             </DialogHeader>
             <div className="flex flex-col gap-4 py-4 opacity-50 pointer-events-none">
               <div className="grid gap-2">
-                <Label htmlFor="nis">Nomor Induk Siswa (NIS)</Label>
-                <Input id="nis" placeholder="Masukkan NIS Anda" disabled />
+                <Label htmlFor="nis">Student ID (NIS)</Label>
+                <Input id="nis" placeholder="Enter your NIS" disabled />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="password">Password</Label>
                 <Input id="password" type="password" placeholder="••••••••" disabled />
               </div>
-              <Button disabled className="w-full">Masuk</Button>
+              <Button disabled className="w-full">Sign In</Button>
             </div>
             <Button variant="ghost" onClick={() => setMode('selection')} className="mt-2">
-              Kembali
+              Back
             </Button>
           </>
         )}

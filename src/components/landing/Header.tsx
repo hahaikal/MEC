@@ -11,9 +11,9 @@ export function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const navigation = [
-    { name: 'Tentang Kami', href: '#about' },
-    { name: 'Program', href: '#programs' },
-    { name: 'Galeri', href: '#gallery' },
+    { name: 'About Us', href: '#about' },
+    { name: 'Programs', href: '#programs' },
+    { name: 'Gallery', href: '#gallery' },
   ];
 
   return (
@@ -24,12 +24,12 @@ export function Header() {
             <Link href="/" className="flex items-center gap-2">
               <Image
                 src="/logo.png"
-                alt="My English Course Logo"
+                alt="MEC Academy Logo"
                 width={40}
                 height={40}
                 className="rounded-md"
               />
-              <span className="text-xl font-bold text-blue-900 hidden sm:block">My English Course</span>
+              <span className="text-xl font-bold text-blue-900 hidden sm:block">My English Course & Academy</span>
             </Link>
           </div>
 

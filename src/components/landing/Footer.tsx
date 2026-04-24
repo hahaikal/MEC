@@ -15,15 +15,15 @@ export function Footer() {
               <div className="bg-white p-1 rounded-md">
                 <Image
                   src="/logo.png"
-                  alt="My English Course Logo"
+                  alt="MEC Academy Logo"
                   width={40}
                   height={40}
                 />
               </div>
-              <span className="text-xl font-bold text-white">MEC</span>
+              <span className="text-xl font-bold text-white">MEC Academy</span>
             </Link>
             <p className="text-sm leading-6 text-slate-300">
-              Learn and grow with us - one stop learning center. Membantu Anda menguasai bahasa Inggris dengan metode pembelajaran yang efektif dan menyenangkan.
+              Learn and grow with us - one stop learning center. Helping you master English with effective and enjoyable learning methods.
             </p>
             <div className="flex space-x-6">
               <a href="#" className="text-slate-400 hover:text-blue-400">
@@ -44,28 +44,33 @@ export function Footer() {
           <div className="mt-16 grid grid-cols-2 gap-8 xl:col-span-2 xl:mt-0">
             <div className="md:grid md:grid-cols-2 md:gap-8">
               <div>
-                <h3 className="text-sm font-semibold leading-6 text-white">Navigasi</h3>
+                <h3 className="text-sm font-semibold leading-6 text-white">Navigation</h3>
                 <ul role="list" className="mt-6 space-y-4">
                   <li>
                     <a href="#about" className="text-sm leading-6 text-slate-300 hover:text-white">
-                      Tentang Kami
+                      About Us
                     </a>
                   </li>
                   <li>
                     <a href="#programs" className="text-sm leading-6 text-slate-300 hover:text-white">
-                      Program
+                      Programs
                     </a>
                   </li>
                   <li>
                     <a href="#gallery" className="text-sm leading-6 text-slate-300 hover:text-white">
-                      Galeri
+                      Gallery
                     </a>
                   </li>
                 </ul>
               </div>
               <div className="mt-10 md:mt-0">
-                <h3 className="text-sm font-semibold leading-6 text-white">Program Kami</h3>
+                <h3 className="text-sm font-semibold leading-6 text-white">Our Programs</h3>
                 <ul role="list" className="mt-6 space-y-4">
+                  <li>
+                    <a href="#programs" className="text-sm leading-6 text-slate-300 hover:text-white">
+                      MEC PRESCHOOL
+                    </a>
+                  </li>
                   <li>
                     <a href="#programs" className="text-sm leading-6 text-slate-300 hover:text-white">
                       English for Kids
@@ -73,12 +78,7 @@ export function Footer() {
                   </li>
                   <li>
                     <a href="#programs" className="text-sm leading-6 text-slate-300 hover:text-white">
-                      General English
-                    </a>
-                  </li>
-                  <li>
-                    <a href="#programs" className="text-sm leading-6 text-slate-300 hover:text-white">
-                      TOEFL/IELTS Prep
+                      Regular English
                     </a>
                   </li>
                 </ul>
@@ -86,11 +86,11 @@ export function Footer() {
             </div>
             <div className="md:grid md:grid-cols-1 md:gap-8">
               <div>
-                <h3 className="text-sm font-semibold leading-6 text-white">Hubungi Kami</h3>
+                <h3 className="text-sm font-semibold leading-6 text-white">Contact Us</h3>
                 <ul role="list" className="mt-6 space-y-4">
                   <li className="flex gap-3 text-sm leading-6 text-slate-300">
                     <MapPin className="h-5 w-5 text-slate-400 flex-shrink-0" />
-                    <span>Jl. Pendidikan No. 123, Kota Cerdas, Indonesia</span>
+                    <span>123 Education St., Smart City, Indonesia</span>
                   </li>
                   <li className="flex gap-3 text-sm leading-6 text-slate-300">
                     <Phone className="h-5 w-5 text-slate-400 flex-shrink-0" />
@@ -108,7 +108,7 @@ export function Footer() {
 
         <div className="mt-16 border-t border-white/10 pt-8 sm:mt-20 lg:mt-24">
           <p className="text-xs leading-5 text-slate-400">
-            &copy; {new Date().getFullYear()} My English Course. All rights reserved.
+            &copy; {new Date().getFullYear()} My English Course & Academy. All rights reserved.
           </p>
         </div>
       </div>
