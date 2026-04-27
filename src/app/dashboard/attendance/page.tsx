@@ -108,9 +108,9 @@ export default function AttendancePage() {
                         {isLoadingClasses ? (
                           <div className="p-2 text-center text-sm text-muted-foreground">Loading...</div>
                         ) : (
-                          classes?.map((className) => (
-                            <SelectItem key={className} value={className}>
-                              {className}
+                          classes?.map((c: any) => (
+                            <SelectItem key={c.id} value={c.name}>
+                              {c.name}
                             </SelectItem>
                           ))
                         )}

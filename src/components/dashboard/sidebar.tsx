@@ -19,14 +19,17 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
+import { useEffect } from 'react'
 
 const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard', href: '/dashboard' },
   { icon: Users, label: 'Students', href: '/dashboard/students' },
-  { icon: ClipboardList, label: 'Attendance', href: '/dashboard/attendance' },
+  { icon: ClipboardList, label: 'Laporan Absensi', href: '/dashboard/attendance', adminOnly: true },
+  { icon: ClipboardList, label: 'Input Kehadiran', href: '/dashboard/attendance/daily' },
   { icon: CreditCard, label: 'Payments', href: '/dashboard/payments' },
   { icon: Receipt, label: 'Expenses', href: '/dashboard/expenses' },
   { icon: BarChart3, label: 'Reports', href: '/dashboard/reports' },
+  { icon: Users, label: 'Manajemen Kelas', href: '/dashboard/classes', adminOnly: true },
   { icon: Settings, label: 'Settings', href: '/dashboard/settings' },
 ]
 
@@ -35,6 +38,20 @@ export function Sidebar() {
   const router = useRouter()
   const supabase = createClient()
   const [isOpen, setIsOpen] = useState(false)
+  const [userRole, setUserRole] = useState<string | null>(null)
+
+  useEffect(() => {
+    async function getUser() {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        const { data } = await supabase.from('users').select('role').eq('id', user.id).single()
+        if (data) {
+          setUserRole(data.role)
+        }
+      }
+    }
+    getUser()
+  }, [supabase])
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
@@ -73,6 +90,7 @@ export function Sidebar() {
           {/* Navigation */}
           <nav className="flex-1 space-y-2">
             {navItems.map((item) => {
+              if (item.adminOnly && userRole === 'teacher') return null
               const Icon = item.icon
               const isActive = pathname === item.href
               return (

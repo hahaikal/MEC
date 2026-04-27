@@ -109,19 +109,19 @@ export default function StudentsPage() {
                   <CommandList>
                     <CommandEmpty>Kelas tidak ditemukan.</CommandEmpty>
                     <CommandGroup>
-                      {classes?.map((className) => (
+                      {classes?.map((c) => (
                         <CommandItem
-                          key={className}
-                          value={className}
-                          onSelect={() => toggleClass(className)}
+                          key={c.id}
+                          value={c.name}
+                          onSelect={() => toggleClass(c.name)}
                         >
                           <Check
                             className={cn(
                               "mr-2 h-4 w-4",
-                              selectedClasses.includes(className) ? "opacity-100" : "opacity-0"
+                              selectedClasses.includes(c.name) ? "opacity-100" : "opacity-0"
                             )}
                           />
-                          {className}
+                          {c.name}
                         </CommandItem>
                       ))}
                     </CommandGroup>

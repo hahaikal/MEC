@@ -4,28 +4,29 @@ import { Database } from '@/types/supabase'
 
 type Student = Database['public']['Tables']['students']['Row']
 
-export function useStudentsByClass(className: string | null) {
+export function useStudentsByClass(classId: string | null) {
   const supabase = createClient()
 
   return useQuery({
-    queryKey: ['students', 'class', className],
+    queryKey: ['students', 'class', classId],
     queryFn: async () => {
-      if (!className) return []
+      if (!classId) return []
 
-      // Fetch students with status 'active' OR 'ACTIVE'
-      // Using .or() to handle both cases
       const { data, error } = await supabase
-        .from('students')
-        .select('*')
-        .eq('class_name', className)
-        .or('status.eq.active,status.eq.ACTIVE')
-        .order('name')
+        .from('class_enrollments')
+        .select('students(*)')
+        .eq('class_id', classId)
 
       if (error) throw error
 
-      return data as Student[]
+      // Filter active students manually or add it to the query
+      const students = data
+        .map((d: any) => d.students)
+        .filter((s: any) => s && (s.status === 'active' || s.status === 'ACTIVE'))
+
+      return students.sort((a: any, b: any) => a.name.localeCompare(b.name)) as Student[]
     },
-    enabled: !!className,
+    enabled: !!classId,
   })
 }
 
@@ -33,18 +34,16 @@ export function useClassList() {
   const supabase = createClient()
 
   return useQuery({
-    queryKey: ['students', 'classes'],
+    queryKey: ['classes'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('students')
-        .select('class_name')
-        .not('class_name', 'is', null)
+        .from('classes')
+        .select('*')
+        .order('name')
 
       if (error) throw error
 
-      // Get unique class names
-      const uniqueClasses = Array.from(new Set(data.map(item => item.class_name).filter(Boolean)))
-      return uniqueClasses.sort() as string[]
+      return data as any[]
     },
   })
 }

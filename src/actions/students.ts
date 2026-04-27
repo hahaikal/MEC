@@ -27,11 +27,10 @@ export async function createStudent(data: StudentFormValues) {
     return value
   }
 
-  const { error } = await supabase.from('students').insert({
+  const { data: student, error } = await supabase.from('students').insert({
     name: validatedFields.data.name,
     email: validatedFields.data.email || null,
     phone_number: validatedFields.data.phone_number || null,
-    class_name: validatedFields.data.class_name || null,
     parent_name: validatedFields.data.parent_name || null,
     parent_phone: validatedFields.data.parent_phone || null,
     parent_occupation: validatedFields.data.parent_occupation || null,
@@ -45,11 +44,25 @@ export async function createStudent(data: StudentFormValues) {
     enrollment_date: toDateValue(validatedFields.data.enrollment_date) || new Date().toISOString(),
     status: 'ACTIVE',
     created_by: user.id,
-  })
+  }).select('id').single()
 
   if (error) {
     console.error('Database Error:', error)
     return { error: error.message }
+  }
+
+  // Enroll student if class_id is provided
+  if (validatedFields.data.class_id) {
+    const { error: enrollmentError } = await supabase.from('class_enrollments').insert({
+      student_id: student.id,
+      class_id: validatedFields.data.class_id,
+    })
+
+    if (enrollmentError) {
+      console.error('Enrollment Error:', enrollmentError)
+      // Note: we could rollback or just return an error
+      return { error: 'Student created but enrollment failed: ' + enrollmentError.message }
+    }
   }
 
   revalidatePath('/dashboard/students')
@@ -75,7 +88,6 @@ export async function updateStudent(id: string, data: StudentFormValues) {
     name: validatedFields.data.name,
     email: validatedFields.data.email || null,
     phone_number: validatedFields.data.phone_number || null,
-    class_name: validatedFields.data.class_name || null,
     parent_name: validatedFields.data.parent_name || null,
     parent_phone: validatedFields.data.parent_phone || null,
     parent_occupation: validatedFields.data.parent_occupation || null,
@@ -98,6 +110,36 @@ export async function updateStudent(id: string, data: StudentFormValues) {
   if (error) {
     console.error('Update Error:', error)
     return { error: error.message }
+  }
+
+  // Handle enrollment update
+  // First, check existing enrollment
+  const { data: existingEnrollments } = await supabase
+    .from('class_enrollments')
+    .select('id, class_id')
+    .eq('student_id', id)
+
+  if (validatedFields.data.class_id) {
+    // Upsert enrollment
+    if (existingEnrollments && existingEnrollments.length > 0) {
+      // Update existing
+      if (existingEnrollments[0].class_id !== validatedFields.data.class_id) {
+        await supabase
+          .from('class_enrollments')
+          .update({ class_id: validatedFields.data.class_id })
+          .eq('id', existingEnrollments[0].id)
+      }
+    } else {
+      // Insert new
+      await supabase.from('class_enrollments').insert({
+        student_id: id,
+        class_id: validatedFields.data.class_id,
+      })
+    }
+  } else {
+    // If class_id is cleared, optionally remove enrollment
+    // Uncomment if un-enrolling is allowed via form:
+    // await supabase.from('class_enrollments').delete().eq('student_id', id)
   }
 
   revalidatePath('/dashboard/students')

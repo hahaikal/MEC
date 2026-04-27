@@ -28,10 +28,24 @@ import { format } from 'date-fns'
 import { cn } from '@/lib/utils'
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { useClassList } from '@/lib/hooks/use-students-by-class'
 
 interface StudentFormProps {
   initialData?: any 
   onSuccess?: () => void
+}
+
+function ClassOptions() {
+  const { data: classes, isLoading } = useClassList()
+  if (isLoading) return <SelectItem value="loading" disabled>Loading...</SelectItem>
+  if (!classes || classes.length === 0) return <SelectItem value="empty" disabled>No classes found</SelectItem>
+  return (
+    <>
+      {classes.map((c: any) => (
+        <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+      ))}
+    </>
+  )
 }
 
 export function StudentForm({ initialData, onSuccess }: StudentFormProps) {
@@ -46,7 +60,7 @@ export function StudentForm({ initialData, onSuccess }: StudentFormProps) {
     defaultValues: initialData ? {
       ...initialData,
       // Pastikan field optional memiliki fallback string kosong jika null
-      class_name: initialData.class_name || '',
+      class_id: initialData.class_id || '',
       email: initialData.email || '',
       phone_number: initialData.phone_number || '',
       parent_name: initialData.parent_name || '',
@@ -68,7 +82,7 @@ export function StudentForm({ initialData, onSuccess }: StudentFormProps) {
       email: '',
       phone_number: '',
       school_origin: '',
-      class_name: '',
+      class_id: '',
       parent_name: '',
       parent_occupation: '',
       parent_phone: '',
@@ -238,46 +252,20 @@ export function StudentForm({ initialData, onSuccess }: StudentFormProps) {
 
             <FormField
               control={form.control}
-              name="class_name"
+              name="class_id"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Class</FormLabel>
                   <FormControl>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value || ''}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Pilih Kelas" />
                         </SelectTrigger>
                       </FormControl>
-                        <SelectContent>
-                          <SelectItem value="Nursery">Nursery</SelectItem>
-                          <SelectItem value="Prescool">Prescool</SelectItem>
-                          <SelectItem value="Pre-Kindergarten">Pre-Kindergarten</SelectItem>
-                          <SelectItem value="Kindergarten">Kindergarten</SelectItem>
-                          <SelectItem value="Pre-basic">Pre-basic</SelectItem>
-                          <SelectItem value="Basic 1">Basic 1</SelectItem>
-                          <SelectItem value="Basic 2">Basic 2</SelectItem>
-                          <SelectItem value="Basic 3">Basic 3</SelectItem>
-                          <SelectItem value="Basic Extension">Basic Extension</SelectItem>
-                          <SelectItem value="Starter 1">Starter 1</SelectItem>
-                          <SelectItem value="Starter 2">Starter 2</SelectItem>
-                          <SelectItem value="Starter 3">Starter 3</SelectItem>
-                          <SelectItem value="Starter 4">Starter 4</SelectItem>
-                          <SelectItem value="Starter 4 Plus">Starter 4 Plus</SelectItem>
-                          <SelectItem value="Starter 5">Starter 5</SelectItem>
-                          <SelectItem value="Starter 5 Plus">Starter 5 Plus</SelectItem>
-                          <SelectItem value="Starter 6">Starter 6</SelectItem>
-                          <SelectItem value="Starter 6 Plus">Starter 6 Plus</SelectItem>
-                          <SelectItem value="Starter 7">Starter 7</SelectItem>
-                          <SelectItem value="Waystage 1">Waystage 1</SelectItem>
-                          <SelectItem value="Waystage 2">Waystage 2</SelectItem>
-                          <SelectItem value="Waystage 3">Waystage 3</SelectItem>
-                          <SelectItem value="Waystage 4">Waystage 4</SelectItem>
-                          <SelectItem value="Waystage 5">Waystage 5</SelectItem>
-                          <SelectItem value="Waystage 6">Waystage 6</SelectItem>
-                          <SelectItem value="Waystage 7">Waystage 7</SelectItem>
-                          <SelectItem value="Waystage 8">Waystage 8</SelectItem>
-                        </SelectContent>
+                      <SelectContent>
+                        <ClassOptions />
+                      </SelectContent>
                     </Select>
                   </FormControl>
                   <FormMessage />
