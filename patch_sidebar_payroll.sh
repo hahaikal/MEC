@@ -1,0 +1,1 @@
+sed -i "/{ icon: Receipt, label: 'Expenses', href: '\/dashboard\/expenses' },/a \ \ { icon: CreditCard, label: 'Penggajian', href: '/dashboard/payroll', adminOnly: true }," src/components/dashboard/sidebar.tsx

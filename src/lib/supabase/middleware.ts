@@ -23,26 +23,46 @@ export async function updateSession(request: NextRequest) {
     }
   )
 
-  // Do not run code between createServerClient and
-  // supabase.auth.getUser(). A simple mistake could make it very hard
-  // to debug issues with users being randomly logged out.
-
   const {
     data: { user },
   } = await supabase.auth.getUser()
 
-  // Protected routes
-  const protectedRoutes = ['/dashboard', '/students', '/payments', '/reports']
-  const isProtectedRoute = protectedRoutes.some((route) => request.nextUrl.pathname.startsWith(route))
+  const isProtectedRoute = request.nextUrl.pathname.startsWith('/dashboard')
 
   if (isProtectedRoute && !user) {
-    // No user, redirect to login
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
   // Redirect authenticated users away from auth pages
   if (user && (request.nextUrl.pathname.startsWith('/login') || request.nextUrl.pathname.startsWith('/register'))) {
     return NextResponse.redirect(new URL('/dashboard', request.url))
+  }
+
+  // Role-based protection for specific routes
+  if (user) {
+    // We need to fetch the user's role. Since this is middleware, we query the 'users' table.
+    const { data: userData } = await supabase.from('users').select('role').eq('id', user.id).single()
+    const role = userData?.role
+
+    const adminOnlyRoutes = [
+      '/dashboard/classes',
+      '/dashboard/payments',
+      '/dashboard/expenses',
+      '/dashboard/reports',
+      '/dashboard/payroll'
+    ]
+
+    const path = request.nextUrl.pathname
+
+    if (role === 'teacher') {
+      // Prevent teachers from accessing admin-only routes.
+      // Exception: They can access /dashboard/attendance/daily but NOT the reports root /dashboard/attendance
+      const isTryingToAccessAdminRoute = adminOnlyRoutes.some(route => path.startsWith(route)) || path === '/dashboard/attendance'
+
+      if (isTryingToAccessAdminRoute) {
+        return NextResponse.redirect(new URL('/dashboard', request.url))
+      }
+    }
   }
 
   return supabaseResponse

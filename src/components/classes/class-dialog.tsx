@@ -15,6 +15,7 @@ export function ClassDialog({ classToEdit, children }: { classToEdit?: any, chil
   const [open, setOpen] = useState(false)
   const [name, setName] = useState(classToEdit?.name || '')
   const [targetMeetings, setTargetMeetings] = useState(classToEdit?.target_meetings?.toString() || '15')
+  const [feePerMeeting, setFeePerMeeting] = useState(classToEdit?.fee_per_meeting?.toString() || '0')
   const [teacherId, setTeacherId] = useState(classToEdit?.teacher_id || 'none')
   const [loading, setLoading] = useState(false)
 
@@ -28,6 +29,7 @@ export function ClassDialog({ classToEdit, children }: { classToEdit?: any, chil
     const payload = {
       name,
       target_meetings: parseInt(targetMeetings) || 15,
+      fee_per_meeting: parseFloat(feePerMeeting) || 0,
       teacher_id: teacherId === 'none' ? null : teacherId,
     }
 
@@ -73,6 +75,11 @@ export function ClassDialog({ classToEdit, children }: { classToEdit?: any, chil
           <div className="space-y-2">
             <Label htmlFor="target">Target Pertemuan</Label>
             <Input id="target" type="number" min="1" value={targetMeetings} onChange={e => setTargetMeetings(e.target.value)} required />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="fee">Honor per Pertemuan (Rp)</Label>
+            <Input id="fee" type="number" min="0" value={feePerMeeting} onChange={e => setFeePerMeeting(e.target.value)} required />
           </div>
 
           <div className="space-y-2">

@@ -54,6 +54,7 @@ export default function ClassesPage() {
                 <TableRow>
                   <TableHead>Nama Kelas</TableHead>
                   <TableHead>Target Pertemuan</TableHead>
+                  <TableHead>Honor/Pertemuan</TableHead>
                   <TableHead>Guru Pengajar</TableHead>
                   <TableHead>Jml Siswa</TableHead>
                   <TableHead className="text-right">Aksi</TableHead>
@@ -62,17 +63,18 @@ export default function ClassesPage() {
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={5} className="p-8"><Skeleton className="h-40 w-full" /></TableCell>
+                    <TableCell colSpan={6} className="p-8"><Skeleton className="h-40 w-full" /></TableCell>
                   </TableRow>
                 ) : classes?.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center p-8 text-muted-foreground">Tidak ada data kelas.</TableCell>
+                    <TableCell colSpan={6} className="text-center p-8 text-muted-foreground">Tidak ada data kelas.</TableCell>
                   </TableRow>
                 ) : (
                   classes?.map(c => (
                     <TableRow key={c.id}>
                       <TableCell className="font-medium">{c.name}</TableCell>
                       <TableCell>{c.target_meetings}</TableCell>
+                      <TableCell>Rp {c.fee_per_meeting?.toLocaleString('id-ID') || 0}</TableCell>
                       <TableCell>{c.teacher_name || <span className="text-muted-foreground text-sm italic">Belum ditentukan</span>}</TableCell>
                       <TableCell>
                          <div className="flex items-center gap-2">

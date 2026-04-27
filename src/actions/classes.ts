@@ -9,6 +9,7 @@ export async function createClass(data: any) {
   const { error } = await supabase.from('classes').insert({
     name: data.name,
     target_meetings: data.target_meetings || 15,
+    fee_per_meeting: data.fee_per_meeting || 0,
     teacher_id: data.teacher_id || null,
   })
 
@@ -29,6 +30,7 @@ export async function updateClass(id: string, data: any) {
     .update({
       name: data.name,
       target_meetings: data.target_meetings,
+      fee_per_meeting: data.fee_per_meeting || 0,
       teacher_id: data.teacher_id || null,
       updated_at: new Date().toISOString()
     })

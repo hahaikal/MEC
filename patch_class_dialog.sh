@@ -1,0 +1,1 @@
+sed -i "s/target_meetings: parseInt(targetMeetings) || 15,/target_meetings: parseInt(targetMeetings) || 15,\n      fee_per_meeting: parseFloat(feePerMeeting) || 0,/" src/components/classes/class-dialog.tsx
