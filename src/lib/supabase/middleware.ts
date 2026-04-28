@@ -63,6 +63,25 @@ export async function updateSession(request: NextRequest) {
         return NextResponse.redirect(new URL('/dashboard', request.url))
       }
     }
+
+    if (role === 'parent') {
+      // Parents can only access the root dashboard. They cannot access any operational routes.
+      const operationalRoutes = [
+        '/dashboard/classes',
+        '/dashboard/students',
+        '/dashboard/attendance',
+        '/dashboard/payments',
+        '/dashboard/expenses',
+        '/dashboard/reports',
+        '/dashboard/payroll'
+      ]
+
+      const isTryingToAccessOperationalRoute = operationalRoutes.some(route => path.startsWith(route))
+
+      if (isTryingToAccessOperationalRoute) {
+         return NextResponse.redirect(new URL('/dashboard', request.url))
+      }
+    }
   }
 
   return supabaseResponse
