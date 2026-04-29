@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -19,11 +19,12 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
-import { Save, Lock, Bell, Globe, Database, Shield } from "lucide-react"
-import { toast } from "@/lib/hooks/use-toast"
+import { Save, Lock, Bell, Globe, Database, Shield, Loader2 } from "lucide-react"
+import { useSettings } from "@/lib/hooks/use-settings"
 
 export default function SettingsPage() {
-  const [isSaving, setIsSaving] = useState(false)
+  const { settings: dbSettings, isLoading, updateSettings, isUpdating } = useSettings()
+
   const [settings, setSettings] = useState({
     schoolName: 'Sekolah Menengah Atas XYZ',
     schoolEmail: 'admin@sekolah.id',
@@ -41,28 +42,25 @@ export default function SettingsPage() {
     backupFrequency: 'weekly',
   })
 
+  useEffect(() => {
+    if (dbSettings) {
+      setSettings(prev => ({
+        ...prev,
+        ...dbSettings
+      }))
+    }
+  }, [dbSettings])
+
   const handleInputChange = (field: string, value: any) => {
     setSettings(prev => ({ ...prev, [field]: value }))
   }
 
   const handleSave = async () => {
-    setIsSaving(true)
-    try {
-      // Simulasi penyimpanan data
-      await new Promise(resolve => setTimeout(resolve, 1500))
-      toast({
-        title: "Pengaturan Tersimpan",
-        description: "Semua perubahan pengaturan telah disimpan dengan sukses.",
-      })
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Gagal menyimpan pengaturan. Silakan coba lagi.",
-        variant: "destructive",
-      })
-    } finally {
-      setIsSaving(false)
-    }
+    updateSettings(settings)
+  }
+
+  if (isLoading) {
+    return <div className="flex justify-center p-12"><Loader2 className="w-8 h-8 animate-spin" /></div>
   }
 
   return (
@@ -332,11 +330,11 @@ export default function SettingsPage() {
       <div className="flex gap-2 sticky bottom-0 bg-background/95 backdrop-blur -mx-4 md:-mx-8 px-4 md:px-8 py-4 border-t">
         <Button
           onClick={handleSave}
-          disabled={isSaving}
+          disabled={isUpdating}
           className="gap-2"
         >
           <Save className="h-4 w-4" />
-          {isSaving ? 'Menyimpan...' : 'Simpan Pengaturan'}
+          {isUpdating ? 'Menyimpan...' : 'Simpan Pengaturan'}
         </Button>
         <Button variant="outline">
           Batal

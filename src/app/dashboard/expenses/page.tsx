@@ -34,8 +34,8 @@ export default function ExpensesPage() {
         <AddExpenseDialog />
       </div>
 
-      <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between bg-white p-4 rounded-lg border shadow-sm">
-        <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto">
+      <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between bg-white p-4 rounded-lg border shadow-sm overflow-x-auto w-full">
+        <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto min-w-max">
            {/* Date Range Picker */}
            <div className="grid gap-2">
             <Popover>

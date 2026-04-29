@@ -73,7 +73,8 @@ export async function updateSession(request: NextRequest) {
         '/dashboard/payments',
         '/dashboard/expenses',
         '/dashboard/reports',
-        '/dashboard/payroll'
+        '/dashboard/payroll',
+        '/dashboard/users'
       ]
 
       const isTryingToAccessOperationalRoute = operationalRoutes.some(route => path.startsWith(route))
@@ -81,6 +82,11 @@ export async function updateSession(request: NextRequest) {
       if (isTryingToAccessOperationalRoute) {
          return NextResponse.redirect(new URL('/dashboard', request.url))
       }
+    }
+
+    if (role !== 'admin' && role !== 'director' && path.startsWith('/dashboard/users')) {
+      // Only admins and directors can access user management
+      return NextResponse.redirect(new URL('/dashboard', request.url))
     }
   }
 
