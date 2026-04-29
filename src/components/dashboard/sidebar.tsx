@@ -31,6 +31,7 @@ const navItems = [
   { icon: CreditCard, label: 'Penggajian', href: '/dashboard/payroll', adminOnly: true },
   { icon: BarChart3, label: 'Reports', href: '/dashboard/reports' },
   { icon: Users, label: 'Manajemen Kelas', href: '/dashboard/classes', adminOnly: true },
+  { icon: Users, label: 'Manajemen Staff', href: '/dashboard/users', adminOnly: true },
   { icon: Settings, label: 'Settings', href: '/dashboard/settings' },
 ]
 
@@ -89,7 +90,7 @@ export function Sidebar() {
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 space-y-2">
+          <nav className="flex-1 space-y-2 overflow-y-auto">
             {navItems.map((item) => {
               if (item.adminOnly && userRole === 'teacher') return null
               const Icon = item.icon

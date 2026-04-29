@@ -20,6 +20,17 @@ import {
 } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
 import { Save, Lock, Bell, Globe, Database, Shield, Loader2 } from "lucide-react"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 import { useSettings } from "@/lib/hooks/use-settings"
 
 export default function SettingsPage() {
@@ -328,14 +339,26 @@ export default function SettingsPage() {
 
       {/* Save Button */}
       <div className="flex gap-2 sticky bottom-0 bg-background/95 backdrop-blur -mx-4 md:-mx-8 px-4 md:px-8 py-4 border-t">
-        <Button
-          onClick={handleSave}
-          disabled={isUpdating}
-          className="gap-2"
-        >
-          <Save className="h-4 w-4" />
-          {isUpdating ? 'Menyimpan...' : 'Simpan Pengaturan'}
-        </Button>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button disabled={isUpdating} className="gap-2">
+              <Save className="h-4 w-4" />
+              {isUpdating ? 'Menyimpan...' : 'Simpan Pengaturan'}
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Simpan Perubahan?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Apakah Anda yakin ingin menyimpan perubahan pengaturan ini? Beberapa perubahan mungkin memerlukan memuat ulang halaman untuk berlaku efektif.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Batal</AlertDialogCancel>
+              <AlertDialogAction onClick={handleSave}>Ya, Simpan</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
         <Button variant="outline">
           Batal
         </Button>
