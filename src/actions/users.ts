@@ -17,9 +17,12 @@ export async function getUsers() {
   return { users: data }
 }
 
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
+
 export async function updateUser(id: string, updates: { full_name?: string, role?: string, is_active?: boolean }) {
   const supabase = await createClient()
 
+  // 1. Update public.users
   const { error } = await supabase
     .from('users')
     .update(updates)
@@ -28,6 +31,22 @@ export async function updateUser(id: string, updates: { full_name?: string, role
   if (error) {
     console.error('Error updating user:', error)
     return { error: error.message }
+  }
+
+  // 2. If role changed, sync to Auth User Metadata using Service Role
+  if (updates.role) {
+     const supabaseAdmin = createSupabaseClient(
+       process.env.NEXT_PUBLIC_SUPABASE_URL!,
+       process.env.SUPABASE_SERVICE_ROLE_KEY!
+     )
+
+     const { error: authError } = await supabaseAdmin.auth.admin.updateUserById(id, {
+       user_metadata: { role: updates.role }
+     })
+
+     if (authError) {
+       console.error("Failed to sync role to auth.users metadata:", authError.message)
+     }
   }
 
   revalidatePath('/dashboard/users')
