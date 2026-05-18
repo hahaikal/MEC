@@ -56,7 +56,7 @@ export function useTuitionDetails(studentId: string | null) {
         .from('class_enrollments')
         .select('classes(id, name, program_id, programs(price))')
         .eq('student_id', studentId)
-        .single()
+        .order('enrolled_at', { ascending: false }).limit(1).single()
 
       if (enrollError && enrollError.code !== 'PGRST116') throw enrollError
 
@@ -100,6 +100,7 @@ export function useTuitionDetails(studentId: string | null) {
 }
 
 export function useStudentPaymentsYearly(studentId: string, year: number) {
+  const supabase = createClient();
   return useQuery({
     queryKey: ['student-payments-yearly', studentId, year],
     queryFn: async () => {

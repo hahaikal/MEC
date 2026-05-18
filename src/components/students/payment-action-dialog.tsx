@@ -98,6 +98,7 @@ export function PaymentActionDialog({
       queryClient.invalidateQueries({ queryKey: ["students"] }) // Refresh status pembayaran di tabel siswa juga
       router.refresh() // Refresh data server component
       onOpenChange(false)
+
     } catch (error: any) {
       toast.error("Gagal mencatat pembayaran: " + error.message)
     } finally {
@@ -181,7 +182,8 @@ export function PaymentActionDialog({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button variant="outline" onClick={() => onOpenChange(false)
+      }>
             Batal
           </Button>
           <Button onClick={handlePayment} disabled={isLoading}>

@@ -12,6 +12,7 @@ export function useClasses() {
         .select(`
           *,
           users:teacher_id (id, full_name),
+          programs:program_id (id, name),
           class_enrollments(count)
         `)
         .order('created_at', { ascending: false })

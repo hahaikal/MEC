@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { useQuery } from '@tanstack/react-query'
+import { createClient } from '@/lib/supabase/client'
 import { useTeachers } from '@/lib/hooks/use-teachers'
 import { createClass, updateClass } from '@/actions/classes'
 import { toast } from 'sonner'
@@ -17,9 +19,19 @@ export function ClassDialog({ classToEdit, children }: { classToEdit?: any, chil
   const [targetMeetings, setTargetMeetings] = useState(classToEdit?.target_meetings?.toString() || '15')
   const [feePerMeeting, setFeePerMeeting] = useState(classToEdit?.fee_per_meeting?.toString() || '0')
   const [teacherId, setTeacherId] = useState(classToEdit?.teacher_id || 'none')
+  const [programId, setProgramId] = useState(classToEdit?.program_id || 'none')
   const [loading, setLoading] = useState(false)
 
   const { data: teachers, isLoading: isLoadingTeachers } = useTeachers()
+  const supabase = createClient()
+  const { data: programs, isLoading: isLoadingPrograms } = useQuery({
+    queryKey: ['programs'],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('programs').select('* ').eq('is_active', true)
+      if (error) throw error
+      return data
+    }
+  })
   const queryClient = useQueryClient()
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -30,6 +42,7 @@ export function ClassDialog({ classToEdit, children }: { classToEdit?: any, chil
       name,
       target_meetings: parseInt(targetMeetings) || 15,
       fee_per_meeting: parseFloat(feePerMeeting) || 0,
+      program_id: programId === 'none' ? null : programId,
       teacher_id: teacherId === 'none' ? null : teacherId,
     }
 
@@ -83,6 +96,21 @@ export function ClassDialog({ classToEdit, children }: { classToEdit?: any, chil
           </div>
 
           <div className="space-y-2">
+          <div className="space-y-2">
+            <Label>Program</Label>
+            <Select value={programId} onValueChange={setProgramId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Pilih Program" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Belum Ditentukan</SelectItem>
+                {!isLoadingPrograms && programs?.map((p: any) => (
+                  <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
             <Label>Guru Pengajar</Label>
             <Select value={teacherId} onValueChange={setTeacherId}>
               <SelectTrigger>

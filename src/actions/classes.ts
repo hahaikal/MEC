@@ -10,6 +10,7 @@ export async function createClass(data: any) {
     name: data.name,
     target_meetings: data.target_meetings || 15,
     fee_per_meeting: data.fee_per_meeting || 0,
+    program_id: data.program_id || null,
     teacher_id: data.teacher_id || null,
   })
 
@@ -31,6 +32,7 @@ export async function updateClass(id: string, data: any) {
       name: data.name,
       target_meetings: data.target_meetings,
       fee_per_meeting: data.fee_per_meeting || 0,
+    program_id: data.program_id || null,
       teacher_id: data.teacher_id || null,
       updated_at: new Date().toISOString()
     })

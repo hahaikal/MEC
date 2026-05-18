@@ -90,7 +90,7 @@ export function Sidebar() {
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 space-y-2 overflow-y-auto">
+          <nav className="flex-1 space-y-2 overflow-y-auto scrollbar-hide">
             {navItems.map((item) => {
               if (item.adminOnly && userRole === 'teacher') return null
               const Icon = item.icon

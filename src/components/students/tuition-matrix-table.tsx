@@ -42,6 +42,9 @@ type Student = {
   address: string | null;
   date_of_birth: string | null;
   created_at: string;
+  class_enrollments?: { classes?: { program_id: string } }[];
+
+
 };
 
 type Payment = {
@@ -52,6 +55,7 @@ type Payment = {
   payment_for_month: string; // e.g., "January", "February"
   payment_status: string;
   invoice_number: string | null;
+  category?: string;
 };
 
 const MONTHS = [
@@ -87,7 +91,7 @@ export function TuitionMatrixTable() {
       // 1. Fetch Students (Active only usually, but let's get all for history)
       const { data: studentsData, error: studentsError } = await supabase
         .from("students")
-        .select("id, name, status, nis, class_year, email, phone_number, parent_name, parent_phone, base_fee, billing_cycle_date, address, date_of_birth, created_at")
+        .select("id, name, status, nis, class_year, email, phone_number, parent_name, parent_phone, base_fee, billing_cycle_date, address, date_of_birth, created_at, class_enrollments(classes(program_id))")
         .order("name");
 
       if (studentsError) throw studentsError;
@@ -297,12 +301,17 @@ export function TuitionMatrixTable() {
       {selectedCell && (
         <PaymentActionDialog
           open={dialogOpen}
-          onOpenChange={setDialogOpen}
-          student={selectedCell.student}
-          month={selectedCell.month}
+          onOpenChange={(open) => {
+            setDialogOpen(open)
+            if (!open) fetchData()
+          }}
+          studentId={selectedCell.student.id}
+          studentName={selectedCell.student.name}
+          programId={selectedCell.student.class_enrollments?.[0]?.classes?.program_id || ""}
+          baseFee={selectedCell.student.base_fee}
+          status={selectedCell.existingPayment ? "paid" : "unpaid"}
+          monthName={selectedCell.month}
           year={selectedYear}
-          existingPayment={selectedCell.existingPayment}
-          onSuccess={handlePaymentSaved}
         />
       )}
 
