@@ -24,8 +24,7 @@ import { useEffect } from 'react'
 const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard', href: '/dashboard' },
   { icon: Users, label: 'Students', href: '/dashboard/students' },
-  { icon: ClipboardList, label: 'Laporan Absensi', href: '/dashboard/attendance', adminOnly: true },
-  { icon: ClipboardList, label: 'Input Kehadiran', href: '/dashboard/attendance/daily' },
+  { icon: ClipboardList, label: 'Absensi & Kehadiran', href: '/dashboard/attendance' },
   { icon: CreditCard, label: 'Payments', href: '/dashboard/payments' },
   { icon: Receipt, label: 'Expenses', href: '/dashboard/expenses' },
   { icon: CreditCard, label: 'Penggajian', href: '/dashboard/payroll', adminOnly: true },
