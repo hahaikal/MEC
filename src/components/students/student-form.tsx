@@ -1,9 +1,13 @@
 'use client'
 
+import { useState, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Loader2 } from 'lucide-react'
 import { studentSchema, type StudentFormValues } from '@/lib/validators/student'
+import { AvatarUpload } from './avatar-upload'
+import { uploadStudentPhoto } from '@/lib/upload-student-photo'
+import { updateStudentPhoto } from '@/actions/students'
 import { useCreateStudent, useUpdateStudent } from '@/lib/hooks/use-mutations'
 import { Button } from '@/components/ui/button'
 import {
@@ -54,6 +58,8 @@ export function StudentForm({ initialData, onSuccess }: StudentFormProps) {
 
   const isEditing = !!initialData
   const isLoading = createStudent.isPending || updateStudent.isPending
+  const [pendingPhotoFile, setPendingPhotoFile] = useState<File | null>(null)
+  const [photoUrl, setPhotoUrl] = useState<string | null>(initialData?.photo_url || null)
 
   const form = useForm<StudentFormValues>({
     resolver: zodResolver(studentSchema),
@@ -95,11 +101,23 @@ export function StudentForm({ initialData, onSuccess }: StudentFormProps) {
       if (isEditing) {
         await updateStudent.mutateAsync({ id: initialData.id, data })
       } else {
-        await createStudent.mutateAsync(data)
+        const result = await createStudent.mutateAsync(data)
+
+        // If there's a pending photo for the new student, upload it now
+        if (pendingPhotoFile && result && 'studentId' in result && result.studentId) {
+          try {
+            const publicUrl = await uploadStudentPhoto(pendingPhotoFile, result.studentId)
+            await updateStudentPhoto(result.studentId, publicUrl)
+          } catch (photoError) {
+            console.error('Photo upload after create failed:', photoError)
+          }
+        }
       }
       
       if (!isEditing) {
         form.reset()
+        setPendingPhotoFile(null)
+        setPhotoUrl(null)
       }
 
       if (onSuccess) {
@@ -117,6 +135,18 @@ export function StudentForm({ initialData, onSuccess }: StudentFormProps) {
         {/* SECTION: DATA PRIBADI */}
         <div className="space-y-4">
           <h3 className="text-lg font-semibold border-b pb-2">Biodata Siswa</h3>
+
+          {/* Avatar Upload */}
+          <div className="flex justify-center py-2">
+            <AvatarUpload
+              studentId={isEditing ? initialData.id : null}
+              studentName={form.watch('name') || 'Siswa'}
+              currentPhotoUrl={photoUrl}
+              onPhotoUploaded={(url) => setPhotoUrl(url)}
+              onFileSelected={(file) => setPendingPhotoFile(file)}
+              size="lg"
+            />
+          </div>
 
           <FormField
             control={form.control}

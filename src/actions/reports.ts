@@ -130,7 +130,7 @@ export async function getDashboardStats() {
   const supabase = await createClient();
 
   const now = new Date();
-  const currentMonth = now.getMonth() + 1;
+  const currentMonth = now.getMonth(); // 0-indexed to match DB storage
   const currentYear = now.getFullYear();
 
   // 1. Active students count
@@ -158,9 +158,9 @@ export async function getDashboardStats() {
 
   // 3. Total income this month
   // Get first day of this month
-  const firstDay = new Date(currentYear, currentMonth - 1, 1).toISOString();
+  const firstDay = new Date(currentYear, currentMonth, 1).toISOString();
   // Get first day of next month
-  const firstDayNextMonth = new Date(currentYear, currentMonth, 1).toISOString();
+  const firstDayNextMonth = new Date(currentYear, currentMonth + 1, 1).toISOString();
 
   const { data: incomeData, error: err3 } = await supabase
     .from('payments')

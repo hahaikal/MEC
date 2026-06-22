@@ -76,11 +76,11 @@ export function Sidebar() {
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed left-0 top-0 h-screen w-64 bg-slate-900 text-white z-40 transition-transform duration-300 md:translate-x-0',
+          'fixed left-0 top-0 h-screen w-64 bg-slate-900 text-white z-40 transition-transform duration-300 md:translate-x-0 overflow-hidden',
           isOpen ? 'translate-x-0' : '-translate-x-full'
         )}
       >
-        <div className="p-6 space-y-8 h-full flex flex-col">
+        <div className="p-6 space-y-8 h-full flex flex-col overflow-y-auto scrollbar-hide">
           {/* Logo */}
           <div>
             <h1 className="text-2xl font-bold">MEC Finance</h1>

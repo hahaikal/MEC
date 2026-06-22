@@ -16,9 +16,8 @@ import {
   Phone, 
   Mail, 
   MapPin,
-  Camera
 } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { AvatarUpload } from "./avatar-upload";
 
 interface StudentDetailDialogProps {
   student: any;
@@ -43,18 +42,13 @@ export function StudentDetailDialog({
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-slate-50">
         <DialogHeader className="mb-4">
           <div className="flex flex-col md:flex-row items-center gap-6 p-6 bg-white rounded-xl shadow-sm border">
-             {/* Avatar Placeholder Area */}
-             <div className="relative group cursor-pointer">
-                <Avatar className="h-24 w-24 border-4 border-slate-50 shadow-md">
-                   <AvatarImage src={student.photo_url || ""} alt={student.name} />
-                   <AvatarFallback className="bg-primary/10 text-primary text-2xl font-bold">
-                     {student.name.substring(0, 2).toUpperCase()}
-                   </AvatarFallback>
-                </Avatar>
-                <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                   <Camera className="text-white h-6 w-6" />
-                </div>
-             </div>
+             {/* Avatar Upload Area */}
+             <AvatarUpload
+               studentId={student.id}
+               studentName={student.name}
+               currentPhotoUrl={student.photo_url}
+               size="lg"
+             />
 
              <div className="text-center md:text-left space-y-2">
                 <DialogTitle className="text-2xl font-bold tracking-tight text-slate-900">

@@ -25,12 +25,20 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { cn } from '@/lib/utils'
 
 export default function StudentsPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedClasses, setSelectedClasses] = useState<string[]>([])
   const [openClassFilter, setOpenClassFilter] = useState(false)
+  const [statusFilter, setStatusFilter] = useState('ACTIVE') // 'ACTIVE', 'INACTIVE', or 'ALL'
   
   const { data: students, isLoading, isError } = useStudents()
   const { data: classes, isLoading: isLoadingClasses } = useClassList()
@@ -46,7 +54,10 @@ export default function StudentsPage() {
     const matchesClass = selectedClasses.length === 0 ||
       (student.class_name && selectedClasses.includes(student.class_name));
 
-    return matchesSearch && matchesClass;
+    // 3. Filter by Status
+    const matchesStatus = statusFilter === 'ALL' || student.status === statusFilter;
+
+    return matchesSearch && matchesClass && matchesStatus;
   }) || []
 
   const toggleClass = (className: string) => {
@@ -74,64 +85,6 @@ export default function StudentsPage() {
 
       {/* Data Table Section */}
       <div className="space-y-4">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
-          {/* Search Input */}
-          <div className="relative flex-1 w-full sm:w-auto md:max-w-sm">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Cari nama atau NIS..."
-              className="pl-8"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-
-          {/* Multi-Class Filter */}
-          <div className="w-full sm:w-[250px]">
-            <Popover open={openClassFilter} onOpenChange={setOpenClassFilter}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  role="combobox"
-                  aria-expanded={openClassFilter}
-                  className="w-full justify-between"
-                  disabled={isLoadingClasses}
-                >
-                  {selectedClasses.length === 0
-                    ? "Semua Kelas"
-                    : `${selectedClasses.length} Kelas Dipilih`}
-                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-[250px] p-0">
-                <Command>
-                  <CommandInput placeholder="Cari kelas..." />
-                  <CommandList>
-                    <CommandEmpty>Kelas tidak ditemukan.</CommandEmpty>
-                    <CommandGroup>
-                      {classes?.map((c) => (
-                        <CommandItem
-                          key={c.id}
-                          value={c.name}
-                          onSelect={() => toggleClass(c.name)}
-                        >
-                          <Check
-                            className={cn(
-                              "mr-2 h-4 w-4",
-                              selectedClasses.includes(c.name) ? "opacity-100" : "opacity-0"
-                            )}
-                          />
-                          {c.name}
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover>
-          </div>
-        </div>
-
         <div className="rounded-md border bg-card w-full max-w-[calc(100vw-2rem)] md:max-w-[calc(100vw-20rem)] overflow-hidden">
           {isLoading ? (
              <div className="p-8 space-y-4">
@@ -146,7 +99,83 @@ export default function StudentsPage() {
               Gagal memuat data siswa. Silakan coba lagi.
             </div>
           ) : (
-            <DataTable columns={columns} data={filteredStudents} />
+            <DataTable 
+              columns={columns} 
+              data={filteredStudents} 
+              toolbarElements={
+                <>
+                  {/* Search Input */}
+                  <div className="relative w-full sm:w-[250px]">
+                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Cari nama atau NIS..."
+                      className="pl-8 h-9"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                  </div>
+
+                  {/* Multi-Class Filter */}
+                  <div className="w-full sm:w-[200px]">
+                    <Popover open={openClassFilter} onOpenChange={setOpenClassFilter}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={openClassFilter}
+                          className="w-full justify-between h-9"
+                          disabled={isLoadingClasses}
+                        >
+                          {selectedClasses.length === 0
+                            ? "Semua Kelas"
+                            : `${selectedClasses.length} Kelas Dipilih`}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[200px] p-0">
+                        <Command>
+                          <CommandInput placeholder="Cari kelas..." />
+                          <CommandList>
+                            <CommandEmpty>Kelas tidak ditemukan.</CommandEmpty>
+                            <CommandGroup>
+                              {classes?.map((c) => (
+                                <CommandItem
+                                  key={c.id}
+                                  value={c.name}
+                                  onSelect={() => toggleClass(c.name)}
+                                >
+                                  <Check
+                                    className={cn(
+                                      "mr-2 h-4 w-4",
+                                      selectedClasses.includes(c.name) ? "opacity-100" : "opacity-0"
+                                    )}
+                                  />
+                                  {c.name}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+
+                  {/* Status Filter */}
+                  <div className="w-full sm:w-[150px]">
+                    <Select value={statusFilter} onValueChange={setStatusFilter}>
+                      <SelectTrigger className="h-9">
+                        <SelectValue placeholder="Status Siswa" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="ACTIVE">Aktif</SelectItem>
+                        <SelectItem value="INACTIVE">Nonaktif</SelectItem>
+                        <SelectItem value="ALL">Semua Status</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </>
+              }
+            />
           )}
         </div>
       </div>

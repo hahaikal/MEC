@@ -66,7 +66,7 @@ export async function createStudent(data: StudentFormValues) {
   }
 
   revalidatePath('/dashboard/students')
-  return { success: true }
+  return { success: true, studentId: student.id }
 }
 
 export async function updateStudent(id: string, data: StudentFormValues) {
@@ -160,6 +160,26 @@ export async function deleteStudent(id: string) {
 
   if (error) {
     console.error('Update Student Status Error:', error)
+    return { error: error.message }
+  }
+
+  revalidatePath('/dashboard/students')
+  return { success: true }
+}
+
+export async function updateStudentPhoto(id: string, photoUrl: string) {
+  const supabase = await createClient()
+
+  const { error } = await supabase
+    .from('students')
+    .update({
+      photo_url: photoUrl,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', id)
+
+  if (error) {
+    console.error('Update Photo Error:', error)
     return { error: error.message }
   }
 

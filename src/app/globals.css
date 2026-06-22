@@ -124,12 +124,24 @@
   }
 }
 
-/* Hide scrollbar utility */
-.scrollbar-hide {
-  -ms-overflow-style: none; /* IE and Edge */
-  scrollbar-width: none; /* Firefox */
+/* Hide scrollbar utility - registered for Tailwind v4 */
+@utility scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 
-.scrollbar-hide::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Opera */
+/* Force hide scrollbar on sidebar and its children */
+aside.overflow-hidden,
+aside.overflow-hidden * {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+aside.overflow-hidden::-webkit-scrollbar,
+aside.overflow-hidden *::-webkit-scrollbar {
+  display: none;
 }

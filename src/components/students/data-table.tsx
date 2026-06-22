@@ -37,6 +37,7 @@ import { cn } from "@/lib/utils";
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  toolbarElements?: React.ReactNode;
 }
 
 // Helper to determine row color based on student data completeness
@@ -79,6 +80,7 @@ function getRowColorClass(data: any) {
 export function DataTable<TData, TValue>({
   columns,
   data,
+  toolbarElements,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -110,19 +112,9 @@ export function DataTable<TData, TValue>({
   return (
     <div className="w-full h-full flex flex-col space-y-4">
       {/* Table Toolbar */}
-      <div className="flex items-center justify-between py-2 px-1">
-        <div className="flex items-center gap-2 w-full max-w-sm">
-          <div className="relative w-full">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Filter students..."
-              value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
-              onChange={(event) =>
-                table.getColumn("name")?.setFilterValue(event.target.value)
-              }
-              className="pl-9 h-9"
-            />
-          </div>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between py-2 px-1 gap-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full flex-1">
+          {toolbarElements}
         </div>
         <div className="flex items-center gap-2">
           <DropdownMenu>

@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Badge } from '@/components/ui/badge'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { PaymentStatusCell } from './payment-status-cell'
 import { AddStudentDialog } from './add-student-dialog'
 import { useDeleteStudent } from '@/lib/hooks/use-mutations'
@@ -81,11 +82,19 @@ export const columns: ColumnDef<Student>[] = [
       return (
         <>
           <div
-            className="flex flex-col cursor-pointer hover:bg-slate-100 p-1 rounded transition-colors"
+            className="flex items-center gap-3 cursor-pointer hover:bg-slate-100 p-1 rounded transition-colors"
             onClick={() => setShowDetail(true)}
           >
-            <span className="font-medium text-primary hover:underline">{row.getValue('name')}</span>
-            <span className="text-xs text-muted-foreground">{student.nis || '-'}</span>
+            <Avatar className="h-8 w-8 shrink-0">
+              <AvatarImage src={student.photo_url || undefined} alt={student.name} className="object-cover" />
+              <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">
+                {student.name.substring(0, 2).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex flex-col">
+              <span className="font-medium text-primary hover:underline">{row.getValue('name')}</span>
+              <span className="text-xs text-muted-foreground">{student.nis || '-'}</span>
+            </div>
           </div>
           <StudentDetailDialog
              open={showDetail}
