@@ -25,8 +25,8 @@ export function Header() {
               <Image
                 src="/logo.png"
                 alt="MEC Academy Logo"
-                width={40}
-                height={40}
+                width={80}
+                height={80}
                 className="rounded-md"
               />
               <span className="text-xl font-bold text-blue-900 hidden sm:block">My English Course & Academy</span>

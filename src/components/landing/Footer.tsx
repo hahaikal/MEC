@@ -12,14 +12,12 @@ export function Footer() {
         <div className="xl:grid xl:grid-cols-3 xl:gap-8">
           <div className="space-y-8">
             <Link href="/" className="flex items-center gap-3">
-              <div className="bg-white p-1 rounded-md">
                 <Image
-                  src="/logo.png"
+                  src="/logo2.png"
                   alt="MEC Academy Logo"
-                  width={40}
-                  height={40}
+                  width={100}
+                  height={100}
                 />
-              </div>
               <span className="text-xl font-bold text-white">MEC Academy</span>
             </Link>
             <p className="text-sm leading-6 text-slate-300">
@@ -73,7 +71,7 @@ export function Footer() {
                   </li>
                   <li>
                     <a href="#programs" className="text-sm leading-6 text-slate-300 hover:text-white">
-                      English for Kids
+                      Calistung & Bimbel 
                     </a>
                   </li>
                   <li>
@@ -90,7 +88,7 @@ export function Footer() {
                 <ul role="list" className="mt-6 space-y-4">
                   <li className="flex gap-3 text-sm leading-6 text-slate-300">
                     <MapPin className="h-5 w-5 text-slate-400 flex-shrink-0" />
-                    <span>123 Education St., Smart City, Indonesia</span>
+                    <span>Jl. Lancang Kuning Bagan Batu, Bagan Sinembah, Rokan Hilir.</span>
                   </li>
                   <li className="flex gap-3 text-sm leading-6 text-slate-300">
                     <Phone className="h-5 w-5 text-slate-400 flex-shrink-0" />
@@ -100,7 +98,7 @@ export function Footer() {
                   </li>
                   <li className="flex gap-3 text-sm leading-6 text-slate-300">
                     <Mail className="h-5 w-5 text-slate-400 flex-shrink-0" />
-                    <span>info@myenglishcourse.com</span>
+                    <span>myenglishcoursebaganbatu@gmail.com</span>
                   </li>
                 </ul>
               </div>
