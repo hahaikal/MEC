@@ -25,12 +25,19 @@ export async function updateSession(request: NextRequest) {
 
   const {
     data: { user },
+    error,
   } = await supabase.auth.getUser()
 
   const isProtectedRoute = request.nextUrl.pathname.startsWith('/dashboard')
 
-  if (isProtectedRoute && !user) {
-    return NextResponse.redirect(new URL('/login', request.url))
+  // The critical requirement: Auto-logout / Force redirect
+  // If we are on a protected route and we don't have a user (or token is invalid/expired), redirect.
+  // By redirecting without setting cookies, we force the client to get a new session on the login page.
+  if (isProtectedRoute && (!user || error)) {
+    // Optional: Clear any existing invalid auth cookies here if you wanted,
+    // but the Supabase client handles this mostly on the browser side.
+    const url = new URL('/login', request.url)
+    return NextResponse.redirect(url)
   }
 
   // Redirect authenticated users away from auth pages

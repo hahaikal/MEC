@@ -15,10 +15,10 @@ import {
   CreditCard, 
   Phone, 
   Mail, 
-  MapPin 
+  MapPin,
+  Camera
 } from "lucide-react";
-import { StudentForm } from "./student-form"; 
-import { useState } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface StudentDetailDialogProps {
   student: any;
@@ -33,7 +33,6 @@ export function StudentDetailDialog({
   open,
   onOpenChange,
 }: StudentDetailDialogProps) {
-  // Jika children tidak ada, kita bisa gunakan icon atau button default
   const trigger = children || (
     <Button variant="ghost" size="sm">Detail</Button>
   );
@@ -41,134 +40,239 @@ export function StudentDetailDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-xl flex items-center gap-2">
-            <span className="font-bold">{student.name}</span>
-            <span className={`text-xs px-2 py-1 rounded-full border ${
-                student.status === 'ACTIVE' || student.status === 'active' 
-                ? 'bg-green-100 text-green-700 border-green-200' 
-                : 'bg-gray-100 text-gray-700 border-gray-200'
-            }`}>
-                {student.status}
-            </span>
-          </DialogTitle>
-        </DialogHeader>
-
-        <Tabs defaultValue="profile" className="w-full mt-4">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="profile">Profil</TabsTrigger>
-            <TabsTrigger value="history">Riwayat Bayar</TabsTrigger>
-            <TabsTrigger value="billing">Tagihan & SPP</TabsTrigger>
-          </TabsList>
-
-          {/* TAB 1: PROFIL & EDIT */}
-          <TabsContent value="profile" className="space-y-4 py-4">
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                <div className="space-y-3">
-                    <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wider">Kontak Siswa</h3>
-                    <div className="flex items-center gap-3 text-sm">
-                        <Mail className="w-4 h-4 text-gray-500" />
-                        <span>{student.email || "-"}</span>
-                    </div>
-                    <div className="flex items-center gap-3 text-sm">
-                        <Phone className="w-4 h-4 text-gray-500" />
-                        <span>{student.phone_number || "-"}</span>
-                    </div>
-                     <div className="flex items-center gap-3 text-sm">
-                        <MapPin className="w-4 h-4 text-gray-500" />
-                        <span>{student.address || "-"}</span>
-                    </div>
-                </div>
-
-                <div className="space-y-3">
-                    <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wider">Orang Tua / Wali</h3>
-                     <div className="flex items-center gap-3 text-sm">
-                        <User className="w-4 h-4 text-gray-500" />
-                        <span>{student.parent_name || "-"}</span>
-                    </div>
-                    <div className="flex items-center gap-3 text-sm">
-                        <Phone className="w-4 h-4 text-gray-500" />
-                        <span>{student.parent_phone || "-"}</span>
-                    </div>
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-slate-50">
+        <DialogHeader className="mb-4">
+          <div className="flex flex-col md:flex-row items-center gap-6 p-6 bg-white rounded-xl shadow-sm border">
+             {/* Avatar Placeholder Area */}
+             <div className="relative group cursor-pointer">
+                <Avatar className="h-24 w-24 border-4 border-slate-50 shadow-md">
+                   <AvatarImage src={student.photo_url || ""} alt={student.name} />
+                   <AvatarFallback className="bg-primary/10 text-primary text-2xl font-bold">
+                     {student.name.substring(0, 2).toUpperCase()}
+                   </AvatarFallback>
+                </Avatar>
+                <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                   <Camera className="text-white h-6 w-6" />
                 </div>
              </div>
-             
-             <div className="border-t pt-4">
-                <h3 className="font-semibold mb-4">Edit Data</h3>
-                {/* FIX: Mengganti 'studentToEdit' menjadi 'initialData'. 
-                    Standard prop untuk form edit biasanya adalah initialData.
-                */}
-                <StudentForm initialData={student} onSuccess={() => onOpenChange?.(false)} />
+
+             <div className="text-center md:text-left space-y-2">
+                <DialogTitle className="text-2xl font-bold tracking-tight text-slate-900">
+                  {student.name}
+                </DialogTitle>
+                <div className="flex flex-wrap items-center justify-center md:justify-start gap-2">
+                  <span className={`text-xs px-3 py-1 rounded-full font-medium border ${
+                      student.status === 'ACTIVE' || student.status === 'active'
+                      ? 'bg-green-100 text-green-700 border-green-200'
+                      : 'bg-slate-100 text-slate-700 border-slate-200'
+                  }`}>
+                      {student.status || 'UNKNOWN'}
+                  </span>
+                  {student.class_name && (
+                    <span className="text-xs px-3 py-1 rounded-full font-medium bg-blue-100 text-blue-700 border border-blue-200">
+                       {student.class_name}
+                    </span>
+                  )}
+                  {student.nis && (
+                     <span className="text-xs px-3 py-1 rounded-full font-medium bg-purple-100 text-purple-700 border border-purple-200">
+                        NIS: {student.nis}
+                     </span>
+                  )}
+                </div>
+             </div>
+          </div>
+        </DialogHeader>
+
+        <Tabs defaultValue="profile" className="w-full mt-2">
+          <TabsList className="grid w-full grid-cols-3 bg-slate-200/50 p-1 rounded-lg mb-6">
+            <TabsTrigger value="profile" className="rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm">Profil Lengkap</TabsTrigger>
+            <TabsTrigger value="history" className="rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm">Riwayat Bayar</TabsTrigger>
+            <TabsTrigger value="billing" className="rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm">Tagihan & SPP</TabsTrigger>
+          </TabsList>
+
+          {/* TAB 1: PROFIL READ-ONLY (CV Style) */}
+          <TabsContent value="profile" className="space-y-6">
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                {/* Biodata Card */}
+                <div className="bg-white p-5 rounded-xl border shadow-sm space-y-4">
+                    <h3 className="font-semibold text-sm text-primary flex items-center gap-2 pb-2 border-b">
+                       <User className="w-4 h-4" />
+                       Biodata Pribadi
+                    </h3>
+                    <div className="space-y-3">
+                        <div className="flex flex-col">
+                           <span className="text-xs text-muted-foreground">Tempat, Tanggal Lahir</span>
+                           <span className="text-sm font-medium">
+                              {student.place_of_birth || "-"}, {student.date_of_birth ? format(new Date(student.date_of_birth), "dd MMMM yyyy", { locale: id }) : "-"}
+                           </span>
+                        </div>
+                        <div className="flex flex-col">
+                           <span className="text-xs text-muted-foreground">Jenis Kelamin</span>
+                           <span className="text-sm font-medium capitalize">
+                              {student.gender?.toLowerCase() || "-"}
+                           </span>
+                        </div>
+                        <div className="flex flex-col">
+                           <span className="text-xs text-muted-foreground">Agama</span>
+                           <span className="text-sm font-medium capitalize">
+                              {student.religion?.toLowerCase() || "-"}
+                           </span>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Kontak Card */}
+                <div className="bg-white p-5 rounded-xl border shadow-sm space-y-4">
+                    <h3 className="font-semibold text-sm text-primary flex items-center gap-2 pb-2 border-b">
+                       <Phone className="w-4 h-4" />
+                       Informasi Kontak
+                    </h3>
+                    <div className="space-y-3">
+                        <div className="flex flex-col">
+                           <span className="text-xs text-muted-foreground">Email</span>
+                           <span className="text-sm font-medium flex items-center gap-2">
+                             {student.email || "-"}
+                           </span>
+                        </div>
+                        <div className="flex flex-col">
+                           <span className="text-xs text-muted-foreground">No. Handphone</span>
+                           <span className="text-sm font-medium">
+                             {student.phone_number || "-"}
+                           </span>
+                        </div>
+                        <div className="flex flex-col">
+                           <span className="text-xs text-muted-foreground">Alamat Lengkap</span>
+                           <span className="text-sm font-medium leading-relaxed">
+                             {student.address || "-"}
+                           </span>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Orang Tua Card */}
+                <div className="bg-white p-5 rounded-xl border shadow-sm space-y-4">
+                    <h3 className="font-semibold text-sm text-primary flex items-center gap-2 pb-2 border-b">
+                       <User className="w-4 h-4" />
+                       Data Orang Tua / Wali
+                    </h3>
+                    <div className="space-y-3">
+                        <div className="flex flex-col">
+                           <span className="text-xs text-muted-foreground">Nama Orang Tua</span>
+                           <span className="text-sm font-medium">
+                             {student.parent_name || "-"}
+                           </span>
+                        </div>
+                        <div className="flex flex-col">
+                           <span className="text-xs text-muted-foreground">Pekerjaan</span>
+                           <span className="text-sm font-medium">
+                             {student.parent_occupation || "-"}
+                           </span>
+                        </div>
+                        <div className="flex flex-col">
+                           <span className="text-xs text-muted-foreground">No. Handphone Darurat</span>
+                           <span className="text-sm font-medium">
+                             {student.parent_phone || "-"}
+                           </span>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Akademik Card */}
+                <div className="bg-white p-5 rounded-xl border shadow-sm space-y-4">
+                    <h3 className="font-semibold text-sm text-primary flex items-center gap-2 pb-2 border-b">
+                       <Calendar className="w-4 h-4" />
+                       Riwayat Akademik
+                    </h3>
+                    <div className="space-y-3">
+                        <div className="flex flex-col">
+                           <span className="text-xs text-muted-foreground">Sekolah Asal</span>
+                           <span className="text-sm font-medium">
+                             {student.school_origin || "-"}
+                           </span>
+                        </div>
+                        <div className="flex flex-col">
+                           <span className="text-xs text-muted-foreground">Tanggal Bergabung</span>
+                           <span className="text-sm font-medium">
+                             {student.enrollment_date ? format(new Date(student.enrollment_date), "dd MMMM yyyy", { locale: id }) : "-"}
+                           </span>
+                        </div>
+                    </div>
+                </div>
+
              </div>
           </TabsContent>
 
           {/* TAB 2: RIWAYAT TABLE */}
-          <TabsContent value="history" className="py-4">
-             <h3 className="font-semibold mb-4 flex items-center gap-2">
-                <Calendar className="w-4 h-4" />
-                Riwayat Transaksi Terakhir
-             </h3>
-             
-             {student.payments && student.payments.length > 0 ? (
-                 <div className="rounded-md border">
-                    <table className="w-full text-sm text-left">
-                        <thead className="bg-muted/50 text-muted-foreground">
-                            <tr>
-                                <th className="p-3 font-medium">Tanggal</th>
-                                <th className="p-3 font-medium">Kategori</th>
-                                <th className="p-3 font-medium">Jumlah</th>
-                                <th className="p-3 font-medium text-right">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {student.payments.map((p: any, idx: number) => (
-                                <tr key={idx} className="border-t hover:bg-muted/50">
-                                    <td className="p-3">
-                                        {p.payment_date ? format(new Date(p.payment_date), "dd MMM yyyy", { locale: id }) : "-"}
-                                    </td>
-                                    <td className="p-3 capitalize">{p.category}</td>
-                                    <td className="p-3">
-                                        {new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR" }).format(p.amount)}
-                                    </td>
-                                    <td className="p-3 text-right">
-                                        <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
-                                            {p.payment_status}
-                                        </span>
-                                    </td>
+          <TabsContent value="history">
+             <div className="bg-white rounded-xl border shadow-sm p-5">
+                 <h3 className="font-semibold mb-4 flex items-center gap-2 text-primary">
+                    <Calendar className="w-4 h-4" />
+                    Riwayat Transaksi Terakhir
+                 </h3>
+
+                 {student.payments && student.payments.length > 0 ? (
+                     <div className="rounded-md border overflow-hidden">
+                        <table className="w-full text-sm text-left">
+                            <thead className="bg-slate-50 text-slate-600 border-b">
+                                <tr>
+                                    <th className="p-3 font-medium">Tanggal</th>
+                                    <th className="p-3 font-medium">Kategori</th>
+                                    <th className="p-3 font-medium text-right">Jumlah</th>
+                                    <th className="p-3 font-medium text-right">Status</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                 </div>
-             ) : (
-                 <div className="text-center py-8 text-muted-foreground border border-dashed rounded-lg">
-                    Belum ada riwayat pembayaran.
-                 </div>
-             )}
+                            </thead>
+                            <tbody className="divide-y">
+                                {student.payments.map((p: any, idx: number) => (
+                                    <tr key={idx} className="hover:bg-slate-50/50 transition-colors">
+                                        <td className="p-3 text-slate-600">
+                                            {p.payment_date ? format(new Date(p.payment_date), "dd MMM yyyy", { locale: id }) : "-"}
+                                        </td>
+                                        <td className="p-3 capitalize font-medium text-slate-700">{p.category}</td>
+                                        <td className="p-3 text-right font-medium">
+                                            {new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(p.amount)}
+                                        </td>
+                                        <td className="p-3 text-right">
+                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                {p.payment_status}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                     </div>
+                 ) : (
+                     <div className="text-center py-10 text-muted-foreground bg-slate-50 rounded-lg border border-dashed">
+                        Belum ada riwayat pembayaran yang tercatat.
+                     </div>
+                 )}
+             </div>
           </TabsContent>
 
           {/* TAB 3: BILLING / TAGIHAN */}
-          <TabsContent value="billing" className="py-4">
-            <div className="flex items-center gap-4 p-4 border rounded-lg bg-slate-50">
-                <div className="p-3 bg-white border rounded-full shadow-sm">
-                    <CreditCard className="w-6 h-6 text-primary" />
+          <TabsContent value="billing">
+            <div className="space-y-4">
+                <div className="flex items-center gap-4 p-5 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 rounded-xl shadow-sm">
+                    <div className="p-3 bg-white border border-blue-100 rounded-full shadow-sm">
+                        <CreditCard className="w-6 h-6 text-blue-600" />
+                    </div>
+                    <div>
+                        <p className="text-sm font-medium text-blue-600/80 mb-1">SPP Bulanan (Base Fee)</p>
+                        <p className="text-2xl font-bold text-slate-900">
+                            {new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(student.base_fee || 0)}
+                        </p>
+                    </div>
+                    <div className="ml-auto">
+                        <Button size="sm" variant="outline" className="bg-white hover:bg-slate-50">Buat Tagihan Manual</Button>
+                    </div>
                 </div>
-                <div>
-                    <p className="text-sm font-medium text-muted-foreground">SPP Bulanan (Base Fee)</p>
-                    <p className="text-2xl font-bold">
-                        {new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR" }).format(student.base_fee || 0)}
-                    </p>
-                </div>
-                <div className="ml-auto">
-                    <Button size="sm">Buat Tagihan Manual</Button>
-                </div>
-            </div>
-            
-            <div className="mt-6">
-                <h4 className="font-medium mb-2 text-sm">Jadwal Tagihan Berikutnya</h4>
-                <div className="p-4 border border-dashed rounded-lg text-sm text-muted-foreground">
-                    Sistem tagihan otomatis akan muncul di sini. Saat ini tagihan dikelola via Matrix.
+
+                <div className="bg-white p-5 border rounded-xl shadow-sm">
+                    <h4 className="font-semibold text-primary mb-3">Informasi Tagihan</h4>
+                    <div className="p-6 border border-dashed rounded-lg text-sm text-slate-500 text-center bg-slate-50">
+                        Sistem tagihan otomatis akan muncul di sini. Saat ini tagihan dikelola secara manual via Matrix.
+                    </div>
                 </div>
             </div>
           </TabsContent>

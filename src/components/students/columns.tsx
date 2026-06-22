@@ -53,6 +53,7 @@ export type Student = {
   parent_occupation?: string | null
   address?: string | null
   parent_phone?: string | null
+  photo_url?: string | null
 
   // Kept for type compatibility if needed, but marked optional/deprecated
   nis?: string | null
@@ -86,10 +87,10 @@ export const columns: ColumnDef<Student>[] = [
             <span className="font-medium text-primary hover:underline">{row.getValue('name')}</span>
             <span className="text-xs text-muted-foreground">{student.nis || '-'}</span>
           </div>
-          <AddStudentDialog
+          <StudentDetailDialog
              open={showDetail}
              onOpenChange={setShowDetail}
-             studentToEdit={student}
+             student={student}
            />
         </>
       )
@@ -235,8 +236,6 @@ export const columns: ColumnDef<Student>[] = [
             </AlertDialogContent>
           </AlertDialog>
           
-           {/* Dialog Edit/Detail menggunakan form yang sama, di wrap component wrapper */}
-           {/* Catatan: Untuk simplifikasi, logic edit biasanya digabung dengan AddStudentDialog atau dialog terpisah yang memanggil StudentForm */}
            <AddStudentDialog 
              open={showDetailDialog} 
              onOpenChange={setShowDetailDialog}

@@ -1,31 +1,43 @@
 'use client'
 
 import { Card } from '@/components/ui/card'
-import { Users, CreditCard, BarChart3, TrendingUp } from 'lucide-react'
+import { Users, CreditCard, BarChart3, TrendingUp, Loader2 } from 'lucide-react'
+import { useDashboardStats } from '@/lib/hooks/use-dashboard-stats'
 
 export function OperationalDashboard({ user }: { user: any }) {
+  const { data: statsData, isLoading } = useDashboardStats()
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(amount)
+  }
+
+  const formatGrowth = (growth: number) => {
+    const sign = growth > 0 ? '+' : ''
+    return `${sign}${growth.toFixed(1)}%`
+  }
+
   const stats = [
     {
       title: 'Total Students',
-      value: '0',
+      value: isLoading ? '...' : (statsData?.totalStudents?.toString() || '0'),
       icon: Users,
       color: 'bg-blue-100 text-blue-600',
     },
     {
       title: 'Total Revenue',
-      value: 'Rp 0',
+      value: isLoading ? '...' : formatCurrency(statsData?.totalRevenue || 0),
       icon: CreditCard,
       color: 'bg-green-100 text-green-600',
     },
     {
       title: 'Active Programs',
-      value: '0',
+      value: isLoading ? '...' : (statsData?.activePrograms?.toString() || '0'),
       icon: BarChart3,
       color: 'bg-purple-100 text-purple-600',
     },
     {
       title: 'Monthly Growth',
-      value: '0%',
+      value: isLoading ? '...' : formatGrowth(statsData?.monthlyGrowth || 0),
       icon: TrendingUp,
       color: 'bg-orange-100 text-orange-600',
     },
@@ -46,7 +58,13 @@ export function OperationalDashboard({ user }: { user: any }) {
               <div className="flex items-start justify-between">
                 <div>
                   <p className="text-sm text-slate-600 font-medium">{stat.title}</p>
-                  <p className="text-3xl font-bold text-slate-900 mt-2">{stat.value}</p>
+                  <p className="text-3xl font-bold text-slate-900 mt-2">
+                    {isLoading && stat.value === '...' ? (
+                       <Loader2 className="h-6 w-6 animate-spin text-slate-400 mt-2" />
+                    ) : (
+                       stat.value
+                    )}
+                  </p>
                 </div>
                 <div className={`p-3 rounded-lg ${stat.color}`}>
                   <Icon className="h-6 w-6" />

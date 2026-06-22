@@ -25,7 +25,6 @@ const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard', href: '/dashboard' },
   { icon: Users, label: 'Students', href: '/dashboard/students' },
   { icon: ClipboardList, label: 'Absensi & Kehadiran', href: '/dashboard/attendance' },
-  { icon: CreditCard, label: 'Payments', href: '/dashboard/payments' },
   { icon: Receipt, label: 'Expenses', href: '/dashboard/expenses' },
   { icon: CreditCard, label: 'Penggajian', href: '/dashboard/payroll', adminOnly: true },
   { icon: BarChart3, label: 'Reports', href: '/dashboard/reports' },
