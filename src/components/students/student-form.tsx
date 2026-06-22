@@ -78,6 +78,7 @@ export function StudentForm({ initialData, onSuccess }: StudentFormProps) {
       religion: initialData.religion || '',
       school_origin: initialData.school_origin || '',
       parent_occupation: initialData.parent_occupation || '',
+      enrollment_date: initialData.enrollment_date || '',
     } : {
       name: '',
       place_of_birth: '',
@@ -303,26 +304,24 @@ export function StudentForm({ initialData, onSuccess }: StudentFormProps) {
               )}
             />
 
-            {!isEditing && (
-              <FormField
-                control={form.control}
-                name="enrollment_date"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Tanggal Masuk / Gabung</FormLabel>
-                    <FormControl>
-                       <Input
-                         type="date"
-                         {...field}
-                         value={field.value ? format(new Date(field.value), "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd")}
-                         onChange={(e) => field.onChange(e.target.value)}
-                       />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            )}
+            <FormField
+              control={form.control}
+              name="enrollment_date"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Tanggal Masuk / Gabung</FormLabel>
+                  <FormControl>
+                     <Input
+                       type="date"
+                       {...field}
+                       value={field.value ? format(new Date(field.value), "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd")}
+                       onChange={(e) => field.onChange(e.target.value)}
+                     />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </div>
         </div>
 

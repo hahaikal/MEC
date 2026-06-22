@@ -81,9 +81,11 @@ export function PaymentStatusCell({ student, month, year, isRegistration = false
       }
 
       // 1. Check explicit 'month' column if available (preferred)
-      if (p.month === targetMonth && p.year === targetYear && p.category !== 'registration') return true;
+      if (p.month !== null && p.month !== undefined) {
+          return p.month === targetMonth && p.year === targetYear && p.category !== 'registration';
+      }
       
-      // 2. Fallback: Check payment_date
+      // 2. Fallback: Check payment_date only if month is not explicitly set
       const pDate = new Date(p.payment_date);
       return pDate.getMonth() === targetMonth && pDate.getFullYear() === targetYear && p.category !== 'registration';
   });

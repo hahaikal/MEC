@@ -53,7 +53,7 @@ export function HeroSection() {
         </Carousel>
       </div>
 
-      <div className="relative z-10 pt-16 pb-32 sm:pt-24 sm:pb-40 lg:pt-32 lg:pb-48">
+      <div className="relative z-10 pt-16 pb-12 sm:pt-24 lg:pt-32">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-2xl text-center">
             <div className="mb-8 flex justify-center">

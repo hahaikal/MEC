@@ -9,7 +9,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
-import { UserPlus, Pencil, Ban, Loader2, CheckCircle2 } from 'lucide-react'
+import { UserPlus, Ban, Loader2, CheckCircle2 } from 'lucide-react'
+import { EditUserDialog } from '@/components/users/edit-user-dialog'
 
 export default function UsersPage() {
   const { users, isLoading, createUser, isCreating, updateUser, deleteUser } = useInternalUsers()
@@ -151,14 +152,17 @@ export default function UsersPage() {
                     )}
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => toggleStatus(user.id, user.is_active)}
-                      className={user.is_active ? "text-orange-600 hover:text-orange-700" : "text-green-600 hover:text-green-700"}
-                    >
-                      {user.is_active ? <Ban className="h-4 w-4" /> : <CheckCircle2 className="h-4 w-4" />}
-                    </Button>
+                    <div className="flex items-center justify-end gap-2">
+                      <EditUserDialog user={user} />
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => toggleStatus(user.id, user.is_active)}
+                        className={user.is_active ? "text-orange-600 hover:text-orange-700" : "text-green-600 hover:text-green-700"}
+                      >
+                        {user.is_active ? <Ban className="h-4 w-4" /> : <CheckCircle2 className="h-4 w-4" />}
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))

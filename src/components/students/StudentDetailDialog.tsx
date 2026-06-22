@@ -18,6 +18,7 @@ import {
   MapPin,
 } from "lucide-react";
 import { AvatarUpload } from "./avatar-upload";
+import { useStudentPayments } from "@/lib/hooks/use-payments";
 
 interface StudentDetailDialogProps {
   student: any;
@@ -32,13 +33,11 @@ export function StudentDetailDialog({
   open,
   onOpenChange,
 }: StudentDetailDialogProps) {
-  const trigger = children || (
-    <Button variant="ghost" size="sm">Detail</Button>
-  );
+  const { data: payments, isLoading } = useStudentPayments(open ? student?.id : null);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogTrigger asChild>{trigger}</DialogTrigger>
+      {children && <DialogTrigger asChild>{children}</DialogTrigger>}
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-slate-50">
         <DialogHeader className="mb-4">
           <div className="flex flex-col md:flex-row items-center gap-6 p-6 bg-white rounded-xl shadow-sm border">
@@ -205,7 +204,11 @@ export function StudentDetailDialog({
                     Riwayat Transaksi Terakhir
                  </h3>
 
-                 {student.payments && student.payments.length > 0 ? (
+                 {isLoading ? (
+                     <div className="text-center py-10 text-muted-foreground bg-slate-50 rounded-lg border border-dashed animate-pulse">
+                        Memuat riwayat pembayaran...
+                     </div>
+                 ) : payments && payments.length > 0 ? (
                      <div className="rounded-md border overflow-hidden">
                         <table className="w-full text-sm text-left">
                             <thead className="bg-slate-50 text-slate-600 border-b">
@@ -217,7 +220,7 @@ export function StudentDetailDialog({
                                 </tr>
                             </thead>
                             <tbody className="divide-y">
-                                {student.payments.map((p: any, idx: number) => (
+                                {payments.map((p: any, idx: number) => (
                                     <tr key={idx} className="hover:bg-slate-50/50 transition-colors">
                                         <td className="p-3 text-slate-600">
                                             {p.payment_date ? format(new Date(p.payment_date), "dd MMM yyyy", { locale: id }) : "-"}

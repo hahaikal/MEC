@@ -6,7 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
-import { Pencil, Trash2, Users } from 'lucide-react'
+import { useState, useMemo } from 'react'
+import { Pencil, Trash2, Users, ArrowUpAZ, ArrowDownZA } from 'lucide-react'
 import { deleteClass } from '@/actions/classes'
 import { toast } from 'sonner'
 import { useQueryClient } from '@tanstack/react-query'
@@ -21,10 +22,36 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+
+const SCHEDULE_LABEL: Record<string, string> = { 
+  'Monday': 'Sen', 'Tuesday': 'Sel', 'Wednesday': 'Rab', 
+  'Thursday': 'Kam', 'Friday': 'Jum', 'Saturday': 'Sab', 'Sunday': 'Min' 
+}
 
 export default function ClassesPage() {
   const { data: classes, isLoading } = useClasses()
   const queryClient = useQueryClient()
+  const [sortBy, setSortBy] = useState('name')
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
+
+  const sortedClasses = useMemo(() => {
+    if (!classes) return []
+    return [...classes].sort((a, b) => {
+      if (sortBy === 'name') {
+        return sortOrder === 'asc' ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name)
+      } else if (sortBy === 'teacher') {
+        const tA = a.teacher_name || ''
+        const tB = b.teacher_name || ''
+        return sortOrder === 'asc' ? tA.localeCompare(tB) : tB.localeCompare(tA)
+      } else if (sortBy === 'students') {
+        const sA = a.enrolled_count || 0
+        const sB = b.enrolled_count || 0
+        return sortOrder === 'asc' ? sA - sB : sB - sA
+      }
+      return 0
+    })
+  }, [classes, sortBy, sortOrder])
 
   const handleDelete = async (id: string) => {
     const res = await deleteClass(id)
@@ -43,7 +70,22 @@ export default function ClassesPage() {
           <h1 className="text-3xl font-bold tracking-tight">Manajemen Kelas</h1>
           <p className="text-muted-foreground mt-1">Kelola data kelas, target pertemuan, dan guru pengajar.</p>
         </div>
-        <ClassDialog />
+        <div className="flex items-center gap-2">
+          <Select value={sortBy} onValueChange={setSortBy}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Urutkan berdasarkan" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="name">Nama Kelas</SelectItem>
+              <SelectItem value="teacher">Guru Pengajar</SelectItem>
+              <SelectItem value="students">Jumlah Siswa</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button variant="outline" size="icon" onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}>
+            {sortOrder === 'asc' ? <ArrowUpAZ className="h-4 w-4" /> : <ArrowDownZA className="h-4 w-4" />}
+          </Button>
+          <ClassDialog />
+        </div>
       </div>
 
       <Card>
@@ -55,7 +97,7 @@ export default function ClassesPage() {
                   <TableHead>Nama Kelas</TableHead>
                   <TableHead>Program</TableHead>
                   <TableHead>Target Pertemuan</TableHead>
-                  <TableHead>Honor/Pertemuan</TableHead>
+                  <TableHead>Jadwal Kelas</TableHead>
                   <TableHead>Guru Pengajar</TableHead>
                   <TableHead>Jml Siswa</TableHead>
                   <TableHead className="text-right">Aksi</TableHead>
@@ -71,12 +113,24 @@ export default function ClassesPage() {
                     <TableCell colSpan={7} className="text-center p-8 text-muted-foreground">Tidak ada data kelas.</TableCell>
                   </TableRow>
                 ) : (
-                  classes?.map(c => (
+                  sortedClasses.map(c => (
                     <TableRow key={c.id}>
                       <TableCell className="font-medium">{c.name}</TableCell>
                       <TableCell>{c.programs?.name || <span className="text-muted-foreground text-sm italic">Belum ditentukan</span>}</TableCell>
                       <TableCell>{c.target_meetings}</TableCell>
-                      <TableCell>Rp {c.fee_per_meeting?.toLocaleString('id-ID') || 0}</TableCell>
+                      <TableCell>
+                        <div className="flex flex-wrap gap-1">
+                           {c.schedule_days && c.schedule_days.length > 0 ? (
+                              c.schedule_days.map((d: string) => (
+                                <span key={d} className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded-md text-xs font-medium">
+                                  {SCHEDULE_LABEL[d] || d}
+                                </span>
+                              ))
+                           ) : (
+                              <span className="text-muted-foreground text-sm italic">Belum diatur</span>
+                           )}
+                        </div>
+                      </TableCell>
                       <TableCell>{c.teacher_name || <span className="text-muted-foreground text-sm italic">Belum ditentukan</span>}</TableCell>
                       <TableCell>
                          <div className="flex items-center gap-2">

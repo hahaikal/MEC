@@ -223,7 +223,7 @@ export type Database = {
           teacher_id: string | null
           capacity: number | null
           target_meetings: number
-          fee_per_meeting: number
+          schedule_days: string[] | null
           created_at: string
           updated_at: string
         }
@@ -234,7 +234,7 @@ export type Database = {
           teacher_id?: string | null
           capacity?: number | null
           target_meetings?: number
-          fee_per_meeting?: number
+          schedule_days?: string[] | null
           created_at?: string
           updated_at?: string
         }
@@ -245,7 +245,7 @@ export type Database = {
           teacher_id?: string | null
           capacity?: number | null
           target_meetings?: number
-          fee_per_meeting?: number
+          schedule_days?: string[] | null
           created_at?: string
           updated_at?: string
         }

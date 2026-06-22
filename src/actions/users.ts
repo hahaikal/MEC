@@ -34,10 +34,10 @@ export async function updateUser(id: string, updates: { full_name?: string, role
   }
 
   // 2. If role changed, sync to Auth User Metadata using Service Role
-  if (updates.role) {
+  if (updates.role && process.env.SUPABASE_SERVICE_ROLE_KEY) {
      const supabaseAdmin = createSupabaseClient(
        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-       process.env.SUPABASE_SERVICE_ROLE_KEY!
+       process.env.SUPABASE_SERVICE_ROLE_KEY
      )
 
      const { error: authError } = await supabaseAdmin.auth.admin.updateUserById(id, {
@@ -47,6 +47,8 @@ export async function updateUser(id: string, updates: { full_name?: string, role
      if (authError) {
        console.error("Failed to sync role to auth.users metadata:", authError.message)
      }
+  } else if (updates.role) {
+     console.warn("SUPABASE_SERVICE_ROLE_KEY is not set. Cannot sync role to auth.users metadata.")
   }
 
   revalidatePath('/dashboard/users')

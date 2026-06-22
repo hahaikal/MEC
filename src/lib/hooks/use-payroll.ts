@@ -27,7 +27,7 @@ export function usePayroll(month: number, year: number) {
 
       const { data: logs, error: logsError } = await supabase
         .from('attendance_logs')
-        .select('date, class_id, classes(teacher_id, name, fee_per_meeting)')
+        .select('date, class_id, classes(teacher_id, name)')
         .gte('date', startOfMonth)
         .lte('date', endOfMonth)
 
@@ -70,7 +70,7 @@ export function usePayroll(month: number, year: number) {
               teacherData.classes[log.class_id] = {
                 className: log.classes.name,
                 sessionCount: 0,
-                feePerMeeting: log.classes.fee_per_meeting || 0,
+                feePerMeeting: 0,
                 total: 0
               }
             }

@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useQuery } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/client'
@@ -17,7 +18,7 @@ export function ClassDialog({ classToEdit, children }: { classToEdit?: any, chil
   const [open, setOpen] = useState(false)
   const [name, setName] = useState(classToEdit?.name || '')
   const [targetMeetings, setTargetMeetings] = useState(classToEdit?.target_meetings?.toString() || '15')
-  const [feePerMeeting, setFeePerMeeting] = useState(classToEdit?.fee_per_meeting?.toString() || '0')
+  const [scheduleDays, setScheduleDays] = useState<string[]>(classToEdit?.schedule_days || [])
   const [teacherId, setTeacherId] = useState(classToEdit?.teacher_id || 'none')
   const [programId, setProgramId] = useState(classToEdit?.program_id || 'none')
   const [loading, setLoading] = useState(false)
@@ -41,7 +42,7 @@ export function ClassDialog({ classToEdit, children }: { classToEdit?: any, chil
     const payload = {
       name,
       target_meetings: parseInt(targetMeetings) || 15,
-      fee_per_meeting: parseFloat(feePerMeeting) || 0,
+      schedule_days: scheduleDays.length > 0 ? scheduleDays : null,
       program_id: programId === 'none' ? null : programId,
       teacher_id: teacherId === 'none' ? null : teacherId,
     }
@@ -65,6 +66,7 @@ export function ClassDialog({ classToEdit, children }: { classToEdit?: any, chil
       if (!classToEdit) {
         setName('')
         setTargetMeetings('15')
+        setScheduleDays([])
         setTeacherId('none')
       }
     }
@@ -91,8 +93,33 @@ export function ClassDialog({ classToEdit, children }: { classToEdit?: any, chil
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="fee">Honor per Pertemuan (Rp)</Label>
-            <Input id="fee" type="number" min="0" value={feePerMeeting} onChange={e => setFeePerMeeting(e.target.value)} required />
+            <Label>Jadwal Hari</Label>
+            <div className="grid grid-cols-2 gap-2 mt-2">
+              {[
+                { id: 'Monday', label: 'Senin' },
+                { id: 'Tuesday', label: 'Selasa' },
+                { id: 'Wednesday', label: 'Rabu' },
+                { id: 'Thursday', label: 'Kamis' },
+                { id: 'Friday', label: 'Jumat' },
+                { id: 'Saturday', label: 'Sabtu' },
+                { id: 'Sunday', label: 'Minggu' }
+              ].map(day => (
+                <div key={day.id} className="flex items-center space-x-2">
+                  <Checkbox 
+                    id={`day-${day.id}`} 
+                    checked={scheduleDays.includes(day.id)}
+                    onCheckedChange={(checked) => {
+                      if (checked) {
+                        setScheduleDays([...scheduleDays, day.id])
+                      } else {
+                        setScheduleDays(scheduleDays.filter(d => d !== day.id))
+                      }
+                    }}
+                  />
+                  <Label htmlFor={`day-${day.id}`} className="font-normal cursor-pointer">{day.label}</Label>
+                </div>
+              ))}
+            </div>
           </div>
 
           <div className="space-y-2">
