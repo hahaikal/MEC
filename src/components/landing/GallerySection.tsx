@@ -3,39 +3,57 @@ import Image from 'next/image';
 const galleryItems = [
   {
     id: 1,
-    title: 'Classroom Activities',
-    category: 'Classroom',
-    image: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=800&q=80'
+    title: 'To JCO',
+    category: 'Field Trips',
+    image: '/images/placeholder-8.png'
   },
   {
     id: 2,
-    title: 'English Competition',
-    category: 'Event',
-    image: 'https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=800&q=80'
+    title: 'Classroom Activity',
+    category: 'Classrooms & Daily Learning',
+    image: '/images/placeholder-9.png'
   },
   {
     id: 3,
-    title: 'Student Graduation',
-    category: 'Graduation',
-    image: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=800&q=80'
+    title: 'Classroom Activity',
+    category: 'Classrooms & Daily Learning',
+    image: '/images/placeholder-10.png'
   },
   {
     id: 4,
-    title: 'Group Discussions',
-    category: 'Classroom',
-    image: 'https://images.unsplash.com/photo-1427504494785-319ce8372320?auto=format&fit=crop&w=800&q=80'
+    title: 'To Ichiban Sushi',
+    category: 'Field Trips',
+    image: '/images/placeholder-11.png'
   },
   {
     id: 5,
-    title: 'Speaking Practice',
-    category: 'Practice',
-    image: 'https://images.unsplash.com/photo-1571260899304-425070114f59?auto=format&fit=crop&w=800&q=80'
+    title: 'Halloween',
+    category: 'Special Events',
+    image: '/images/placeholder-12.png'
   },
   {
     id: 6,
-    title: 'Annual Event',
-    category: 'Event',
-    image: 'https://images.unsplash.com/photo-1511629091441-ee46146481b6?auto=format&fit=crop&w=800&q=80'
+    title: 'Physics education',
+    category: 'Classrooms & Daily Learning',
+    image: '/images/placeholder-13.png'
+  },
+  {
+    id: 7,
+    title: 'End of Year Concert',
+    category: 'Special Events',
+    image: '/images/placeholder-14.jpg'
+  },
+  {
+    id: 8,
+    title: 'Art',
+    category: 'Classrooms & Daily Learning',
+    image: '/images/placeholder-15.png'
+  },
+  {
+    id: 9,
+    title: 'Music',
+    category: 'Classrooms & Daily Learning',
+    image: '/images/placeholder-16.png'
   },
 ];
 

@@ -16,7 +16,7 @@ export function RegistrationDialog({ children }: { children: React.ReactNode }) 
   const [isOpen, setIsOpen] = useState(false);
 
   // You can replace this with the actual WhatsApp number of the admin
-  const whatsappNumber = '6281234567890';
+  const whatsappNumber = '6281274256077';
   const message = encodeURIComponent('Hello Admin, I am interested in registering at My English Course & Academy. Could I get more registration information?');
   const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${message}`;
 

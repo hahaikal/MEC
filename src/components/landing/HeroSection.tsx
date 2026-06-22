@@ -14,9 +14,10 @@ import {
 import Autoplay from 'embla-carousel-autoplay';
 
 const heroImages = [
-  'https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=1920&q=80',
-  'https://images.unsplash.com/photo-1427504494785-319ce8372320?auto=format&fit=crop&w=1920&q=80',
-  'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=1920&q=80',
+  '/images/placeholder-1.png',
+  '/images/placeholder-2.png',
+  '/images/placeholder-3.png',
+  '/images/placeholder-4.png'
 ];
 
 export function HeroSection() {
@@ -74,13 +75,18 @@ export function HeroSection() {
               One Stop Learning Center. Improve your English skills with the best curriculum and professional teaching staff.
             </p>
 
-            <div className="mt-10 flex items-center justify-center gap-x-6">
+            <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
               <RegistrationDialog>
-                <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white gap-2 px-8 py-6 text-lg rounded-full shadow-lg hover:shadow-blue-500/25 transition-all">
+                <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-white gap-2 px-8 py-6 text-lg rounded-full shadow-lg hover:shadow-blue-500/25 transition-all w-full sm:w-auto">
                   Register Now
                   <ArrowRight className="h-5 w-5" />
                 </Button>
               </RegistrationDialog>
+              <a href="https://wa.me/6281274256077?text=Halo%20Admin%20MEC%2C%20saya%20ingin%20konsultasi%20mengenai%20program%20kursus" target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
+                <Button size="lg" className="bg-white text-blue-600 hover:bg-blue-50 hover:text-blue-700 gap-2 px-8 py-6 text-lg rounded-full shadow-lg transition-all border-2 border-blue-600 w-full sm:w-auto">
+                  Consultation
+                </Button>
+              </a>
             </div>
           </div>
 

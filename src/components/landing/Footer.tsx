@@ -94,7 +94,9 @@ export function Footer() {
                   </li>
                   <li className="flex gap-3 text-sm leading-6 text-slate-300">
                     <Phone className="h-5 w-5 text-slate-400 flex-shrink-0" />
-                    <span>+62 812-3456-7890</span>
+                    <a href="https://wa.me/6281274256077?text=Halo%20Admin%20MEC%2C%20saya%20ingin%20konsultasi%20mengenai%20program%20kursus" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
+                      +62 812-7425-6077 (Consultation)
+                    </a>
                   </li>
                   <li className="flex gap-3 text-sm leading-6 text-slate-300">
                     <Mail className="h-5 w-5 text-slate-400 flex-shrink-0" />
