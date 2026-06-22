@@ -5,7 +5,7 @@ import { Users, CreditCard, BarChart3, TrendingUp, Loader2 } from 'lucide-react'
 import { useDashboardStats } from '@/lib/hooks/use-dashboard-stats'
 
 export function OperationalDashboard({ user }: { user: any }) {
-  const { data: statsData, isLoading } = useDashboardStats()
+  const { data: statsData, isLoading, error } = useDashboardStats()
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(amount)
@@ -50,15 +50,22 @@ export function OperationalDashboard({ user }: { user: any }) {
         <p className="text-slate-600 mt-2">Welcome back, {user?.full_name || user?.email || 'User'}</p>
       </div>
 
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+          <p className="font-medium">Gagal memuat data dashboard</p>
+          <p className="text-sm mt-1">{error.message}</p>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat) => {
           const Icon = stat.icon
           return (
-            <Card key={stat.title} className="p-6 hover:shadow-lg transition-shadow">
-              <div className="flex items-start justify-between">
-                <div>
+            <Card key={stat.title} className="p-6 hover:shadow-lg transition-shadow overflow-hidden">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0 flex-1">
                   <p className="text-sm text-slate-600 font-medium">{stat.title}</p>
-                  <p className="text-3xl font-bold text-slate-900 mt-2">
+                  <p className="text-xl xl:text-2xl font-bold text-slate-900 mt-2 break-all leading-tight">
                     {isLoading && stat.value === '...' ? (
                        <Loader2 className="h-6 w-6 animate-spin text-slate-400 mt-2" />
                     ) : (
@@ -66,7 +73,7 @@ export function OperationalDashboard({ user }: { user: any }) {
                     )}
                   </p>
                 </div>
-                <div className={`p-3 rounded-lg ${stat.color}`}>
+                <div className={`p-3 rounded-lg shrink-0 ${stat.color}`}>
                   <Icon className="h-6 w-6" />
                 </div>
               </div>
