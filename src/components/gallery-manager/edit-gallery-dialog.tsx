@@ -30,6 +30,7 @@ interface EditGalleryDialogProps {
     description: string | null
     image_url: string
     category: string
+    event_date?: string | null
     order_index: number
   } | null
   open: boolean
@@ -40,6 +41,7 @@ export function EditGalleryDialog({ item, open, onOpenChange }: EditGalleryDialo
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [category, setCategory] = useState('')
+  const [eventDate, setEventDate] = useState('')
   const [orderIndex, setOrderIndex] = useState(0)
   const updateMutation = useUpdateGalleryItem()
 
@@ -48,6 +50,7 @@ export function EditGalleryDialog({ item, open, onOpenChange }: EditGalleryDialo
       setTitle(item.title)
       setDescription(item.description || '')
       setCategory(item.category)
+      setEventDate(item.event_date || '')
       setOrderIndex(item.order_index)
     }
   }, [item])
@@ -60,7 +63,13 @@ export function EditGalleryDialog({ item, open, onOpenChange }: EditGalleryDialo
 
     const result = await updateMutation.mutateAsync({
       id: item.id,
-      data: { title, description, category, order_index: orderIndex },
+      data: { 
+        title, 
+        description, 
+        category, 
+        event_date: category === 'event' && eventDate ? eventDate : null,
+        order_index: orderIndex 
+      },
     })
 
     if ('error' in result && result.error) {
@@ -81,7 +90,7 @@ export function EditGalleryDialog({ item, open, onOpenChange }: EditGalleryDialo
           <DialogDescription>Update the details for this gallery item.</DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
+        <div className="space-y-4 py-4 px-1 max-h-[65vh] overflow-y-auto">
           {/* Current Image Preview */}
           <div>
             <Label>Current Image</Label>
@@ -112,6 +121,20 @@ export function EditGalleryDialog({ item, open, onOpenChange }: EditGalleryDialo
               </SelectContent>
             </Select>
           </div>
+
+          {/* Event Date (Conditional) */}
+          {category === 'event' && (
+            <div>
+              <Label htmlFor="edit-event_date">Event Date *</Label>
+              <Input
+                id="edit-event_date"
+                type="date"
+                value={eventDate}
+                onChange={(e) => setEventDate(e.target.value)}
+                required
+              />
+            </div>
+          )}
 
           {/* Order */}
           <div>

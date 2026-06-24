@@ -7,6 +7,7 @@ export const galleryItemSchema = z.object({
   category: z.string().min(1, 'Category is required'),
   is_active: z.boolean().default(true),
   order_index: z.number().int().default(0),
+  event_date: z.string().optional().nullable(),
 })
 
 export type GalleryFormValues = z.infer<typeof galleryItemSchema>

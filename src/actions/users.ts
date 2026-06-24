@@ -19,7 +19,7 @@ export async function getUsers() {
 
 import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 
-export async function updateUser(id: string, updates: { full_name?: string, role?: string, is_active?: boolean }) {
+export async function updateUser(id: string, updates: { full_name?: string, role?: string, is_active?: boolean, bio?: string, profile_picture_url?: string }) {
   const supabase = await createClient()
 
   // 1. Update public.users

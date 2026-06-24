@@ -28,6 +28,27 @@ export function useClasses() {
   })
 }
 
+export function useActiveClasses() {
+  const supabase = createClient()
+
+  return useQuery({
+    queryKey: ['classes', 'active'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('classes')
+        .select(`
+          *,
+          users:teacher_id (id, full_name, role, profile_picture_url, bio)
+        `)
+        .eq('is_active', true)
+        .order('name', { ascending: true })
+
+      if (error) throw error
+      return data || []
+    },
+  })
+}
+
 export function useClass(id: string) {
   const supabase = createClient()
 
@@ -38,7 +59,7 @@ export function useClass(id: string) {
         .from('classes')
         .select(`
           *,
-          users:teacher_id (id, full_name)
+          users:teacher_id (id, full_name, role, profile_picture_url, bio)
         `)
         .eq('id', id)
         .single()

@@ -29,11 +29,47 @@ export default function ProgramPage({
 
   return (
     <>
-      <TeacherHero teachers={program.teachers} context={`Program · ${program.name}`} />
+      {program.teachers.length === 1 ? (
+        <>
+          <TeacherHero teachers={program.teachers} context={`Program · ${program.name}`} />
+          <p className="rounded-3xl bg-white p-6 text-neutral-700 shadow-sm text-lg leading-relaxed mt-6">{program.description}</p>
+        </>
+      ) : (
+        <>
+          <section
+            className="relative overflow-hidden rounded-3xl p-8 text-white shadow-xl mb-6"
+            style={{ background: "var(--mec-blue)" }}
+          >
+            <div
+              className="absolute -right-16 -top-16 h-64 w-64 rounded-full opacity-40"
+              style={{ background: "var(--mec-yellow)" }}
+            />
+            <div className="relative">
+              <p className="text-sm uppercase tracking-widest text-white/70">Program · {program.name}</p>
+              <h1 className="mt-1 text-3xl font-bold sm:text-4xl">Our {program.name} Teachers</h1>
+              <p className="mt-2 max-w-2xl text-white/85">
+                {program.description}
+              </p>
+            </div>
+          </section>
 
-      <p className="rounded-3xl bg-white p-6 text-neutral-700 shadow-sm text-lg leading-relaxed">{program.description}</p>
+          <section className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mb-8">
+            {program.teachers.map((t) => (
+              <article key={t.id} className="overflow-hidden rounded-3xl bg-white shadow-md">
+                <div className="aspect-square overflow-hidden">
+                  <img src={t.image} alt={t.name} className="h-full w-full object-cover" />
+                </div>
+                <div className="p-4">
+                  <h3 className="font-bold text-neutral-900">{t.name}</h3>
+                  <p className="text-xs text-neutral-500">{t.role}</p>
+                </div>
+              </article>
+            ))}
+          </section>
+        </>
+      )}
 
-      <section>
+      <section id="activities">
         <h2 className="mb-6 text-2xl font-bold text-neutral-900">Gallery & Activities</h2>
         {isLoading ? (
           <div className="space-y-4">

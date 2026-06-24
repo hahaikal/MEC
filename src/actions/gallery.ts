@@ -65,6 +65,7 @@ export async function createGalleryItem(data: GalleryFormValues) {
     description: validated.data.description || null,
     image_url: validated.data.image_url,
     category: validated.data.category,
+    event_date: validated.data.event_date || null,
     is_active: validated.data.is_active,
     order_index: validated.data.order_index,
     created_by: user.id,

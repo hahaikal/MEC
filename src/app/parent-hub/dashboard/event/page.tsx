@@ -21,7 +21,7 @@ export default function EventPage() {
     const map = new Map<string, typeof eventItems>();
     if (!eventItems) return map;
     for (const e of eventItems) {
-      const d = new Date(e.created_at);
+      const d = new Date(e.event_date || e.created_at);
       const k = d.toDateString();
       if (!map.has(k)) map.set(k, []);
       map.get(k)!.push(e);

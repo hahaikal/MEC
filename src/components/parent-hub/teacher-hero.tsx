@@ -3,6 +3,7 @@
 import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";
 import type { Teacher } from "@/lib/parent-hub-data";
+import { useActiveClasses } from "@/lib/hooks/use-classes";
 
 export function TeacherHero({
   teachers,
@@ -14,6 +15,7 @@ export function TeacherHero({
   const [emblaRef] = useEmblaCarousel({ loop: true, align: "center" }, [
     Autoplay({ delay: 5000, stopOnInteraction: true }),
   ]);
+  const { data: activeClasses } = useActiveClasses();
 
   if (!teachers || teachers.length === 0) return null;
 
@@ -43,19 +45,26 @@ export function TeacherHero({
                   <h1 className="text-3xl font-bold sm:text-4xl">{teacher.name}</h1>
                   <p className="mt-1 text-white/85">{teacher.role}</p>
                   
-                  {teacher.specialties && (
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      {teacher.specialties.map((s) => (
-                        <span
-                          key={s}
-                          className="rounded-full bg-white/15 px-4 py-1.5 text-sm font-medium text-white backdrop-blur-md"
-                          style={{ border: "1px solid rgba(255,255,255,0.25)" }}
-                        >
-                          {s}
-                        </span>
-                      ))}
-                    </div>
-                  )}
+                  {(() => {
+                    const taughtClasses = activeClasses?.filter(c => c.teacher_id === teacher.id).map(c => c.name) || [];
+                    const labelsToDisplay = taughtClasses.length > 0 ? taughtClasses : teacher.specialties;
+                    
+                    if (!labelsToDisplay || labelsToDisplay.length === 0) return null;
+                    
+                    return (
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        {labelsToDisplay.map((s) => (
+                          <span
+                            key={s}
+                            className="rounded-full bg-white/15 px-4 py-1.5 text-sm font-medium text-white backdrop-blur-md"
+                            style={{ border: "1px solid rgba(255,255,255,0.25)" }}
+                          >
+                            {s}
+                          </span>
+                        ))}
+                      </div>
+                    );
+                  })()}
                   
                   {teacher.bio && (
                     <div className="mt-5 rounded-2xl bg-white/10 p-4 text-sm text-white/90 backdrop-blur-md">
@@ -63,12 +72,13 @@ export function TeacherHero({
                     </div>
                   )}
                   
-                  <button
-                    className="mt-5 rounded-2xl px-5 py-2.5 text-sm font-semibold text-neutral-900 shadow-lg transition hover:brightness-95"
+                  <a
+                    href="#activities"
+                    className="mt-5 inline-block rounded-2xl px-5 py-2.5 text-sm font-semibold text-neutral-900 shadow-lg transition hover:brightness-95"
                     style={{ background: "var(--mec-yellow)" }}
                   >
                     Explore Classes
-                  </button>
+                  </a>
                 </div>
               </div>
             </div>

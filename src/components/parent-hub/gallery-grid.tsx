@@ -11,7 +11,20 @@ interface GalleryItemData {
   category: string;
   is_active: boolean;
   order_index: number;
+  event_date?: string | null;
   created_at: string;
+}
+
+function getEventStatus(eventDateStr: string | null | undefined): "upcoming" | "ongoing" | "past" | null {
+  if (!eventDateStr) return null;
+  const eventDate = new Date(eventDateStr);
+  eventDate.setHours(0, 0, 0, 0);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  if (eventDate > today) return "upcoming";
+  if (eventDate < today) return "past";
+  return "ongoing";
 }
 
 export function GalleryGrid({ items }: { items: GalleryItemData[] }) {
@@ -48,12 +61,15 @@ export function GalleryGrid({ items }: { items: GalleryItemData[] }) {
           <div className="flex flex-col justify-center space-y-3 p-6 md:p-8 flex-1">
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium text-neutral-500">
-                {new Date(item.created_at).toLocaleDateString("en-US", {
+                {new Date(item.event_date || item.created_at).toLocaleDateString("en-US", {
                   day: "numeric",
                   month: "short",
                   year: "numeric",
                 })}
               </span>
+              {item.category === "event" && item.event_date && (
+                <StatusPill status={getEventStatus(item.event_date) || "ongoing"} />
+              )}
             </div>
             <h3 className="text-2xl font-bold text-neutral-900">{item.title}</h3>
             {item.description && (

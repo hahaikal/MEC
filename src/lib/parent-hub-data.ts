@@ -74,7 +74,7 @@ function mkGallery(prefix: string, count: number, base = 0): GalleryItem[] {
   }));
 }
 
-const englishTeachers: Teacher[] = Array.from({ length: 8 }).map((_, i) => ({
+const englishTeachers: Teacher[] = Array.from({ length: 9 }).map((_, i) => ({
   id: `eng-t-${i}`,
   name: [
     "Ms. Sarah Kim",
@@ -85,6 +85,7 @@ const englishTeachers: Teacher[] = Array.from({ length: 8 }).map((_, i) => ({
     "Mr. David Lee",
     "Ms. Olivia Chen",
     "Mr. Ethan Brooks",
+    "Ms. Chloe Davis",
   ][i],
   role: "English Teacher",
   image: portrait(i + 10),

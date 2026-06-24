@@ -82,7 +82,8 @@ export async function updateSession(request: NextRequest) {
         '/dashboard/expenses',
         '/dashboard/reports',
         '/dashboard/payroll',
-        '/dashboard/users'
+        '/dashboard/users',
+        '/dashboard/teacher-workspace'
       ]
 
       const isTryingToAccessOperationalRoute = operationalRoutes.some(route => path.startsWith(route))

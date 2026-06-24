@@ -95,6 +95,7 @@ export type Database = {
           department: string | null
           phone_number: string | null
           profile_picture_url: string | null
+          bio: string | null
           is_active: boolean
           created_at: string
           updated_at: string
@@ -107,6 +108,7 @@ export type Database = {
           department?: string | null
           phone_number?: string | null
           profile_picture_url?: string | null
+          bio?: string | null
           is_active?: boolean
           created_at?: string
           updated_at?: string
@@ -119,6 +121,7 @@ export type Database = {
           department?: string | null
           phone_number?: string | null
           profile_picture_url?: string | null
+          bio?: string | null
           is_active?: boolean
           created_at?: string
           updated_at?: string
@@ -224,6 +227,7 @@ export type Database = {
           capacity: number | null
           target_meetings: number
           schedule_days: string[] | null
+          is_active: boolean
           created_at: string
           updated_at: string
         }
@@ -235,6 +239,7 @@ export type Database = {
           capacity?: number | null
           target_meetings?: number
           schedule_days?: string[] | null
+          is_active?: boolean
           created_at?: string
           updated_at?: string
         }
@@ -246,6 +251,7 @@ export type Database = {
           capacity?: number | null
           target_meetings?: number
           schedule_days?: string[] | null
+          is_active?: boolean
           created_at?: string
           updated_at?: string
         }
@@ -567,6 +573,7 @@ export type Database = {
           category: string
           is_active: boolean
           order_index: number
+          event_date: string | null
           created_at: string
           created_by: string | null
         }
@@ -578,6 +585,7 @@ export type Database = {
           category?: string
           is_active?: boolean
           order_index?: number
+          event_date?: string | null
           created_at?: string
           created_by?: string | null
         }
@@ -589,6 +597,39 @@ export type Database = {
           category?: string
           is_active?: boolean
           order_index?: number
+          event_date?: string | null
+          created_at?: string
+          created_by?: string | null
+        }
+      }
+      class_documents: {
+        Row: {
+          id: string
+          class_id: string | null
+          title: string
+          document_url: string
+          file_size_mb: number | null
+          document_type: string
+          created_at: string
+          created_by: string | null
+        }
+        Insert: {
+          id?: string
+          class_id?: string | null
+          title: string
+          document_url: string
+          file_size_mb?: number | null
+          document_type: string
+          created_at?: string
+          created_by?: string | null
+        }
+        Update: {
+          id?: string
+          class_id?: string | null
+          title?: string
+          document_url?: string
+          file_size_mb?: number | null
+          document_type?: string
           created_at?: string
           created_by?: string | null
         }

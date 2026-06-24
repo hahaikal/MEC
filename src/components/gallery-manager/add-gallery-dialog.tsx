@@ -31,6 +31,7 @@ export function AddGalleryDialog() {
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [category, setCategory] = useState('')
+  const [eventDate, setEventDate] = useState('')
   const [orderIndex, setOrderIndex] = useState(0)
   const [file, setFile] = useState<File | null>(null)
   const [preview, setPreview] = useState<string | null>(null)
@@ -42,6 +43,7 @@ export function AddGalleryDialog() {
     setTitle('')
     setDescription('')
     setCategory('')
+    setEventDate('')
     setOrderIndex(0)
     setFile(null)
     setPreview(null)
@@ -69,6 +71,7 @@ export function AddGalleryDialog() {
         description,
         image_url: imageUrl,
         category,
+        event_date: category === 'event' && eventDate ? eventDate : null,
         is_active: true,
         order_index: orderIndex,
       })
@@ -101,7 +104,7 @@ export function AddGalleryDialog() {
           <DialogDescription>Upload an image and add it to the Parent Hub gallery.</DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
+        <div className="space-y-4 py-4 px-1 max-h-[65vh] overflow-y-auto">
           {/* Image Upload */}
           <div>
             <Label>Image *</Label>
@@ -160,6 +163,20 @@ export function AddGalleryDialog() {
               </SelectContent>
             </Select>
           </div>
+
+          {/* Event Date (Conditional) */}
+          {category === 'event' && (
+            <div>
+              <Label htmlFor="event_date">Event Date *</Label>
+              <Input
+                id="event_date"
+                type="date"
+                value={eventDate}
+                onChange={(e) => setEventDate(e.target.value)}
+                required
+              />
+            </div>
+          )}
 
           {/* Order */}
           <div>

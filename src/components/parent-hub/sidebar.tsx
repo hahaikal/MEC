@@ -4,12 +4,14 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ChevronDown, GraduationCap, BookOpen, Calendar, Baby, LogOut } from "lucide-react";
-import { CLASSES, PROGRAMS } from "@/lib/parent-hub-data";
+import { PROGRAMS } from "@/lib/parent-hub-data";
+import { useActiveClasses } from "@/lib/hooks/use-classes";
 
 export function ParentHubSidebar({ onLogout }: { onLogout: () => void }) {
   const pathname = usePathname() || "";
   const [openProgram, setOpenProgram] = useState(pathname.includes("/program/"));
   const [openClass, setOpenClass] = useState(pathname.includes("/class/"));
+  const { data: dynamicClasses = [], isLoading } = useActiveClasses();
 
   const linkBase =
     "flex items-center gap-3 rounded-2xl px-4 py-2.5 text-sm font-medium transition";
@@ -72,17 +74,23 @@ export function ParentHubSidebar({ onLogout }: { onLogout: () => void }) {
         </button>
         {openClass && (
           <div className="ml-3 max-h-64 overflow-y-auto space-y-1 border-l-2 border-[color:var(--mec-grey)] pl-3 pr-1">
-            {CLASSES.map((c) => (
-              <Link
-                key={c.id}
-                href={`/parent-hub/dashboard/class/${c.id}`}
-                className={`${linkBase} ${
-                  isActive(`/parent-hub/dashboard/class/${c.id}`) ? linkActive : linkIdle
-                }`}
-              >
-                {c.name}
-              </Link>
-            ))}
+            {isLoading ? (
+              <div className="py-2 text-xs text-neutral-500 text-center">Loading classes...</div>
+            ) : dynamicClasses.length === 0 ? (
+              <div className="py-2 text-xs text-neutral-500 text-center">No active classes found</div>
+            ) : (
+              dynamicClasses.map((c) => (
+                <Link
+                  key={c.id}
+                  href={`/parent-hub/dashboard/class/${c.id}`}
+                  className={`${linkBase} ${
+                    isActive(`/parent-hub/dashboard/class/${c.id}`) ? linkActive : linkIdle
+                  }`}
+                >
+                  {c.name}
+                </Link>
+              ))
+            )}
           </div>
         )}
 

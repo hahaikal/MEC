@@ -15,6 +15,7 @@ import {
   Menu,
   X,
   ImageIcon,
+  BookOpen,
 } from 'lucide-react'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
@@ -32,6 +33,7 @@ const navItems = [
   { icon: Users, label: 'Manajemen Kelas', href: '/dashboard/classes', adminOnly: true },
   { icon: Users, label: 'Manajemen Staff', href: '/dashboard/users', adminOnly: true },
   { icon: ImageIcon, label: 'Parent Hub', href: '/dashboard/parent-hub-manager', adminOnly: true },
+  { icon: BookOpen, label: 'Teacher Workspace', href: '/dashboard/teacher-workspace' },
   { icon: Settings, label: 'Settings', href: '/dashboard/settings' },
 ]
 
@@ -93,6 +95,8 @@ export function Sidebar() {
           <nav className="flex-1 space-y-2 overflow-y-auto scrollbar-hide">
             {navItems.map((item) => {
               if (item.adminOnly && userRole === 'teacher') return null
+              if (item.adminOnly && userRole === 'parent') return null
+              if (item.href === '/dashboard/teacher-workspace' && userRole === 'parent') return null
               const Icon = item.icon
               const isActive = pathname === item.href
               return (
