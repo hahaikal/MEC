@@ -1,21 +1,25 @@
-import Link from 'next/link';
-import Image from 'next/image';
-import { Header } from '@/components/landing/Header';
-import { HeroSection } from '@/components/landing/HeroSection';
-import { ProgramsSection } from '@/components/landing/ProgramsSection';
-import { FeaturesSection } from '@/components/landing/FeaturesSection';
-import { GallerySection } from '@/components/landing/GallerySection';
-import { Footer } from '@/components/landing/Footer';
+import { Navbar } from "@/components/landing/navbar";
+import { Hero } from "@/components/landing/hero";
+import { About } from "@/components/landing/about";
+import { Programs } from "@/components/landing/programs";
+import { WhyUs } from "@/components/landing/why-us";
+import { Gallery } from "@/components/landing/gallery";
+import { Testimonials } from "@/components/landing/testimonials";
+import { CTABanner } from "@/components/landing/cta-banner";
+import { Footer } from "@/components/landing/footer";
 
-export default function Home() {
+export default function LandingPage() {
   return (
-    <div className="flex flex-col min-h-screen">
-      <Header />
-      <main className="flex-1">
-        <HeroSection />
-        <FeaturesSection />
-        <ProgramsSection />
-        <GallerySection />
+    <div className="bg-background">
+      <Navbar />
+      <main>
+        <Hero />
+        <About />
+        <Programs />
+        <WhyUs />
+        <Gallery />
+        <Testimonials />
+        <CTABanner />
       </main>
       <Footer />
     </div>
