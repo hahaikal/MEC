@@ -558,6 +558,41 @@ export type Database = {
           updated_at?: string
         }
       }
+      gallery_items: {
+        Row: {
+          id: string
+          title: string
+          description: string | null
+          image_url: string
+          category: string
+          is_active: boolean
+          order_index: number
+          created_at: string
+          created_by: string | null
+        }
+        Insert: {
+          id?: string
+          title: string
+          description?: string | null
+          image_url: string
+          category?: string
+          is_active?: boolean
+          order_index?: number
+          created_at?: string
+          created_by?: string | null
+        }
+        Update: {
+          id?: string
+          title?: string
+          description?: string | null
+          image_url?: string
+          category?: string
+          is_active?: boolean
+          order_index?: number
+          created_at?: string
+          created_by?: string | null
+        }
+      }
     }
     Views: {
       [_ in never]: never

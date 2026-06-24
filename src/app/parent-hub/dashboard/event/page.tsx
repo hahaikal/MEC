@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { EVENTS, type GalleryItem } from "@/lib/parent-hub-data";
+import { useActiveGalleryItems } from "@/lib/hooks/use-gallery";
 import { GalleryGrid } from "@/components/parent-hub/gallery-grid";
 
 const MONTHS = [
@@ -11,33 +11,23 @@ const MONTHS = [
 ];
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-// parse "5 Jun 2026" -> Date
-function parseEventDate(s: string): Date | null {
-  const map: Record<string, number> = {
-    Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5,
-    Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11,
-  };
-  const [d, m, y] = s.split(" ");
-  if (!d || !m || !y) return null;
-  return new Date(parseInt(y), map[m] ?? 0, parseInt(d));
-}
-
 export default function EventPage() {
   const today = new Date();
   const [view, setView] = useState({ y: today.getFullYear(), m: today.getMonth() });
   const [selected, setSelected] = useState<Date>(today);
+  const { data: eventItems, isLoading } = useActiveGalleryItems("event");
 
   const eventsByDate = useMemo(() => {
-    const map = new Map<string, GalleryItem[]>();
-    for (const e of EVENTS) {
-      const d = parseEventDate(e.date);
-      if (!d) continue;
+    const map = new Map<string, typeof eventItems>();
+    if (!eventItems) return map;
+    for (const e of eventItems) {
+      const d = new Date(e.created_at);
       const k = d.toDateString();
       if (!map.has(k)) map.set(k, []);
       map.get(k)!.push(e);
     }
     return map;
-  }, []);
+  }, [eventItems]);
 
   const firstDay = new Date(view.y, view.m, 1).getDay();
   const daysInMonth = new Date(view.y, view.m + 1, 0).getDate();
@@ -128,7 +118,7 @@ export default function EventPage() {
             ) : (
               selectedEvents.map((e) => (
                 <div key={e.id} className="flex gap-3 rounded-2xl bg-[color:var(--mec-grey)] p-3">
-                  <img src={e.image} alt="" className="h-16 w-16 rounded-xl object-cover" />
+                  <img src={e.image_url} alt="" className="h-16 w-16 rounded-xl object-cover" />
                   <div>
                     <p className="font-semibold text-neutral-900">{e.title}</p>
                     <p className="text-xs text-neutral-600">{e.description}</p>
@@ -142,7 +132,15 @@ export default function EventPage() {
 
       <section>
         <h2 className="mb-4 text-2xl font-bold text-neutral-900">All Events</h2>
-        <GalleryGrid items={EVENTS} />
+        {isLoading ? (
+          <div className="space-y-4">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-40 animate-pulse rounded-3xl bg-white/60" />
+            ))}
+          </div>
+        ) : (
+          <GalleryGrid items={eventItems ?? []} />
+        )}
       </section>
     </>
   );

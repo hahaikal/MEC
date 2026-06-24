@@ -56,7 +56,8 @@ export async function updateSession(request: NextRequest) {
       '/dashboard/payments',
       '/dashboard/expenses',
       '/dashboard/reports',
-      '/dashboard/payroll'
+      '/dashboard/payroll',
+      '/dashboard/parent-hub-manager'
     ]
 
     const path = request.nextUrl.pathname

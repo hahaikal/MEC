@@ -1,10 +1,14 @@
+"use client";
+
 import { GalleryGrid } from "@/components/parent-hub/gallery-grid";
-import { DASHBOARD_ACTIVITIES, EVENTS, type GalleryItem } from "@/lib/parent-hub-data";
+import { useActiveGalleryItems } from "@/lib/hooks/use-gallery";
+import { EVENTS } from "@/lib/parent-hub-data";
 
 export default function DashboardHome() {
-  const ongoing = DASHBOARD_ACTIVITIES.filter((a) => a.status === "ongoing");
-  const upcoming = DASHBOARD_ACTIVITIES.filter((a) => a.status === "upcoming");
-  const past = DASHBOARD_ACTIVITIES.filter((a) => a.status === "past");
+  const { data: allItems, isLoading } = useActiveGalleryItems();
+
+  const items = allItems ?? [];
+  const totalEvents = items.length;
 
   return (
     <>
@@ -24,16 +28,23 @@ export default function DashboardHome() {
             Academy in one place.
           </p>
           <div className="mt-5 flex flex-wrap gap-3">
-            <Stat label="Total Events" value={EVENTS.length} />
-            <Stat label="Ongoing" value={ongoing.length} />
-            <Stat label="Upcoming" value={upcoming.length} />
+            <Stat label="Total Items" value={totalEvents} />
           </div>
         </div>
       </section>
 
-      <Section title="🟡 Ongoing" items={ongoing} empty="No ongoing activities." />
-      <Section title="🔵 Upcoming" items={upcoming} empty="No upcoming activities." />
-      <Section title="⚪ Completed" items={past} empty="No past activities." />
+      <section>
+        <h2 className="mb-4 text-xl font-bold text-neutral-900">Latest Activities</h2>
+        {isLoading ? (
+          <div className="space-y-4">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-40 animate-pulse rounded-3xl bg-white/60" />
+            ))}
+          </div>
+        ) : (
+          <GalleryGrid items={items} />
+        )}
+      </section>
     </>
   );
 }
@@ -44,26 +55,5 @@ function Stat({ label, value }: { label: string; value: number }) {
       <div className="text-xs text-white/75">{label}</div>
       <div className="text-xl font-bold">{value}</div>
     </div>
-  );
-}
-
-function Section({
-  title,
-  items,
-  empty,
-}: {
-  title: string;
-  items: GalleryItem[];
-  empty: string;
-}) {
-  return (
-    <section>
-      <h2 className="mb-4 text-xl font-bold text-neutral-900">{title}</h2>
-      {items.length === 0 ? (
-        <p className="rounded-2xl bg-white p-6 text-sm text-neutral-500 shadow-sm">{empty}</p>
-      ) : (
-        <GalleryGrid items={items} />
-      )}
-    </section>
   );
 }

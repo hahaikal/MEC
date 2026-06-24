@@ -14,6 +14,7 @@ import {
   LogOut,
   Menu,
   X,
+  ImageIcon,
 } from 'lucide-react'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
@@ -30,6 +31,7 @@ const navItems = [
   { icon: BarChart3, label: 'Reports', href: '/dashboard/reports' },
   { icon: Users, label: 'Manajemen Kelas', href: '/dashboard/classes', adminOnly: true },
   { icon: Users, label: 'Manajemen Staff', href: '/dashboard/users', adminOnly: true },
+  { icon: ImageIcon, label: 'Parent Hub', href: '/dashboard/parent-hub-manager', adminOnly: true },
   { icon: Settings, label: 'Settings', href: '/dashboard/settings' },
 ]
 

@@ -1,7 +1,12 @@
+"use client";
+
 import { GalleryGrid } from "@/components/parent-hub/gallery-grid";
-import { PRESCHOOL_GALLERY, PRESCHOOL_SCHEDULE, PRESCHOOL_TEACHERS, PRESCHOOL_MAGAZINES } from "@/lib/parent-hub-data";
+import { useActiveGalleryItems } from "@/lib/hooks/use-gallery";
+import { PRESCHOOL_SCHEDULE, PRESCHOOL_TEACHERS, PRESCHOOL_MAGAZINES } from "@/lib/parent-hub-data";
 
 export default function PreschoolPage() {
+  const { data: galleryItems, isLoading } = useActiveGalleryItems("preschool");
+
   return (
     <>
       <section
@@ -89,7 +94,15 @@ export default function PreschoolPage() {
 
       <section>
         <h2 className="mb-4 text-2xl font-bold text-neutral-900">Activities Gallery</h2>
-        <GalleryGrid items={PRESCHOOL_GALLERY} />
+        {isLoading ? (
+          <div className="space-y-4">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-40 animate-pulse rounded-3xl bg-white/60" />
+            ))}
+          </div>
+        ) : (
+          <GalleryGrid items={galleryItems ?? []} />
+        )}
       </section>
 
       <section>

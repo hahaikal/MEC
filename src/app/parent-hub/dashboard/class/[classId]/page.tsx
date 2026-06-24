@@ -1,16 +1,20 @@
+"use client";
+
 import Link from "next/link";
-import { notFound } from "next/navigation";
 import { GalleryGrid } from "@/components/parent-hub/gallery-grid";
 import { TeacherHero } from "@/components/parent-hub/teacher-hero";
+import { useActiveGalleryItems } from "@/lib/hooks/use-gallery";
 import { CLASSES } from "@/lib/parent-hub-data";
+import { use } from "react";
 
-export default async function ClassPage({
+export default function ClassPage({
   params,
 }: {
   params: Promise<{ classId: string }>;
 }) {
-  const { classId } = await params;
+  const { classId } = use(params);
   const cls = CLASSES.find((c) => c.id === classId);
+  const { data: galleryItems, isLoading } = useActiveGalleryItems(classId);
 
   if (!cls) {
     return (
@@ -30,7 +34,15 @@ export default async function ClassPage({
         <h2 className="mb-6 text-2xl font-bold text-neutral-900">
           {cls.name} Activities Gallery
         </h2>
-        <GalleryGrid items={cls.gallery} />
+        {isLoading ? (
+          <div className="space-y-4">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-40 animate-pulse rounded-3xl bg-white/60" />
+            ))}
+          </div>
+        ) : (
+          <GalleryGrid items={galleryItems ?? []} />
+        )}
       </section>
     </>
   );

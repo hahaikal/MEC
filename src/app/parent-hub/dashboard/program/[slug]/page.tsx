@@ -1,16 +1,20 @@
+"use client";
+
 import Link from "next/link";
-import { notFound } from "next/navigation";
 import { GalleryGrid } from "@/components/parent-hub/gallery-grid";
 import { TeacherHero } from "@/components/parent-hub/teacher-hero";
+import { useActiveGalleryItems } from "@/lib/hooks/use-gallery";
 import { PROGRAMS } from "@/lib/parent-hub-data";
+import { use } from "react";
 
-export default async function ProgramPage({
+export default function ProgramPage({
   params,
 }: {
   params: Promise<{ slug: string }>;
 }) {
-  const { slug } = await params;
+  const { slug } = use(params);
   const program = PROGRAMS[slug];
+  const { data: galleryItems, isLoading } = useActiveGalleryItems(slug);
 
   if (!program) {
     return (
@@ -31,7 +35,15 @@ export default async function ProgramPage({
 
       <section>
         <h2 className="mb-6 text-2xl font-bold text-neutral-900">Gallery & Activities</h2>
-        <GalleryGrid items={program.gallery} />
+        {isLoading ? (
+          <div className="space-y-4">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-40 animate-pulse rounded-3xl bg-white/60" />
+            ))}
+          </div>
+        ) : (
+          <GalleryGrid items={galleryItems ?? []} />
+        )}
       </section>
     </>
   );
