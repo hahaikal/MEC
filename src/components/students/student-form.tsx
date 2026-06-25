@@ -9,6 +9,7 @@ import { AvatarUpload } from './avatar-upload'
 import { uploadStudentPhoto } from '@/lib/upload-student-photo'
 import { updateStudentPhoto } from '@/actions/students'
 import { useCreateStudent, useUpdateStudent } from '@/lib/hooks/use-mutations'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import {
   Form,
@@ -101,16 +102,20 @@ export function StudentForm({ initialData, onSuccess }: StudentFormProps) {
     try {
       if (isEditing) {
         await updateStudent.mutateAsync({ id: initialData.id, data })
+        toast.success('Data siswa berhasil diperbarui!')
       } else {
         const result = await createStudent.mutateAsync(data)
+        toast.success('Siswa baru berhasil ditambahkan!')
 
         // If there's a pending photo for the new student, upload it now
         if (pendingPhotoFile && result && 'studentId' in result && result.studentId) {
           try {
             const publicUrl = await uploadStudentPhoto(pendingPhotoFile, result.studentId)
             await updateStudentPhoto(result.studentId, publicUrl)
+            toast.success('Foto profil siswa berhasil diunggah!')
           } catch (photoError) {
             console.error('Photo upload after create failed:', photoError)
+            toast.error('Gagal mengunggah foto profil.')
           }
         }
       }
@@ -124,8 +129,9 @@ export function StudentForm({ initialData, onSuccess }: StudentFormProps) {
       if (onSuccess) {
         onSuccess()
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error(error)
+      toast.error(error?.message || 'Gagal menyimpan data siswa.')
     }
   }
 

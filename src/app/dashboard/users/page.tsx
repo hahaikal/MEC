@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
 import { UserPlus, Ban, Loader2, CheckCircle2 } from 'lucide-react'
 import { EditUserDialog } from '@/components/users/edit-user-dialog'
+import { toast } from 'sonner'
 
 export default function UsersPage() {
   const { users, isLoading, createUser, isCreating, updateUser, deleteUser } = useInternalUsers()
@@ -29,12 +30,19 @@ export default function UsersPage() {
       onSuccess: () => {
         setIsDialogOpen(false)
         setFormData({ email: '', password: '', full_name: '', roles: ['Staff'] })
+        toast.success('Pengguna berhasil ditambahkan!')
+      },
+      onError: (err: any) => {
+        toast.error(err.message || 'Gagal menambahkan pengguna')
       }
     })
   }
 
   const toggleStatus = (id: string, currentStatus: boolean) => {
-    updateUser({ id, updates: { is_active: !currentStatus } })
+    updateUser({ id, updates: { is_active: !currentStatus } }, {
+      onSuccess: () => toast.success(`Status pengguna berhasil ${!currentStatus ? 'diaktifkan' : 'dinonaktifkan'}!`),
+      onError: (err: any) => toast.error(err.message || 'Gagal mengubah status pengguna')
+    })
   }
 
   return (

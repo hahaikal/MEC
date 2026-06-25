@@ -4,8 +4,16 @@ import Link from "next/link";
 import { GalleryGrid } from "@/components/parent-hub/gallery-grid";
 import { TeacherHero } from "@/components/parent-hub/teacher-hero";
 import { usePrograms, useProgramTeachers } from "@/lib/hooks/use-programs";
-import { useActiveGalleryItems } from "@/lib/hooks/use-gallery";
+import { useProgramActivities } from "@/lib/hooks/use-activities";
 import { use } from "react";
+
+const PROGRAM_DESCRIPTIONS: Record<string, string> = {
+  "Calistung": "A foundational program designed to spark your child's early literacy and numeracy skills. Through fun and engaging activities, we build a strong basis in reading, writing, and counting to prepare them for their future academic journey.",
+  "English Class": "A comprehensive English learning program tailored to improve grammar, vocabulary, and conversational skills. We foster a supportive environment where students gain confidence in their English proficiency.",
+  "Foresight": "An advanced program aimed at developing critical thinking, problem-solving, and future-ready skills. We empower students to look ahead, plan, and excel in a rapidly changing world.",
+  "MEC PRESCHOOL": "A nurturing and playful learning environment for our youngest learners. We focus on holistic development, social skills, and early cognitive growth in a safe and loving space.",
+  "Smart Program": "An intensive, fast-tracked curriculum designed to challenge and stimulate bright minds. We combine innovative teaching methods with advanced materials to accelerate your child's learning potential."
+};
 
 export default function ProgramPage({
   params,
@@ -16,7 +24,7 @@ export default function ProgramPage({
   const { data: programs = [], isLoading: isProgramsLoading } = usePrograms();
   const program = programs.find((p: any) => p.id === slug);
   const { data: programTeachers = [], isLoading: isTeachersLoading } = useProgramTeachers(slug);
-  const { data: galleryItems, isLoading } = useActiveGalleryItems(program?.name || "program");
+  const { data: activities, isLoading } = useProgramActivities(slug);
 
   if (isProgramsLoading) {
     return (
@@ -37,12 +45,16 @@ export default function ProgramPage({
     );
   }
 
+  const engagingDescription = PROGRAM_DESCRIPTIONS[program.name] || program.description || 'Our dedicated teaching team is here to support your learning journey.';
+
   return (
     <>
       {programTeachers.length === 1 ? (
         <>
           <TeacherHero teachers={programTeachers} context={`Program · ${program.name}`} />
-          <p className="rounded-3xl bg-white p-6 text-neutral-700 shadow-sm text-lg leading-relaxed mt-6">{program.description || 'No description available.'}</p>
+          <p className="rounded-3xl bg-white p-6 text-neutral-700 shadow-sm text-lg leading-relaxed mt-6">
+            {engagingDescription}
+          </p>
         </>
       ) : (
         <>
@@ -58,7 +70,7 @@ export default function ProgramPage({
               <p className="text-sm uppercase tracking-widest text-white/70">Program · {program.name}</p>
               <h1 className="mt-1 text-3xl font-bold sm:text-4xl">Our {program.name} Teachers</h1>
               <p className="mt-2 max-w-2xl text-white/85">
-                {program.description || 'Our dedicated teaching team.'}
+                {engagingDescription}
               </p>
             </div>
           </section>
@@ -96,7 +108,7 @@ export default function ProgramPage({
             ))}
           </div>
         ) : (
-          <GalleryGrid items={galleryItems ?? []} />
+          <GalleryGrid items={activities ?? []} />
         )}
       </section>
     </>

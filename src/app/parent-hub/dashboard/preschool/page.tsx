@@ -138,25 +138,40 @@ export default function PreschoolPage() {
                 href={mag.document_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group flex flex-col justify-between rounded-3xl border border-neutral-100 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
+                className="group flex flex-col overflow-hidden rounded-3xl bg-[#1e463a] shadow-sm transition hover:-translate-y-1 hover:shadow-md"
               >
-                <div className="flex items-start gap-4">
-                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-[color:var(--mec-blue)]">
-                    <FileText className="h-7 w-7" />
+                {/* PDF Cover Image Preview */}
+                <div className="relative h-40 w-full overflow-hidden bg-neutral-200">
+                  <img 
+                    src={mag.cover_image_url || "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=800&q=80"} 
+                    alt="Cover Preview" 
+                    className="h-full w-full object-cover opacity-90 transition duration-500 group-hover:scale-105" 
+                  />
+                  {/* Subtle overlay to blend with the bottom part */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#1e463a] to-transparent opacity-60" />
+                </div>
+                
+                {/* PDF Info Bar */}
+                <div className="flex items-center gap-4 p-5 -mt-2 relative z-10">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-red-600 text-white font-bold text-sm shadow-md border-2 border-[#1e463a]">
+                    PDF
                   </div>
-                  <div>
-                    <h3 className="font-bold text-neutral-900 group-hover:text-[color:var(--mec-blue)] transition-colors">
+                  <div className="flex-1 min-w-0 text-white">
+                    <h3 className="truncate font-semibold text-[15px] leading-tight">
                       {mag.title}
                     </h3>
-                    <p className="mt-1 flex flex-col text-xs font-medium text-neutral-500">
-                      <span>{format(new Date(mag.created_at), "MMMM d, yyyy")} • {mag.file_size_mb} MB</span>
-                      {mag.classes?.name && <span className="mt-1 text-[color:var(--mec-blue)]">{mag.classes.name}</span>}
+                    <p className="mt-1 flex items-center gap-2 text-[11px] text-white/70">
+                      {mag.classes?.name && (
+                        <>
+                          <span className="truncate max-w-[80px]">{mag.classes.name}</span>
+                          <span>•</span>
+                        </>
+                      )}
+                      <span>PDF</span>
+                      <span>•</span>
+                      <span>{mag.file_size_mb} MB</span>
                     </p>
                   </div>
-                </div>
-                <div className="mt-6 flex items-center text-sm font-semibold text-[color:var(--mec-blue)]">
-                  <Download className="mr-2 h-4 w-4" />
-                  Download PDF
                 </div>
               </a>
             ))

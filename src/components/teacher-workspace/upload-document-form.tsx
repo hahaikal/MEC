@@ -18,7 +18,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { Progress } from "@/components/ui/progress";
-import { FileUp, Loader2 } from "lucide-react";
+import { FileUp, Loader2, X } from "lucide-react";
+import { ImageCropper } from "@/components/ui/image-cropper";
 
 const MAX_FILE_SIZE = 35 * 1024 * 1024; // 35MB
 
@@ -35,6 +36,7 @@ const formSchema = z.object({
       (files) => files?.[0]?.type === "application/pdf",
       "Only .pdf files are accepted."
     ),
+  coverImage: z.any().optional(),
 });
 
 interface UploadDocumentFormProps {
@@ -50,6 +52,9 @@ export function UploadDocumentForm({
 }: UploadDocumentFormProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [cropFileSrc, setCropFileSrc] = useState<string | null>(null);
+  const [croppedFile, setCroppedFile] = useState<File | null>(null);
+  const [showCropper, setShowCropper] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -98,6 +103,25 @@ export function UploadDocumentForm({
         .from("parent_hub_magazines")
         .getPublicUrl(filePath);
 
+      // Handle optional cover image upload
+      let coverImageUrl: string | undefined = undefined;
+      const finalCoverImage = croppedFile || (values.coverImage?.[0] as File);
+      if (finalCoverImage) {
+        const imgExt = finalCoverImage.name.split('.').pop() || 'jpeg';
+        const imgName = `${classId}-cover-${Math.random().toString(36).substring(2)}.${imgExt}`;
+        
+        const { data: imgUpload, error: imgError } = await supabase.storage
+          .from("parent_hub_magazines")
+          .upload(imgName, finalCoverImage, { cacheControl: "3600", upsert: false });
+
+        if (!imgError && imgUpload) {
+          const { data: imgPublicUrl } = supabase.storage
+            .from("parent_hub_magazines")
+            .getPublicUrl(imgName);
+          coverImageUrl = imgPublicUrl.publicUrl;
+        }
+      }
+
       // Create DB Record
       const fileSizeMb = parseFloat((file.size / (1024 * 1024)).toFixed(2));
       const documentType = isPreschool ? "MAGAZINE" : "LESSON_PLAN";
@@ -108,6 +132,7 @@ export function UploadDocumentForm({
         document_url: publicUrlData.publicUrl,
         file_size_mb: fileSizeMb,
         document_type: documentType,
+        cover_image_url: coverImageUrl,
       });
 
       if (!result.success) {
@@ -116,6 +141,7 @@ export function UploadDocumentForm({
 
       toast.success("Document uploaded successfully");
       form.reset();
+      setCroppedFile(null);
       if (onSuccess) onSuccess();
     } catch (error: any) {
       toast.error(error.message || "Failed to upload document");
@@ -163,6 +189,56 @@ export function UploadDocumentForm({
           )}
         />
 
+        <FormField
+          control={form.control}
+          name="coverImage"
+          render={({ field: { value, onChange, ...field } }) => (
+            <FormItem>
+              <FormLabel>Cover Image (Optional)</FormLabel>
+              <FormControl>
+                {croppedFile ? (
+                  <div className="relative mt-2">
+                    <img 
+                      src={URL.createObjectURL(croppedFile)} 
+                      alt="Cropped Preview" 
+                      className="h-40 w-full rounded-lg object-cover" 
+                    />
+                    <Button
+                      type="button"
+                      size="icon"
+                      variant="destructive"
+                      className="absolute top-2 right-2 h-7 w-7"
+                      onClick={() => { 
+                        setCroppedFile(null);
+                        form.setValue('coverImage', undefined as any);
+                      }}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const files = e.target.files;
+                      if (files && files.length > 0) {
+                        const file = files[0];
+                        const url = URL.createObjectURL(file);
+                        setCropFileSrc(url);
+                        setShowCropper(true);
+                        onChange(files);
+                      }
+                    }}
+                    {...field}
+                  />
+                )}
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
         {isUploading && (
           <div className="space-y-2">
             <div className="flex items-center justify-between text-xs text-neutral-500">
@@ -187,6 +263,22 @@ export function UploadDocumentForm({
           )}
         </Button>
       </form>
+      {cropFileSrc && (
+        <ImageCropper
+          imageSrc={cropFileSrc}
+          aspectRatio={4 / 3}
+          open={showCropper}
+          onCancel={() => {
+            setShowCropper(false);
+            setCropFileSrc(null);
+          }}
+          onCropComplete={(croppedFile) => {
+            setCroppedFile(croppedFile);
+            setShowCropper(false);
+            setCropFileSrc(null);
+          }}
+        />
+      )}
     </Form>
   );
 }

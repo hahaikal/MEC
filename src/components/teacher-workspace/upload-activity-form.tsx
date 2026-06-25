@@ -19,7 +19,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Progress } from "@/components/ui/progress";
-import { ImagePlus, Loader2 } from "lucide-react";
+import { ImagePlus, Loader2, X } from "lucide-react";
+import { ImageCropper } from "@/components/ui/image-cropper";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
@@ -41,6 +42,9 @@ export function UploadActivityForm({
 }: UploadActivityFormProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [cropFileSrc, setCropFileSrc] = useState<string | null>(null);
+  const [croppedFile, setCroppedFile] = useState<File | null>(null);
+  const [showCropper, setShowCropper] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -56,7 +60,7 @@ export function UploadActivityForm({
     setProgress(0);
 
     try {
-      const file = values.file[0] as File;
+      const file = croppedFile || (values.file[0] as File);
       const supabase = createClient();
 
       const progressInterval = setInterval(() => {
@@ -104,6 +108,7 @@ export function UploadActivityForm({
 
       toast.success("Activity posted successfully");
       form.reset();
+      setCroppedFile(null);
       if (onSuccess) onSuccess();
     } catch (error: any) {
       toast.error(error.message || "Failed to post activity");
@@ -154,14 +159,45 @@ export function UploadActivityForm({
             <FormItem>
               <FormLabel>Photo (Max 10MB)</FormLabel>
               <FormControl>
-                <Input
-                  type="file"
-                  accept="image/jpeg, image/jpg, image/png, image/webp"
-                  onChange={(e) => {
-                    onChange(e.target.files);
-                  }}
-                  {...field}
-                />
+                {croppedFile ? (
+                  <div className="relative mt-2">
+                    <img 
+                      src={URL.createObjectURL(croppedFile)} 
+                      alt="Cropped Preview" 
+                      className="h-40 w-full rounded-lg object-cover" 
+                    />
+                    <Button
+                      type="button"
+                      size="icon"
+                      variant="destructive"
+                      className="absolute top-2 right-2 h-7 w-7"
+                      onClick={() => { 
+                        setCroppedFile(null);
+                        form.setValue('file', undefined as any);
+                      }}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <Input
+                    type="file"
+                    accept="image/jpeg, image/jpg, image/png, image/webp"
+                    onChange={(e) => {
+                      const files = e.target.files;
+                      if (files && files.length > 0) {
+                        const file = files[0];
+                        const url = URL.createObjectURL(file);
+                        setCropFileSrc(url);
+                        setShowCropper(true);
+                        // Do not trigger onChange yet, wait for crop
+                        // We set original file to make validation pass, but we'll override it on submit
+                        onChange(files);
+                      }
+                    }}
+                    {...field}
+                  />
+                )}
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -192,6 +228,23 @@ export function UploadActivityForm({
           )}
         </Button>
       </form>
+      {cropFileSrc && (
+        <ImageCropper
+          imageSrc={cropFileSrc}
+          aspectRatio={4 / 3}
+          open={showCropper}
+          onCancel={() => {
+            setShowCropper(false);
+            setCropFileSrc(null);
+            // Optionally reset file input if they cancel, but we'll leave it
+          }}
+          onCropComplete={(croppedFile) => {
+            setCroppedFile(croppedFile);
+            setShowCropper(false);
+            setCropFileSrc(null);
+          }}
+        />
+      )}
     </Form>
   );
 }

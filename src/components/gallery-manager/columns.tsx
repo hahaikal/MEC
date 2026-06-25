@@ -80,18 +80,7 @@ export const columns: ColumnDef<GalleryRow>[] = [
       return <Badge variant="secondary">{cat?.label || row.getValue('category')}</Badge>
     },
   },
-  {
-    accessorKey: 'order_index',
-    header: ({ column }) => (
-      <Button
-        variant="ghost"
-        onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-      >
-        Order
-        <ArrowUpDown className="ml-2 h-4 w-4" />
-      </Button>
-    ),
-  },
+
   {
     accessorKey: 'is_active',
     header: 'Status',

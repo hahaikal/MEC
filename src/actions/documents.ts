@@ -9,6 +9,7 @@ export async function createDocumentRecord(data: {
   document_url: string;
   file_size_mb: number;
   document_type: string;
+  cover_image_url?: string;
 }) {
   const supabase = await createClient();
   const {

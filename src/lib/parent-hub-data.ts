@@ -44,4 +44,53 @@ export const PRESCHOOL_SCHEDULE: Array<{
   Wednesday: string;
   Thursday: string;
   Friday: string;
-}> = [];
+}> = [
+  {
+    time: "08:00 - 08:30",
+    Monday: "Arrival & Free Play",
+    Tuesday: "Arrival & Free Play",
+    Wednesday: "Arrival & Free Play",
+    Thursday: "Arrival & Free Play",
+    Friday: "Arrival & Free Play",
+  },
+  {
+    time: "08:30 - 09:00",
+    Monday: "Morning Circle",
+    Tuesday: "Morning Circle",
+    Wednesday: "Morning Circle",
+    Thursday: "Morning Circle",
+    Friday: "Morning Circle",
+  },
+  {
+    time: "09:00 - 09:45",
+    Monday: "Language & Literacy",
+    Tuesday: "Math & Logic",
+    Wednesday: "Arts & Crafts",
+    Thursday: "Science Discovery",
+    Friday: "Music & Movement",
+  },
+  {
+    time: "09:45 - 10:15",
+    Monday: "Snack Time",
+    Tuesday: "Snack Time",
+    Wednesday: "Snack Time",
+    Thursday: "Snack Time",
+    Friday: "Snack Time",
+  },
+  {
+    time: "10:15 - 11:00",
+    Monday: "Outdoor Play",
+    Tuesday: "Outdoor Play",
+    Wednesday: "Outdoor Play",
+    Thursday: "Outdoor Play",
+    Friday: "Outdoor Play",
+  },
+  {
+    time: "11:00 - 11:30",
+    Monday: "Story Time & Dismissal",
+    Tuesday: "Story Time & Dismissal",
+    Wednesday: "Story Time & Dismissal",
+    Thursday: "Story Time & Dismissal",
+    Friday: "Show & Tell & Dismissal",
+  },
+];

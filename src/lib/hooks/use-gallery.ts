@@ -12,7 +12,6 @@ export function useGalleryItems(category?: string) {
       let query = supabase
         .from('gallery_items')
         .select('*')
-        .order('order_index', { ascending: true })
         .order('created_at', { ascending: false })
 
       if (category) {
@@ -36,7 +35,6 @@ export function useActiveGalleryItems(category?: string) {
         .from('gallery_items')
         .select('*')
         .eq('is_active', true)
-        .order('order_index', { ascending: true })
         .order('created_at', { ascending: false })
 
       if (category) {

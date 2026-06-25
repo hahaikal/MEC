@@ -10,7 +10,6 @@ interface GalleryItemData {
   image_url: string;
   category: string;
   is_active: boolean;
-  order_index: number;
   event_date?: string | null;
   created_at: string;
 }

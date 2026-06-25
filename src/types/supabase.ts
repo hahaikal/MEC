@@ -572,7 +572,6 @@ export type Database = {
           image_url: string
           category: string
           is_active: boolean
-          order_index: number
           event_date: string | null
           created_at: string
           created_by: string | null
@@ -584,7 +583,6 @@ export type Database = {
           image_url: string
           category?: string
           is_active?: boolean
-          order_index?: number
           event_date?: string | null
           created_at?: string
           created_by?: string | null
@@ -596,7 +594,6 @@ export type Database = {
           image_url?: string
           category?: string
           is_active?: boolean
-          order_index?: number
           event_date?: string | null
           created_at?: string
           created_by?: string | null
@@ -610,6 +607,7 @@ export type Database = {
           document_url: string
           file_size_mb: number | null
           document_type: string
+          cover_image_url: string | null
           created_at: string
           created_by: string | null
         }
@@ -620,6 +618,7 @@ export type Database = {
           document_url: string
           file_size_mb?: number | null
           document_type: string
+          cover_image_url?: string | null
           created_at?: string
           created_by?: string | null
         }
@@ -630,6 +629,7 @@ export type Database = {
           document_url?: string
           file_size_mb?: number | null
           document_type?: string
+          cover_image_url?: string | null
           created_at?: string
           created_by?: string | null
         }

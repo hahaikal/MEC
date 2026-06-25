@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getSystemSettings, updateSystemSettings } from '@/actions/settings'
-import { toast } from '@/lib/hooks/use-toast'
+import { toast } from 'sonner'
 
 export function useSettings() {
   const queryClient = useQueryClient()
@@ -20,17 +20,10 @@ export function useSettings() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['system-settings'] })
-      toast({
-        title: "Pengaturan Tersimpan",
-        description: "Semua perubahan pengaturan telah disimpan dengan sukses.",
-      })
+      toast.success("Semua perubahan pengaturan telah disimpan dengan sukses.")
     },
     onError: (error) => {
-      toast({
-        title: "Gagal Menyimpan",
-        description: error.message || "Gagal menyimpan pengaturan. Silakan coba lagi.",
-        variant: "destructive",
-      })
+      toast.error(error.message || "Gagal menyimpan pengaturan. Silakan coba lagi.")
     }
   })
 

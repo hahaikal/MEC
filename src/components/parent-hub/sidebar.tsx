@@ -37,6 +37,16 @@ export function ParentHubSidebar({ onLogout }: { onLogout: () => void }) {
       </div>
 
       <nav className="space-y-1">
+        {/* Dashboard */}
+        <Link
+          href="/parent-hub/dashboard"
+          className={`${linkBase} ${
+            isActive("/parent-hub/dashboard") ? linkActive : linkIdle
+          }`}
+        >
+          <BookOpen className="h-4 w-4" /> Dashboard
+        </Link>
+
         {/* Program */}
         <button
           onClick={() => setOpenProgram((v) => !v)}
@@ -101,15 +111,7 @@ export function ParentHubSidebar({ onLogout }: { onLogout: () => void }) {
           </div>
         )}
 
-        {/* Event */}
-        <Link
-          href="/parent-hub/dashboard/event"
-          className={`${linkBase} ${
-            isActive("/parent-hub/dashboard/event") ? linkActive : linkIdle
-          }`}
-        >
-          <Calendar className="h-4 w-4" /> Special Events
-        </Link>
+
 
         {/* Preschool */}
         <Link
@@ -118,7 +120,7 @@ export function ParentHubSidebar({ onLogout }: { onLogout: () => void }) {
             isActive("/parent-hub/dashboard/preschool") ? linkActive : linkIdle
           }`}
         >
-          <Baby className="h-4 w-4" /> Preschool
+          <Baby className="h-4 w-4" /> MEC Preschool
         </Link>
       </nav>
 

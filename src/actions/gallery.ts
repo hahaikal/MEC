@@ -10,7 +10,6 @@ export async function getGalleryItems(category?: string) {
   let query = supabase
     .from('gallery_items')
     .select('*')
-    .order('order_index', { ascending: true })
     .order('created_at', { ascending: false })
 
   if (category) {
@@ -34,7 +33,6 @@ export async function getActiveGalleryItems(category?: string) {
     .from('gallery_items')
     .select('*')
     .eq('is_active', true)
-    .order('order_index', { ascending: true })
     .order('created_at', { ascending: false })
 
   if (category) {
@@ -67,7 +65,6 @@ export async function createGalleryItem(data: GalleryFormValues) {
     category: validated.data.category,
     event_date: validated.data.event_date || null,
     is_active: validated.data.is_active,
-    order_index: validated.data.order_index,
     created_by: user.id,
   })
 

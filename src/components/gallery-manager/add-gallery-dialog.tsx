@@ -21,6 +21,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Plus, Upload, X } from 'lucide-react'
+import { ImageCropper } from '@/components/ui/image-cropper'
 import { useCreateGalleryItem } from '@/lib/hooks/use-gallery'
 import { uploadGalleryImage } from '@/lib/upload-gallery-image'
 import { GALLERY_CATEGORIES } from '@/types/gallery'
@@ -32,10 +33,13 @@ export function AddGalleryDialog() {
   const [description, setDescription] = useState('')
   const [category, setCategory] = useState('')
   const [eventDate, setEventDate] = useState('')
-  const [orderIndex, setOrderIndex] = useState(0)
   const [file, setFile] = useState<File | null>(null)
   const [preview, setPreview] = useState<string | null>(null)
   const [uploading, setUploading] = useState(false)
+  
+  const [cropFileSrc, setCropFileSrc] = useState<string | null>(null)
+  const [showCropper, setShowCropper] = useState(false)
+
   const fileRef = useRef<HTMLInputElement>(null)
   const createMutation = useCreateGalleryItem()
 
@@ -44,7 +48,6 @@ export function AddGalleryDialog() {
     setDescription('')
     setCategory('')
     setEventDate('')
-    setOrderIndex(0)
     setFile(null)
     setPreview(null)
   }
@@ -52,8 +55,11 @@ export function AddGalleryDialog() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = e.target.files?.[0]
     if (!selected) return
-    setFile(selected)
-    setPreview(URL.createObjectURL(selected))
+    const url = URL.createObjectURL(selected)
+    setCropFileSrc(url)
+    setShowCropper(true)
+    // Clear input so same file can be selected again
+    if (fileRef.current) fileRef.current.value = ''
   }
 
   const handleSubmit = async () => {
@@ -73,7 +79,6 @@ export function AddGalleryDialog() {
         category,
         event_date: category === 'event' && eventDate ? eventDate : null,
         is_active: true,
-        order_index: orderIndex,
       })
 
       if ('error' in result && result.error) {
@@ -177,12 +182,6 @@ export function AddGalleryDialog() {
               />
             </div>
           )}
-
-          {/* Order */}
-          <div>
-            <Label htmlFor="order">Display Order</Label>
-            <Input id="order" type="number" value={orderIndex} onChange={(e) => setOrderIndex(Number(e.target.value))} />
-          </div>
         </div>
 
         <DialogFooter>
@@ -192,6 +191,23 @@ export function AddGalleryDialog() {
           </Button>
         </DialogFooter>
       </DialogContent>
+      {cropFileSrc && (
+        <ImageCropper
+          imageSrc={cropFileSrc}
+          aspectRatio={4 / 3}
+          open={showCropper}
+          onCancel={() => {
+            setShowCropper(false)
+            setCropFileSrc(null)
+          }}
+          onCropComplete={(croppedFile) => {
+            setFile(croppedFile)
+            setPreview(URL.createObjectURL(croppedFile))
+            setShowCropper(false)
+            setCropFileSrc(null)
+          }}
+        />
+      )}
     </Dialog>
   )
 }
