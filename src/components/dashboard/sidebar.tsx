@@ -42,15 +42,15 @@ export function Sidebar() {
   const router = useRouter()
   const supabase = createClient()
   const [isOpen, setIsOpen] = useState(false)
-  const [userRole, setUserRole] = useState<string | null>(null)
+  const [userRoles, setUserRoles] = useState<string[]>([])
 
   useEffect(() => {
     async function getUser() {
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
-        const { data } = await supabase.from('users').select('role').eq('id', user.id).single()
+        const { data } = await supabase.from('users').select('*').eq('id', user.id).single()
         if (data) {
-          setUserRole(data.role)
+          setUserRoles(data.roles || (data.role ? [data.role] : []))
         }
       }
     }
@@ -94,9 +94,14 @@ export function Sidebar() {
           {/* Navigation */}
           <nav className="flex-1 space-y-2 overflow-y-auto scrollbar-hide">
             {navItems.map((item) => {
-              if (item.adminOnly && userRole === 'teacher') return null
-              if (item.adminOnly && userRole === 'parent') return null
-              if (item.href === '/dashboard/teacher-workspace' && userRole === 'parent') return null
+              const isAdminOrDirector = userRoles.some(r => ['admin', 'director', 'manager'].includes(r.toLowerCase()));
+              
+              if (!isAdminOrDirector) {
+                const allowedRoutes = ['/dashboard', '/dashboard/students', '/dashboard/attendance', '/dashboard/teacher-workspace', '/dashboard/settings'];
+                if (!allowedRoutes.includes(item.href)) return null;
+                if (item.href === '/dashboard/teacher-workspace' && userRoles.some(r => r.toLowerCase() === 'parent')) return null;
+              }
+              
               const Icon = item.icon
               const isActive = pathname === item.href
               return (

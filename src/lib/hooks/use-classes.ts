@@ -11,7 +11,7 @@ export function useClasses() {
         .from('classes')
         .select(`
           *,
-          users:teacher_id (id, full_name),
+          class_teachers ( users (id, full_name) ),
           programs:program_id (id, name),
           class_enrollments(count)
         `)
@@ -21,7 +21,7 @@ export function useClasses() {
 
       return data.map((c: any) => ({
         ...c,
-        teacher_name: c.users?.full_name || null,
+        teachers: c.class_teachers?.map((ct: any) => ct.users) || [],
         enrolled_count: c.class_enrollments[0]?.count || 0
       }))
     },
@@ -38,13 +38,16 @@ export function useActiveClasses() {
         .from('classes')
         .select(`
           *,
-          users:teacher_id (id, full_name, role, profile_picture_url, bio)
+          class_teachers ( users (id, full_name, roles, profile_picture_url, bio) )
         `)
         .eq('is_active', true)
         .order('name', { ascending: true })
 
       if (error) throw error
-      return data || []
+      return data.map((c: any) => ({
+        ...c,
+        teachers: c.class_teachers?.map((ct: any) => ct.users) || []
+      }))
     },
   })
 }
@@ -59,13 +62,16 @@ export function useClass(id: string) {
         .from('classes')
         .select(`
           *,
-          users:teacher_id (id, full_name, role, profile_picture_url, bio)
+          class_teachers ( users (id, full_name, roles, profile_picture_url, bio) )
         `)
         .eq('id', id)
         .single()
 
       if (error) throw error
-      return data
+      return {
+        ...data,
+        teachers: data.class_teachers?.map((ct: any) => ct.users) || []
+      }
     },
     enabled: !!id,
   })

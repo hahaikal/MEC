@@ -2,7 +2,6 @@
 
 import { GalleryGrid } from "@/components/parent-hub/gallery-grid";
 import { useActiveGalleryItems } from "@/lib/hooks/use-gallery";
-import { EVENTS } from "@/lib/parent-hub-data";
 
 export default function DashboardHome() {
   const { data: allItems, isLoading } = useActiveGalleryItems();

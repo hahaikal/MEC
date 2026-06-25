@@ -37,14 +37,14 @@ export default function SettingsPage() {
   const { settings: dbSettings, isLoading, updateSettings, isUpdating } = useSettings()
 
   const [settings, setSettings] = useState({
-    schoolName: 'Sekolah Menengah Atas XYZ',
-    schoolEmail: 'admin@sekolah.id',
-    schoolPhone: '+62 812 3456 7890',
+    schoolName: 'My English Course & Academy',
+    schoolEmail: 'myenglishcoursebaganbatu@gmail.com',
+    schoolPhone: '+62 812-3087-1923',
     currency: 'IDR',
     timezone: 'Asia/Jakarta',
     language: 'id',
-    sppAmount: 500000,
-    dueDate: 10,
+    sppAmount: 375000,
+    dueDate: 5,
     theme: 'light',
     emailNotification: true,
     paymentReminder: true,
@@ -80,7 +80,7 @@ export default function SettingsPage() {
       <div className="flex flex-col gap-1">
         <h1 className="text-4xl font-bold tracking-tight text-balance">Pengaturan Sistem</h1>
         <p className="text-muted-foreground text-balance">
-          Kelola konfigurasi sistem, sekolah, notifikasi, dan keamanan aplikasi
+          Kelola konfigurasi sistem, notifikasi, dan keamanan aplikasi
         </p>
       </div>
 
@@ -91,9 +91,9 @@ export default function SettingsPage() {
             <Globe className="h-5 w-5 text-blue-600 dark:text-blue-400" />
           </div>
           <div>
-            <CardTitle className="text-lg">Informasi Sekolah</CardTitle>
+            <CardTitle className="text-lg">Informasi Course</CardTitle>
             <CardDescription className="mt-1">
-              Data dasar institusi pendidikan Anda
+              Data dasar
             </CardDescription>
           </div>
         </CardHeader>
@@ -101,19 +101,19 @@ export default function SettingsPage() {
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="schoolName" className="text-sm font-semibold">
-                Nama Sekolah
+                Nama Institusi
               </Label>
               <Input
                 id="schoolName"
                 value={settings.schoolName}
                 onChange={(e) => handleInputChange('schoolName', e.target.value)}
-                placeholder="Masukkan nama sekolah"
+                placeholder="Masukkan nama Institusi"
                 className="h-9"
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="schoolEmail" className="text-sm font-semibold">
-                Email Sekolah
+                Email
               </Label>
               <Input
                 id="schoolEmail"

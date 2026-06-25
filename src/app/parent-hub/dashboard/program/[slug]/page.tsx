@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { GalleryGrid } from "@/components/parent-hub/gallery-grid";
 import { TeacherHero } from "@/components/parent-hub/teacher-hero";
+import { usePrograms, useProgramTeachers } from "@/lib/hooks/use-programs";
 import { useActiveGalleryItems } from "@/lib/hooks/use-gallery";
-import { PROGRAMS } from "@/lib/parent-hub-data";
 import { use } from "react";
 
 export default function ProgramPage({
@@ -12,9 +12,19 @@ export default function ProgramPage({
 }: {
   params: Promise<{ slug: string }>;
 }) {
-  const { slug } = use(params);
-  const program = PROGRAMS[slug];
-  const { data: galleryItems, isLoading } = useActiveGalleryItems(slug);
+  const { slug } = use(params); // slug is actually programId now
+  const { data: programs = [], isLoading: isProgramsLoading } = usePrograms();
+  const program = programs.find((p: any) => p.id === slug);
+  const { data: programTeachers = [], isLoading: isTeachersLoading } = useProgramTeachers(slug);
+  const { data: galleryItems, isLoading } = useActiveGalleryItems(program?.name || "program");
+
+  if (isProgramsLoading) {
+    return (
+      <div className="space-y-4">
+        <div className="h-64 animate-pulse rounded-3xl bg-white/60" />
+      </div>
+    );
+  }
 
   if (!program) {
     return (
@@ -29,10 +39,10 @@ export default function ProgramPage({
 
   return (
     <>
-      {program.teachers.length === 1 ? (
+      {programTeachers.length === 1 ? (
         <>
-          <TeacherHero teachers={program.teachers} context={`Program · ${program.name}`} />
-          <p className="rounded-3xl bg-white p-6 text-neutral-700 shadow-sm text-lg leading-relaxed mt-6">{program.description}</p>
+          <TeacherHero teachers={programTeachers} context={`Program · ${program.name}`} />
+          <p className="rounded-3xl bg-white p-6 text-neutral-700 shadow-sm text-lg leading-relaxed mt-6">{program.description || 'No description available.'}</p>
         </>
       ) : (
         <>
@@ -48,23 +58,31 @@ export default function ProgramPage({
               <p className="text-sm uppercase tracking-widest text-white/70">Program · {program.name}</p>
               <h1 className="mt-1 text-3xl font-bold sm:text-4xl">Our {program.name} Teachers</h1>
               <p className="mt-2 max-w-2xl text-white/85">
-                {program.description}
+                {program.description || 'Our dedicated teaching team.'}
               </p>
             </div>
           </section>
 
           <section className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mb-8">
-            {program.teachers.map((t) => (
-              <article key={t.id} className="overflow-hidden rounded-3xl bg-white shadow-md">
-                <div className="aspect-square overflow-hidden">
-                  <img src={t.image} alt={t.name} className="h-full w-full object-cover" />
-                </div>
-                <div className="p-4">
-                  <h3 className="font-bold text-neutral-900">{t.name}</h3>
-                  <p className="text-xs text-neutral-500">{t.role}</p>
-                </div>
-              </article>
-            ))}
+            {isTeachersLoading ? (
+              <div className="col-span-full h-40 animate-pulse rounded-3xl bg-white/60" />
+            ) : programTeachers.length === 0 ? (
+              <div className="col-span-full rounded-3xl bg-white p-8 text-center text-neutral-500 shadow-sm border border-neutral-100">
+                No teachers assigned to this program yet.
+              </div>
+            ) : (
+              programTeachers.map((t: any) => (
+                <article key={t.id} className="overflow-hidden rounded-3xl bg-white shadow-md">
+                  <div className="aspect-square overflow-hidden">
+                    <img src={t.image} alt={t.name} className="h-full w-full object-cover" />
+                  </div>
+                  <div className="p-4">
+                    <h3 className="font-bold text-neutral-900">{t.name}</h3>
+                    <p className="text-xs text-neutral-500">{t.role}</p>
+                  </div>
+                </article>
+              ))
+            )}
           </section>
         </>
       )}

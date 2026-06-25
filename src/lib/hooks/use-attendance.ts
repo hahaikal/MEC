@@ -2,25 +2,51 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/client'
 import { AttendanceSummary, UpsertAttendanceParams } from '@/types/attendance'
 
-export function useAttendanceBySemester(className: string | null, semester: number, year: number) {
+export function useAttendanceBySemester(classId: string | null, semester: number, year: number) {
   const supabase = createClient()
 
   return useQuery({
-    queryKey: ['attendance', className, semester, year],
+    queryKey: ['attendance', classId, semester, year],
     queryFn: async () => {
-      if (!className) return []
+      if (!classId) return []
+
+      const startDate = semester === 1 ? `${year}-01-01` : `${year}-07-01`
+      const endDate = semester === 1 ? `${year}-06-30` : `${year}-12-31`
 
       const { data, error } = await supabase
-        .from('attendance_summaries')
-        .select('*')
-        .eq('class_name', className)
-        .eq('semester', semester)
-        .eq('year', year)
+        .from('attendance_logs')
+        .select('student_id, status')
+        .eq('class_id', classId)
+        .gte('date', startDate)
+        .lte('date', endDate)
 
       if (error) throw error
-      return data as AttendanceSummary[]
+
+      const summaries: Record<string, AttendanceSummary> = {}
+      
+      data.forEach(log => {
+        if (log.status === 'HOLIDAY') return;
+
+        if (!summaries[log.student_id]) {
+          summaries[log.student_id] = {
+            student_id: log.student_id,
+            total_meetings: 0,
+            sick: 0,
+            leave: 0,
+            alpha: 0,
+          } as any
+        }
+        
+        summaries[log.student_id].total_meetings++
+        
+        if (log.status === 'SICK') summaries[log.student_id].sick++
+        else if (log.status === 'LEAVE') summaries[log.student_id].leave++
+        else if (log.status === 'ALPHA') summaries[log.student_id].alpha++
+      })
+
+      return Object.values(summaries)
     },
-    enabled: !!className,
+    enabled: !!classId,
   })
 }
 

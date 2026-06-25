@@ -23,7 +23,6 @@ import { Loader2 } from 'lucide-react'
 
 export default function AttendancePage() {
   const [selectedSemester, setSelectedSemester] = useState<string>('')
-  const [selectedYear, setSelectedYear] = useState<string>('')
   const [selectedClass, setSelectedClass] = useState<string>('')
 
   // Fetch Classes
@@ -31,9 +30,10 @@ export default function AttendancePage() {
 
   // Derived state for queries
   const semesterInt = selectedSemester ? parseInt(selectedSemester) : 0
-  const yearInt = selectedYear ? parseInt(selectedYear) : 0
+  const currentYear = new Date().getFullYear()
+  const yearInt = currentYear
 
-  const isFilterComplete = !!(selectedClass && yearInt && semesterInt)
+  const isFilterComplete = !!(selectedClass && semesterInt)
 
   // Fetch Data (only if filters complete)
   const {
@@ -52,39 +52,19 @@ export default function AttendancePage() {
 
   const isLoadingData = isLoadingAttendanceSemester || isLoadingStudents
 
-  // Generate Year Options (Current Year - 2 to + 2)
-  const currentYear = new Date().getFullYear()
-  const yearOptions = Array.from({ length: 5 }, (_, i) => currentYear - 2 + i)
-
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold tracking-tight">Attendance</h1>
       </div>
 
-      <Card>
+      <Card className="w-full overflow-hidden">
         <CardHeader>
           <CardTitle>Filter Attendance</CardTitle>
         </CardHeader>
         <CardContent>
            <div className="flex flex-col gap-4 mb-6">
               <div className="flex flex-col md:flex-row gap-4">
-                  {/* Year Select - Always needed */}
-                  <div className="w-full md:w-1/4">
-                    <Select value={selectedYear} onValueChange={setSelectedYear}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select Year" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {yearOptions.map((year) => (
-                          <SelectItem key={year} value={year.toString()}>
-                            {year}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
                   {/* Semester Select */}
                   <div className="w-full md:w-1/4">
                     <Select value={selectedSemester} onValueChange={setSelectedSemester}>
@@ -109,7 +89,7 @@ export default function AttendancePage() {
                           <div className="p-2 text-center text-sm text-muted-foreground">Loading...</div>
                         ) : (
                           classes?.map((c: any) => (
-                            <SelectItem key={c.id} value={c.name}>
+                            <SelectItem key={c.id} value={c.id}>
                               {c.name}
                             </SelectItem>
                           ))
@@ -124,7 +104,7 @@ export default function AttendancePage() {
                 {/* Validation Message */}
                 {!isFilterComplete ? (
                   <div className="text-center p-12 border-2 border-dashed rounded-lg text-muted-foreground">
-                    Please select Year, Semester, and Class to view attendance.
+                    Please select Semester and Class to view attendance.
                   </div>
                 ) : isLoadingData ? (
                   <div className="flex justify-center p-8">
@@ -135,9 +115,9 @@ export default function AttendancePage() {
                     No active students found in this class.
                   </div>
                 ) : (
-                  <Card>
+                  <Card className="w-full overflow-hidden border-none shadow-none">
                     <CardContent className="p-0">
-                        <div className="overflow-x-auto">
+                        <div className="w-full overflow-x-auto">
                         <Table>
                           <TableHeader>
                             <TableRow>

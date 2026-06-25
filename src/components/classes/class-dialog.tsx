@@ -13,13 +13,17 @@ import { createClient } from '@/lib/supabase/client'
 import { useTeachers } from '@/lib/hooks/use-teachers'
 import { createClass, updateClass } from '@/actions/classes'
 import { toast } from 'sonner'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
+import { Badge } from '@/components/ui/badge'
+import { Plus, X, Check } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 export function ClassDialog({ classToEdit, children }: { classToEdit?: any, children?: React.ReactNode }) {
   const [open, setOpen] = useState(false)
   const [name, setName] = useState(classToEdit?.name || '')
-  const [targetMeetings, setTargetMeetings] = useState(classToEdit?.target_meetings?.toString() || '15')
   const [scheduleDays, setScheduleDays] = useState<string[]>(classToEdit?.schedule_days || [])
-  const [teacherId, setTeacherId] = useState(classToEdit?.teacher_id || 'none')
+  const [teacherIds, setTeacherIds] = useState<string[]>(classToEdit?.teachers?.map((t: any) => t.id) || [])
   const [programId, setProgramId] = useState(classToEdit?.program_id || 'none')
   const [loading, setLoading] = useState(false)
 
@@ -41,10 +45,9 @@ export function ClassDialog({ classToEdit, children }: { classToEdit?: any, chil
 
     const payload = {
       name,
-      target_meetings: parseInt(targetMeetings) || 15,
       schedule_days: scheduleDays.length > 0 ? scheduleDays : null,
       program_id: programId === 'none' ? null : programId,
-      teacher_id: teacherId === 'none' ? null : teacherId,
+      teacher_ids: teacherIds,
     }
 
     let result
@@ -65,9 +68,8 @@ export function ClassDialog({ classToEdit, children }: { classToEdit?: any, chil
       setOpen(false)
       if (!classToEdit) {
         setName('')
-        setTargetMeetings('15')
         setScheduleDays([])
-        setTeacherId('none')
+        setTeacherIds([])
       }
     }
   }
@@ -85,11 +87,6 @@ export function ClassDialog({ classToEdit, children }: { classToEdit?: any, chil
           <div className="space-y-2">
             <Label htmlFor="name">Nama Kelas</Label>
             <Input id="name" value={name} onChange={e => setName(e.target.value)} required placeholder="Mis. Basic 1" />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="target">Target Pertemuan</Label>
-            <Input id="target" type="number" min="1" value={targetMeetings} onChange={e => setTargetMeetings(e.target.value)} required />
           </div>
 
           <div className="space-y-2">
@@ -138,18 +135,67 @@ export function ClassDialog({ classToEdit, children }: { classToEdit?: any, chil
             </Select>
           </div>
 
+          </div>
+
+          <div className="space-y-2">
             <Label>Guru Pengajar</Label>
-            <Select value={teacherId} onValueChange={setTeacherId}>
-              <SelectTrigger>
-                <SelectValue placeholder="Pilih Guru" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">Belum Ditentukan</SelectItem>
-                {!isLoadingTeachers && teachers?.map(t => (
-                  <SelectItem key={t.id} value={t.id}>{t.full_name || t.email}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="flex flex-wrap gap-2 mb-2">
+              {teacherIds.map((id) => {
+                const teacher = teachers?.find((t) => t.id === id)
+                if (!teacher) return null
+                return (
+                  <Badge key={id} variant="secondary" className="flex items-center gap-1.5 px-3 py-1 text-sm bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-full border-blue-200">
+                    {teacher.full_name || teacher.email}
+                    <button
+                      type="button"
+                      onClick={() => setTeacherIds(teacherIds.filter((tid) => tid !== id))}
+                      className="ml-1 rounded-full p-0.5 hover:bg-blue-200 transition-colors"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                )
+              })}
+            </div>
+
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm" className="w-full justify-start border-dashed">
+                  <Plus className="mr-2 h-4 w-4" />
+                  + Tambah Guru
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[300px] p-0" align="start">
+                <Command>
+                  <CommandInput placeholder="Cari nama guru..." />
+                  <CommandList>
+                    <CommandEmpty>Tidak ada guru yang ditemukan.</CommandEmpty>
+                    <CommandGroup>
+                      {!isLoadingTeachers && teachers?.map((t) => {
+                        const isSelected = teacherIds.includes(t.id)
+                        return (
+                          <CommandItem
+                            key={t.id}
+                            onSelect={() => {
+                              if (isSelected) {
+                                setTeacherIds(teacherIds.filter((id) => id !== t.id))
+                              } else {
+                                setTeacherIds([...teacherIds, t.id])
+                              }
+                            }}
+                          >
+                            <div className="flex flex-1 items-center justify-between">
+                              <span>{t.full_name || t.email}</span>
+                              {isSelected && <Check className="h-4 w-4 text-[color:var(--mec-blue)]" />}
+                            </div>
+                          </CommandItem>
+                        )
+                      })}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
           </div>
 
           <div className="flex justify-end pt-4">

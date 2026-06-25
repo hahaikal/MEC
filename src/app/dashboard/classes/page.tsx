@@ -41,8 +41,8 @@ export default function ClassesPage() {
       if (sortBy === 'name') {
         return sortOrder === 'asc' ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name)
       } else if (sortBy === 'teacher') {
-        const tA = a.teacher_name || ''
-        const tB = b.teacher_name || ''
+        const tA = a.teachers?.map((t: any) => t.full_name).join(', ') || ''
+        const tB = b.teachers?.map((t: any) => t.full_name).join(', ') || ''
         return sortOrder === 'asc' ? tA.localeCompare(tB) : tB.localeCompare(tA)
       } else if (sortBy === 'students') {
         const sA = a.enrolled_count || 0
@@ -68,7 +68,7 @@ export default function ClassesPage() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Manajemen Kelas</h1>
-          <p className="text-muted-foreground mt-1">Kelola data kelas, target pertemuan, dan guru pengajar.</p>
+          <p className="text-muted-foreground mt-1">Kelola data kelas dan guru pengajar.</p>
         </div>
         <div className="flex items-center gap-2">
           <Select value={sortBy} onValueChange={setSortBy}>
@@ -96,7 +96,6 @@ export default function ClassesPage() {
                 <TableRow>
                   <TableHead>Nama Kelas</TableHead>
                   <TableHead>Program</TableHead>
-                  <TableHead>Target Pertemuan</TableHead>
                   <TableHead>Jadwal Kelas</TableHead>
                   <TableHead>Guru Pengajar</TableHead>
                   <TableHead>Jml Siswa</TableHead>
@@ -117,7 +116,6 @@ export default function ClassesPage() {
                     <TableRow key={c.id}>
                       <TableCell className="font-medium">{c.name}</TableCell>
                       <TableCell>{c.programs?.name || <span className="text-muted-foreground text-sm italic">Belum ditentukan</span>}</TableCell>
-                      <TableCell>{c.target_meetings}</TableCell>
                       <TableCell>
                         <div className="flex flex-wrap gap-1">
                            {c.schedule_days && c.schedule_days.length > 0 ? (
@@ -131,7 +129,7 @@ export default function ClassesPage() {
                            )}
                         </div>
                       </TableCell>
-                      <TableCell>{c.teacher_name || <span className="text-muted-foreground text-sm italic">Belum ditentukan</span>}</TableCell>
+                      <TableCell>{c.teachers && c.teachers.length > 0 ? c.teachers.map((t: any) => t.full_name).join(', ') : <span className="text-muted-foreground text-sm italic">Belum ditentukan</span>}</TableCell>
                       <TableCell>
                          <div className="flex items-center gap-2">
                            <Users className="h-4 w-4 text-muted-foreground" />

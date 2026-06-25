@@ -4,13 +4,14 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ChevronDown, GraduationCap, BookOpen, Calendar, Baby, LogOut } from "lucide-react";
-import { PROGRAMS } from "@/lib/parent-hub-data";
 import { useActiveClasses } from "@/lib/hooks/use-classes";
+import { usePrograms } from "@/lib/hooks/use-programs";
 
 export function ParentHubSidebar({ onLogout }: { onLogout: () => void }) {
   const pathname = usePathname() || "";
   const [openProgram, setOpenProgram] = useState(pathname.includes("/program/"));
   const [openClass, setOpenClass] = useState(pathname.includes("/class/"));
+  const { data: programs = [], isLoading: isProgramsLoading } = usePrograms();
   const { data: dynamicClasses = [], isLoading } = useActiveClasses();
 
   const linkBase =
@@ -48,17 +49,23 @@ export function ParentHubSidebar({ onLogout }: { onLogout: () => void }) {
         </button>
         {openProgram && (
           <div className="ml-3 space-y-1 border-l-2 border-[color:var(--mec-grey)] pl-3">
-            {Object.values(PROGRAMS).map((p) => (
-              <Link
-                key={p.slug}
-                href={`/parent-hub/dashboard/program/${p.slug}`}
-                className={`${linkBase} ${
-                  isActive(`/parent-hub/dashboard/program/${p.slug}`) ? linkActive : linkIdle
-                }`}
-              >
-                {p.name}
-              </Link>
-            ))}
+            {isProgramsLoading ? (
+              <div className="py-2 text-xs text-neutral-500 text-center">Loading programs...</div>
+            ) : programs.length === 0 ? (
+              <div className="py-2 text-xs text-neutral-500 text-center">No active programs found</div>
+            ) : (
+              programs.map((p: any) => (
+                <Link
+                  key={p.id}
+                  href={`/parent-hub/dashboard/program/${p.id}`}
+                  className={`${linkBase} ${
+                    isActive(`/parent-hub/dashboard/program/${p.id}`) ? linkActive : linkIdle
+                  }`}
+                >
+                  {p.name}
+                </Link>
+              ))
+            )}
           </div>
         )}
 

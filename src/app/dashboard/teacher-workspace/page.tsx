@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { BookOpen, Users } from "lucide-react";
+import { BookOpen, Users, User } from "lucide-react";
 
 export default async function TeacherWorkspacePage() {
   const supabase = await createClient();
@@ -13,15 +13,25 @@ export default async function TeacherWorkspacePage() {
     redirect("/login");
   }
 
-  // Fetch classes taught by this teacher
-  const { data: classes, error } = await supabase
+  const { data: userData } = await supabase.from('users').select('roles').eq('id', user.id).single();
+  const isAdmin = userData?.roles?.some((r: string) => ['Admin', 'Manager', 'Director', 'Staff'].includes(r));
+
+  // Fetch classes taught by this teacher (or all classes if admin)
+  let query = supabase
     .from("classes")
     .select(`
       *,
-      programs:program_id (id, name)
+      class_teachers!inner (teacher_id),
+      programs:program_id (name),
+      class_enrollments(count)
     `)
-    .eq("teacher_id", user.id)
-    .order("name");
+    .eq("is_active", true);
+
+  if (!isAdmin) {
+    query = query.eq("class_teachers.teacher_id", user.id);
+  }
+
+  const { data: classes, error } = await query;
 
   if (error) {
     console.error("Error fetching teacher classes:", error);
@@ -62,11 +72,15 @@ export default async function TeacherWorkspacePage() {
                 <h3 className="text-xl font-bold text-neutral-900 group-hover:text-[color:var(--mec-blue)] transition-colors">
                   {cls.name}
                 </h3>
-                <div className="mt-4 flex items-center text-sm text-neutral-500">
-                  <Users className="mr-2 h-4 w-4" />
-                  <span>
-                    Capacity: {cls.capacity ? cls.capacity : "N/A"} students
-                  </span>
+                <div className="mt-4 flex flex-col space-y-2 text-sm text-neutral-500">
+                  <p className="text-sm font-medium">Class Teacher</p>
+                  <p className="text-sm text-muted-foreground">
+                    Multiple Teachers
+                  </p>
+                  <div className="flex items-center">
+                    <Users className="mr-2 h-4 w-4" />
+                    <span>{cls.class_enrollments?.[0]?.count || 0} students</span>
+                  </div>
                 </div>
               </div>
               <div className="border-t bg-neutral-50 px-6 py-4">

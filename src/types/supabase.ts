@@ -634,6 +634,35 @@ export type Database = {
           created_by?: string | null
         }
       }
+      class_activities: {
+        Row: {
+          id: string
+          class_id: string | null
+          title: string
+          description: string | null
+          image_url: string
+          created_at: string
+          created_by: string | null
+        }
+        Insert: {
+          id?: string
+          class_id?: string | null
+          title: string
+          description?: string | null
+          image_url: string
+          created_at?: string
+          created_by?: string | null
+        }
+        Update: {
+          id?: string
+          class_id?: string | null
+          title?: string
+          description?: string | null
+          image_url?: string
+          created_at?: string
+          created_by?: string | null
+        }
+      }
     }
     Views: {
       [_ in never]: never

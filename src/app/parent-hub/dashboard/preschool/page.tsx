@@ -2,10 +2,16 @@
 
 import { GalleryGrid } from "@/components/parent-hub/gallery-grid";
 import { useActiveGalleryItems } from "@/lib/hooks/use-gallery";
-import { PRESCHOOL_SCHEDULE, PRESCHOOL_TEACHERS, PRESCHOOL_MAGAZINES } from "@/lib/parent-hub-data";
+import { PRESCHOOL_SCHEDULE } from "@/lib/parent-hub-data";
+import { usePreschoolTeachers } from "@/lib/hooks/use-teachers";
+import { usePreschoolMagazines } from "@/lib/hooks/use-documents";
+import { format } from "date-fns";
+import { FileText, Download } from "lucide-react";
 
 export default function PreschoolPage() {
   const { data: galleryItems, isLoading } = useActiveGalleryItems("preschool");
+  const { data: documents, isLoading: isDocumentsLoading } = usePreschoolMagazines();
+  const { data: preschoolTeachers, isLoading: isTeachersLoading } = usePreschoolTeachers();
 
   return (
     <>
@@ -27,17 +33,25 @@ export default function PreschoolPage() {
       </section>
 
       <section className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        {PRESCHOOL_TEACHERS.map((t) => (
-          <article key={t.id} className="overflow-hidden rounded-3xl bg-white shadow-md">
-            <div className="aspect-square overflow-hidden">
-              <img src={t.image} alt={t.name} className="h-full w-full object-cover" />
-            </div>
-            <div className="p-4">
-              <h3 className="font-bold text-neutral-900">{t.name}</h3>
-              <p className="text-xs text-neutral-500">{t.role}</p>
-            </div>
-          </article>
-        ))}
+        {isTeachersLoading ? (
+          <div className="col-span-full h-40 animate-pulse rounded-3xl bg-white/60" />
+        ) : !preschoolTeachers || preschoolTeachers.length === 0 ? (
+          <div className="col-span-full rounded-3xl bg-white p-8 text-center text-neutral-500 shadow-sm border border-neutral-100">
+            No teachers assigned to preschool classes yet.
+          </div>
+        ) : (
+          preschoolTeachers.map((t: any) => (
+            <article key={t.id} className="overflow-hidden rounded-3xl bg-white shadow-md">
+              <div className="aspect-square overflow-hidden">
+                <img src={t.image} alt={t.name} className="h-full w-full object-cover" />
+              </div>
+              <div className="p-4">
+                <h3 className="font-bold text-neutral-900">{t.name}</h3>
+                <p className="text-xs text-neutral-500">{t.role}</p>
+              </div>
+            </article>
+          ))
+        )}
       </section>
 
       <section>
@@ -111,36 +125,42 @@ export default function PreschoolPage() {
           Download and read our monthly preschool magazine to keep up with what your children are learning and creating.
         </p>
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {PRESCHOOL_MAGAZINES.map((mag) => (
-            <article
-              key={mag.id}
-              className="group flex flex-col overflow-hidden rounded-3xl bg-white shadow-md transition hover:-translate-y-1 hover:shadow-xl"
-            >
-              <div className="aspect-[3/4] overflow-hidden bg-neutral-100 p-4">
-                <img
-                  src={mag.coverImage}
-                  alt={mag.title}
-                  className="h-full w-full object-cover rounded-xl shadow-sm transition duration-500 group-hover:scale-105"
-                />
-              </div>
-              <div className="p-5 flex flex-col flex-1">
-                <span className="text-xs font-semibold text-[color:var(--mec-blue)] mb-1 uppercase tracking-wider">
-                  {mag.date}
-                </span>
-                <h3 className="text-lg font-bold text-neutral-900">{mag.title}</h3>
-                <p className="text-sm text-neutral-500 mb-4">{mag.issue}</p>
-                <div className="mt-auto">
-                  <a
-                    href={mag.pdfUrl}
-                    className="inline-flex w-full items-center justify-center gap-2 rounded-2xl py-2.5 text-sm font-semibold text-white shadow-md transition hover:brightness-110"
-                    style={{ background: "var(--mec-blue)" }}
-                  >
-                    Read PDF
-                  </a>
+          {isDocumentsLoading ? (
+            <div className="h-40 animate-pulse rounded-3xl bg-white/60 col-span-3" />
+          ) : !documents || documents.length === 0 ? (
+            <div className="col-span-3 rounded-3xl bg-white p-8 text-center text-neutral-500 shadow-sm border border-neutral-100">
+              No magazines uploaded yet for preschool classes.
+            </div>
+          ) : (
+            documents.map((mag) => (
+              <a
+                key={mag.id}
+                href={mag.document_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex flex-col justify-between rounded-3xl border border-neutral-100 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md"
+              >
+                <div className="flex items-start gap-4">
+                  <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-blue-50 text-[color:var(--mec-blue)]">
+                    <FileText className="h-7 w-7" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-neutral-900 group-hover:text-[color:var(--mec-blue)] transition-colors">
+                      {mag.title}
+                    </h3>
+                    <p className="mt-1 flex flex-col text-xs font-medium text-neutral-500">
+                      <span>{format(new Date(mag.created_at), "MMMM d, yyyy")} • {mag.file_size_mb} MB</span>
+                      {mag.classes?.name && <span className="mt-1 text-[color:var(--mec-blue)]">{mag.classes.name}</span>}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            </article>
-          ))}
+                <div className="mt-6 flex items-center text-sm font-semibold text-[color:var(--mec-blue)]">
+                  <Download className="mr-2 h-4 w-4" />
+                  Download PDF
+                </div>
+              </a>
+            ))
+          )}
         </div>
       </section>
     </>

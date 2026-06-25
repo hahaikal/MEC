@@ -31,8 +31,9 @@ export async function POST(request: Request) {
   }
 
   // Check role
-  const { data: userData } = await supabaseAuth.from('users').select('role').eq('id', user.id).single()
-  if (userData?.role !== 'admin' && userData?.role !== 'director') {
+  const { data: userData } = await supabaseAuth.from('users').select('roles').eq('id', user.id).single()
+  const isAdmin = userData?.roles?.some((r: string) => ['Admin', 'Director', 'Manager'].includes(r));
+  if (!isAdmin) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
@@ -44,9 +45,9 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json()
-    const { email, password, full_name, role } = body
+    const { email, password, full_name, roles } = body
 
-    if (!email || !password || !role) {
+    if (!email || !password || !roles || roles.length === 0) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
@@ -57,7 +58,7 @@ export async function POST(request: Request) {
       email_confirm: true,
       user_metadata: {
         full_name,
-        role
+        roles
       }
     })
 
@@ -68,7 +69,7 @@ export async function POST(request: Request) {
     // Force insert into public.users if trigger hasn't fired yet
     const { error: dbError } = await supabaseAdmin
       .from('users')
-      .update({ role, full_name })
+      .update({ roles, full_name })
       .eq('id', authData.user.id)
 
     if (dbError) {
@@ -76,7 +77,7 @@ export async function POST(request: Request) {
          id: authData.user.id,
          email,
          full_name,
-         role
+         roles
        }).select().single()
     }
 

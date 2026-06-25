@@ -1,11 +1,12 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Loader2, Pencil, Upload, X } from 'lucide-react'
 import { useInternalUsers } from '@/lib/hooks/use-users'
 import { toast } from 'sonner'
@@ -20,9 +21,12 @@ export function EditUserDialog({ user }: { user: any }) {
   
   const [formData, setFormData] = useState({
     full_name: user.full_name || '',
-    role: user.role || 'staff',
+    roles: user.roles || (user.role ? [user.role] : []),
     email: user.email || '',
-    bio: user.bio || ''
+    bio: user.bio || '',
+    staff_id: user.staff_id || '',
+    date_of_birth: user.date_of_birth || '',
+    payday: user.payday || ''
   })
   
   const [file, setFile] = useState<File | null>(null)
@@ -51,8 +55,11 @@ export function EditUserDialog({ user }: { user: any }) {
           id: user.id, 
           updates: { 
             full_name: formData.full_name, 
-            role: formData.role,
+            roles: formData.roles,
             bio: formData.bio,
+            staff_id: formData.staff_id,
+            date_of_birth: formData.date_of_birth || null,
+            payday: formData.payday ? parseInt(formData.payday.toString()) : null,
             ...(photoUrl !== user.profile_picture_url ? { profile_picture_url: photoUrl } : {})
           } 
         },
@@ -84,6 +91,7 @@ export function EditUserDialog({ user }: { user: any }) {
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Edit Pengguna</DialogTitle>
+          <DialogDescription className="sr-only">Formulir untuk mengedit data pengguna</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 pt-4 px-1 max-h-[70vh] overflow-y-auto">
           {/* Photo Upload */}
@@ -139,19 +147,52 @@ export function EditUserDialog({ user }: { user: any }) {
             <p className="text-xs text-muted-foreground">Email tidak dapat diubah setelah dibuat.</p>
           </div>
           <div className="space-y-2">
-            <Label>Role</Label>
-            <Select value={formData.role} onValueChange={(val) => setFormData({...formData, role: val})}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="staff">Staff</SelectItem>
-                <SelectItem value="teacher">Guru</SelectItem>
-                <SelectItem value="manager">Manager</SelectItem>
-                <SelectItem value="director">Direktur</SelectItem>
-                <SelectItem value="admin">Admin</SelectItem>
-              </SelectContent>
-            </Select>
+            <Label>Roles</Label>
+            <div className="grid grid-cols-2 gap-2 mt-2">
+              {['Teacher', 'Principal', 'Head of Department', 'Director', 'Admin', 'Manager', 'Staff'].map((roleItem) => (
+                <div key={roleItem} className="flex items-center space-x-2">
+                  <Checkbox 
+                    id={`role-${roleItem}`} 
+                    checked={formData.roles.includes(roleItem)}
+                    onCheckedChange={(checked) => {
+                      if (checked) {
+                        setFormData({...formData, roles: [...formData.roles, roleItem]})
+                      } else {
+                        setFormData({...formData, roles: formData.roles.filter((r: string) => r !== roleItem)})
+                      }
+                    }}
+                  />
+                  <Label htmlFor={`role-${roleItem}`} className="font-normal cursor-pointer">{roleItem}</Label>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Staff ID</Label>
+              <Input
+                value={formData.staff_id}
+                onChange={(e) => setFormData({...formData, staff_id: e.target.value})}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Tanggal Gajian (Tgl)</Label>
+              <Input
+                type="number"
+                min="1"
+                max="31"
+                value={formData.payday}
+                onChange={(e) => setFormData({...formData, payday: e.target.value})}
+              />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label>Tanggal Lahir</Label>
+            <Input
+              type="date"
+              value={formData.date_of_birth}
+              onChange={(e) => setFormData({...formData, date_of_birth: e.target.value})}
+            />
           </div>
           <div className="space-y-2">
             <Label>Biodata Guru</Label>

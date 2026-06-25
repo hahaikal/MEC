@@ -15,11 +15,12 @@ export function useInternalUsers() {
   })
 
   const createUserMutation = useMutation({
-    mutationFn: async (userData: any) => {
+    mutationFn: async (newUser: any) => {
+      const { email, password, full_name, roles } = newUser
       const res = await fetch('/api/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(userData)
+        body: JSON.stringify({ email, password, full_name, roles })
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)

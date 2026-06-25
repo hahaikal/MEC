@@ -4,11 +4,12 @@ import React, { useState } from 'react'
 import { useInternalUsers } from '@/lib/hooks/use-users'
 import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Badge } from '@/components/ui/badge'
+import { Checkbox } from '@/components/ui/checkbox'
 import { UserPlus, Ban, Loader2, CheckCircle2 } from 'lucide-react'
 import { EditUserDialog } from '@/components/users/edit-user-dialog'
 
@@ -19,7 +20,7 @@ export default function UsersPage() {
     email: '',
     password: '',
     full_name: '',
-    role: 'staff'
+    roles: ['Staff']
   })
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -27,7 +28,7 @@ export default function UsersPage() {
     createUser(formData, {
       onSuccess: () => {
         setIsDialogOpen(false)
-        setFormData({ email: '', password: '', full_name: '', role: 'staff' })
+        setFormData({ email: '', password: '', full_name: '', roles: ['Staff'] })
       }
     })
   }
@@ -56,6 +57,7 @@ export default function UsersPage() {
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Tambah Pengguna Baru</DialogTitle>
+              <DialogDescription className="sr-only">Formulir untuk menambah pengguna baru</DialogDescription>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4 pt-4">
               <div className="space-y-2">
@@ -86,19 +88,25 @@ export default function UsersPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label>Role</Label>
-                <Select value={formData.role} onValueChange={(val) => setFormData({...formData, role: val})}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="staff">Staff</SelectItem>
-                    <SelectItem value="teacher">Guru</SelectItem>
-                    <SelectItem value="manager">Manager</SelectItem>
-                    <SelectItem value="director">Direktur</SelectItem>
-                    <SelectItem value="admin">Admin</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Label>Roles</Label>
+                <div className="grid grid-cols-2 gap-2 mt-2">
+                  {['Teacher', 'Principal', 'Head of Department', 'Director', 'Admin', 'Manager', 'Staff'].map((roleItem) => (
+                    <div key={roleItem} className="flex items-center space-x-2">
+                      <Checkbox 
+                        id={`new-role-${roleItem}`} 
+                        checked={formData.roles.includes(roleItem)}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            setFormData({...formData, roles: [...formData.roles, roleItem]})
+                          } else {
+                            setFormData({...formData, roles: formData.roles.filter(r => r !== roleItem)})
+                          }
+                        }}
+                      />
+                      <Label htmlFor={`new-role-${roleItem}`} className="font-normal cursor-pointer">{roleItem}</Label>
+                    </div>
+                  ))}
+                </div>
               </div>
               <Button type="submit" className="w-full" disabled={isCreating}>
                 {isCreating ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
@@ -140,9 +148,21 @@ export default function UsersPage() {
                   <TableCell className="font-medium">{user.full_name || '-'}</TableCell>
                   <TableCell>{user.email}</TableCell>
                   <TableCell>
-                    <Badge variant="outline" className="capitalize">
-                      {user.role}
-                    </Badge>
+                    <div className="flex flex-wrap gap-1">
+                      {user.roles && user.roles.length > 0 ? (
+                        user.roles.map((r: string) => (
+                          <Badge key={r} variant="outline" className="capitalize">
+                            {r}
+                          </Badge>
+                        ))
+                      ) : user.role ? (
+                        <Badge variant="outline" className="capitalize">
+                          {user.role}
+                        </Badge>
+                      ) : (
+                        <span className="text-muted-foreground">-</span>
+                      )}
+                    </div>
                   </TableCell>
                   <TableCell>
                     {user.is_active ? (

@@ -116,7 +116,7 @@ export function AttendanceMatrix({ classData, month, year }: AttendanceMatrixPro
   }
 
   return (
-    <div className="rounded-md border overflow-x-auto bg-white">
+    <div className="w-full rounded-md border overflow-x-auto bg-white">
       <Table>
         <TableHeader>
           <TableRow>

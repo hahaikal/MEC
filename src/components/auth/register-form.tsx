@@ -17,7 +17,7 @@ const registerSchema = z.object({
   email: z.string().email('Invalid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
   confirm_password: z.string(),
-  role: z.enum(['admin', 'staff', 'viewer']),
+  roles: z.array(z.string()).min(1, 'Select at least one role'),
 }).refine(data => data.password === data.confirm_password, {
   message: "Passwords don't match",
   path: ["confirm_password"],
@@ -38,7 +38,7 @@ export function RegisterForm() {
       email: '',
       password: '',
       confirm_password: '',
-      role: 'staff',
+      roles: ['Staff'],
     },
   })
 
@@ -53,7 +53,7 @@ export function RegisterForm() {
         options: {
           data: {
             full_name: values.full_name,
-            role: values.role,
+            roles: values.roles,
           },
         },
       })
@@ -138,20 +138,20 @@ export function RegisterForm() {
 
           <FormField
             control={form.control}
-            name="role"
+            name="roles"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Role</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormLabel>Roles</FormLabel>
+                <Select onValueChange={(val) => field.onChange([...field.value, val])} value={field.value?.[0]}>
                   <FormControl>
                     <SelectTrigger disabled={isLoading}>
-                      <SelectValue />
+                      <SelectValue placeholder="Select a role" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="admin">Admin</SelectItem>
-                    <SelectItem value="staff">Staff</SelectItem>
-                    <SelectItem value="viewer">Viewer</SelectItem>
+                    <SelectItem value="Admin">Admin</SelectItem>
+                    <SelectItem value="Staff">Staff</SelectItem>
+                    <SelectItem value="Viewer">Viewer</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />

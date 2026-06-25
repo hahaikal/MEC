@@ -36,7 +36,7 @@ export default function DailyAttendancePage() {
         <h1 className="text-3xl font-bold tracking-tight">Kehadiran Kelas</h1>
       </div>
 
-      <Card>
+      <Card className="w-full overflow-hidden">
         <CardHeader>
           <CardTitle>Filter Kelas & Bulan</CardTitle>
         </CardHeader>
