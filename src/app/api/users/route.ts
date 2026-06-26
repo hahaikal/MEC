@@ -63,7 +63,11 @@ export async function POST(request: Request) {
     })
 
     if (authError) {
-      return NextResponse.json({ error: authError.message }, { status: 400 })
+      // Supabase returns an empty message "{}" with 500 status when a database trigger fails
+      const errorMessage = authError.message === "{}" || authError.status === 500
+        ? "Gagal membuat user di database Supabase (Terjadi kesalahan pada Database Trigger 'handle_new_user'). Silakan cek menu SQL Editor di Supabase."
+        : authError.message;
+      return NextResponse.json({ error: errorMessage }, { status: 400 })
     }
 
     // Force insert into public.users if trigger hasn't fired yet

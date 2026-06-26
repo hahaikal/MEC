@@ -91,15 +91,15 @@ export default function ClassesPage() {
       <Card>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
-            <Table>
+            <Table className="table-fixed min-w-[900px] [&_td]:whitespace-normal [&_th]:whitespace-normal break-words">
               <TableHeader>
                 <TableRow>
-                  <TableHead>Nama Kelas</TableHead>
-                  <TableHead>Program</TableHead>
-                  <TableHead>Jadwal Kelas</TableHead>
-                  <TableHead>Guru Pengajar</TableHead>
-                  <TableHead>Jml Siswa</TableHead>
-                  <TableHead className="text-right">Aksi</TableHead>
+                  <TableHead className="w-[20%]">Nama Kelas</TableHead>
+                  <TableHead className="w-[15%]">Program</TableHead>
+                  <TableHead className="w-[25%]">Jadwal Kelas</TableHead>
+                  <TableHead className="w-[20%]">Guru Pengajar</TableHead>
+                  <TableHead className="w-[10%]">Jml Siswa</TableHead>
+                  <TableHead className="w-[10%] text-right">Aksi</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
