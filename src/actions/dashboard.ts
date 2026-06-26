@@ -1,9 +1,22 @@
 'use server'
 
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/server'
 
 export async function getDashboardStats() {
-  const supabase = await createClient()
+  const supabaseAuth = await createClient()
+  const { data: { user }, error: authError } = await supabaseAuth.auth.getUser()
+  
+  if (authError || !user) {
+    throw new Error('Unauthorized')
+  }
+
+  // Use service role to bypass RLS for global dashboard aggregates
+  const supabase = createSupabaseClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+
   const now = new Date()
 
   // 1. Total Active Students

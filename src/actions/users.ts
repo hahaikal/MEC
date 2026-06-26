@@ -73,3 +73,50 @@ export async function deleteUser(id: string) {
   revalidatePath('/dashboard/users')
   return { success: true }
 }
+
+export async function changeUserPassword(targetUserId: string, newPassword: string) {
+  const supabase = await createClient()
+
+  // Verify caller is authenticated
+  const { data: { user }, error: authError } = await supabase.auth.getUser()
+  if (authError || !user) {
+    return { error: 'Unauthorized' }
+  }
+
+  // Verify caller is Admin
+  const { data: callerData, error: callerError } = await supabase
+    .from('users')
+    .select('roles')
+    .eq('id', user.id)
+    .single()
+
+  if (callerError || !callerData) {
+    return { error: 'Failed to verify permissions' }
+  }
+
+  const roles = callerData.roles || []
+  if (!roles.includes('Admin') && !roles.includes('Director')) {
+    return { error: 'Hanya Admin yang dapat merubah password' }
+  }
+
+  // Use Supabase Admin to update password
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    return { error: 'Server configuration error (missing service role key)' }
+  }
+
+  const supabaseAdmin = createSupabaseClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY
+  )
+
+  const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(targetUserId, {
+    password: newPassword
+  })
+
+  if (updateError) {
+    console.error('Error updating password:', updateError)
+    return { error: updateError.message }
+  }
+
+  return { success: true }
+}

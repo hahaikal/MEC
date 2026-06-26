@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getUsers, updateUser, deleteUser } from '@/actions/users'
+import { getUsers, updateUser, deleteUser, changeUserPassword } from '@/actions/users'
 import { toast } from '@/lib/hooks/use-toast'
 
 export function useInternalUsers() {
@@ -65,6 +65,20 @@ export function useInternalUsers() {
     }
   })
 
+  const changePasswordMutation = useMutation({
+    mutationFn: async ({ targetUserId, newPassword }: { targetUserId: string, newPassword: string }) => {
+      const res = await changeUserPassword(targetUserId, newPassword)
+      if (res.error) throw new Error(res.error)
+      return res
+    },
+    onSuccess: () => {
+      toast({ title: 'Success', description: 'User password changed successfully' })
+    },
+    onError: (err: any) => {
+      toast({ title: 'Error', description: err.message, variant: 'destructive' })
+    }
+  })
+
   return {
     users: data || [],
     isLoading,
@@ -73,6 +87,8 @@ export function useInternalUsers() {
     updateUser: updateUserMutation.mutate,
     isUpdating: updateUserMutation.isPending,
     deleteUser: deleteUserMutation.mutate,
-    isDeleting: deleteUserMutation.isPending
+    isDeleting: deleteUserMutation.isPending,
+    changePassword: changePasswordMutation.mutate,
+    isChangingPassword: changePasswordMutation.isPending
   }
 }

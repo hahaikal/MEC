@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
 import { UserPlus, Ban, Loader2, CheckCircle2 } from 'lucide-react'
 import { EditUserDialog } from '@/components/users/edit-user-dialog'
+import { ChangePasswordDialog } from '@/components/users/change-password-dialog'
 import { toast } from 'sonner'
 
 export default function UsersPage() {
@@ -181,6 +182,7 @@ export default function UsersPage() {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-2">
+                      <ChangePasswordDialog user={user} />
                       <EditUserDialog user={user} />
                       <Button
                         variant="ghost"

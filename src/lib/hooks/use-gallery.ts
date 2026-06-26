@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/client'
+import { getPublicActiveGalleryItems } from '@/actions/parent-hub-public'
 import { createGalleryItem, updateGalleryItem, toggleGalleryItem, deleteGalleryItem } from '@/actions/gallery'
 import type { GalleryFormValues } from '@/lib/validators/gallery'
 
@@ -26,25 +27,9 @@ export function useGalleryItems(category?: string) {
 }
 
 export function useActiveGalleryItems(category?: string) {
-  const supabase = createClient()
-
   return useQuery({
     queryKey: ['gallery-items', 'active', category],
-    queryFn: async () => {
-      let query = supabase
-        .from('gallery_items')
-        .select('*')
-        .eq('is_active', true)
-        .order('created_at', { ascending: false })
-
-      if (category) {
-        query = query.eq('category', category)
-      }
-
-      const { data, error } = await query
-      if (error) throw error
-      return data ?? []
-    },
+    queryFn: async () => getPublicActiveGalleryItems(category),
   })
 }
 

@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/client'
+import { getPublicPreschoolTeachers } from '@/actions/parent-hub-public'
 
 export function useTeachers() {
   const supabase = createClient()
@@ -20,51 +21,8 @@ export function useTeachers() {
 }
 
 export function usePreschoolTeachers() {
-  const supabase = createClient()
-
   return useQuery({
     queryKey: ['preschool-teachers'],
-    queryFn: async () => {
-      // 1. Get classes that belong to MEC PRESCHOOL
-      const { data: programs, error: progError } = await supabase
-        .from('programs')
-        .select('id')
-        .eq('name', 'MEC PRESCHOOL')
-        .single()
-        
-      if (progError || !programs) return []
-
-      const { data: classes, error: classError } = await supabase
-        .from('classes')
-        .select('id')
-        .eq('program_id', programs.id)
-        
-      if (classError || !classes.length) return []
-      
-      const classIds = classes.map(c => c.id)
-
-      // 2. Get teachers assigned to those classes
-      const { data: classTeachers, error: ctError } = await supabase
-        .from('class_teachers')
-        .select('users(id, full_name, roles, profile_picture_url)')
-        .in('class_id', classIds)
-        
-      if (ctError || !classTeachers) return []
-
-      // 3. Deduplicate and format teachers
-      const uniqueTeachers = new Map()
-      classTeachers.forEach((ct: any) => {
-        if (ct.users && !uniqueTeachers.has(ct.users.id)) {
-          uniqueTeachers.set(ct.users.id, {
-            id: ct.users.id,
-            name: ct.users.full_name || 'Teacher',
-            role: ct.users.roles?.[0] || 'Teacher',
-            image: ct.users.profile_picture_url || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop'
-          })
-        }
-      })
-
-      return Array.from(uniqueTeachers.values())
-    },
+    queryFn: async () => getPublicPreschoolTeachers(),
   })
 }
