@@ -39,7 +39,7 @@ export default function SettingsPage() {
   const [settings, setSettings] = useState({
     schoolName: 'My English Course & Academy',
     schoolEmail: 'myenglishcoursebaganbatu@gmail.com',
-    schoolPhone: '+62 812-3087-1923',
+    schoolPhone: '+62 812-7425-6077',
     currency: 'IDR',
     timezone: 'Asia/Jakarta',
     language: 'id',

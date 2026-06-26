@@ -36,8 +36,11 @@ export function Footer() {
                 width={80}
                 height={80}
               />
-              <span className="font-display font-extrabold text-lg text-foreground">
+              <span className="font-display font-extrabold text-lg text-foreground hidden min-[1400px]:block">
                 My English Course & Academy
+              </span>
+              <span className="font-display font-extrabold text-lg text-foreground min-[1400px]:hidden">
+                MEC&A<span className="text-primary">.</span>
               </span>
             </div>
             <p className="mt-4 text-sm text-muted-foreground max-w-xs">
@@ -80,7 +83,7 @@ export function Footer() {
               <li className="flex items-start gap-2">
                 <Phone className="h-4 w-4 mt-0.5 text-primary shrink-0" />
                 <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="hover:text-primary">
-                  +62 812-3087-1923
+                  +62 812-7425-6077
                 </a>
               </li>
               <li className="flex items-start gap-2">

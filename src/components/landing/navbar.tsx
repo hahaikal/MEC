@@ -35,11 +35,11 @@ export function Navbar() {
               height={80}
               className="rounded-md"
             />
-            <span className="font-display font-extrabold text-lg tracking-tight text-foreground hidden sm:block">
+            <span className="font-display font-extrabold text-lg tracking-tight text-foreground hidden min-[1400px]:block">
               My English Course & Academy
             </span>
-            <span className="font-display font-extrabold text-lg tracking-tight text-foreground sm:hidden">
-              MEC<span className="text-primary">.</span>
+            <span className="font-display font-extrabold text-lg tracking-tight text-foreground min-[1400px]:hidden">
+              MEC&A<span className="text-primary">.</span>
             </span>
           </a>
 
