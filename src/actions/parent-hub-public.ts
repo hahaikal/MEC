@@ -67,7 +67,7 @@ export async function getPublicActiveClasses() {
   const { data, error } = await supabase
     .from('classes')
     .select(`
-      id, name, level, schedule, room, program_id,
+      *,
       class_teachers ( users (id, full_name, roles, profile_picture_url, bio) )
     `)
     .eq('is_active', true)
@@ -137,7 +137,7 @@ export async function getPublicPreschoolMagazines() {
 
   const { data, error } = await supabase
     .from('class_documents')
-    .select('id, title, document_url, document_type, cover_image_url, file_size_mb, classes(name)')
+    .select('*, classes(name)')
     .eq('document_type', 'MAGAZINE')
     .in('class_id', preschoolClassIds)
     .order('created_at', { ascending: false })
@@ -199,7 +199,7 @@ export async function getPublicClassDocuments(classId?: string, documentType?: s
   
   let query = supabase
     .from('class_documents')
-    .select('id, title, document_url, document_type, cover_image_url, file_size_mb')
+    .select('*')
     .eq('class_id', classId)
     .order('created_at', { ascending: false })
 
