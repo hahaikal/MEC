@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Clock } from "lucide-react";
 import type { GalleryItem } from "@/types/gallery";
+import Image from "next/image";
 
 const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
@@ -217,9 +218,9 @@ export function ScheduleCalendar({ items }: { items: GalleryItem[] }) {
                   key={e.id}
                   className="flex items-center gap-3 rounded-2xl bg-card p-3 shadow-float"
                 >
-                  <div className="h-10 w-10 shrink-0 rounded-xl bg-mec-yellow-soft overflow-hidden">
+                  <div className="relative h-10 w-10 shrink-0 rounded-xl bg-mec-yellow-soft overflow-hidden">
                     {e.image_url ? (
-                      <img src={e.image_url} alt="" className="h-full w-full object-cover" />
+                      <Image src={e.image_url} alt="" fill sizes="40px" className="object-cover" />
                     ) : (
                       <div className="grid h-full w-full place-items-center text-xl">🗓️</div>
                     )}

@@ -7,7 +7,7 @@ export async function getUsers() {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('users')
-    .select('*')
+    .select('id, email, full_name, department, phone_number, profile_picture_url, is_active, bio, roles, staff_id, date_of_birth, payday, created_at, updated_at')
     .order('created_at', { ascending: false })
 
   if (error) {

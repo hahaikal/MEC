@@ -6,6 +6,7 @@ import { TeacherHero } from "@/components/parent-hub/teacher-hero";
 import { usePrograms, useProgramTeachers } from "@/lib/hooks/use-programs";
 import { useProgramActivities } from "@/lib/hooks/use-activities";
 import { use } from "react";
+import Image from "next/image";
 
 const PROGRAM_DESCRIPTIONS: Record<string, string> = {
   "Calistung": "A foundational program designed to spark your child's early literacy and numeracy skills. Through fun and engaging activities, we build a strong basis in reading, writing, and counting to prepare them for their future academic journey.",
@@ -85,8 +86,8 @@ export default function ProgramPage({
             ) : (
               programTeachers.map((t: any) => (
                 <article key={t.id} className="overflow-hidden rounded-3xl bg-white shadow-md">
-                  <div className="aspect-square overflow-hidden">
-                    <img src={t.image} alt={t.name} className="h-full w-full object-cover" />
+                  <div className="relative aspect-square overflow-hidden bg-neutral-100">
+                    <Image src={t.image} alt={t.name} fill className="object-cover" sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" />
                   </div>
                   <div className="p-4">
                     <h3 className="font-bold text-neutral-900">{t.name}</h3>

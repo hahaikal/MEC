@@ -7,6 +7,7 @@ import { usePreschoolTeachers } from "@/lib/hooks/use-teachers";
 import { usePreschoolMagazines } from "@/lib/hooks/use-documents";
 import { format } from "date-fns";
 import { FileText, Download } from "lucide-react";
+import Image from "next/image";
 
 export default function PreschoolPage() {
   const { data: galleryItems, isLoading } = useActiveGalleryItems("preschool");
@@ -42,8 +43,8 @@ export default function PreschoolPage() {
         ) : (
           preschoolTeachers.map((t: any) => (
             <article key={t.id} className="overflow-hidden rounded-3xl bg-white shadow-md">
-              <div className="aspect-square overflow-hidden">
-                <img src={t.image} alt={t.name} className="h-full w-full object-cover" />
+              <div className="relative aspect-square overflow-hidden bg-neutral-100">
+                <Image src={t.image} alt={t.name} fill className="object-cover" sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" />
               </div>
               <div className="p-4">
                 <h3 className="font-bold text-neutral-900">{t.name}</h3>
@@ -142,10 +143,12 @@ export default function PreschoolPage() {
               >
                 {/* PDF Cover Image Preview */}
                 <div className="relative h-40 w-full overflow-hidden bg-neutral-200">
-                  <img 
+                  <Image 
                     src={mag.cover_image_url || "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=800&q=80"} 
                     alt="Cover Preview" 
-                    className="h-full w-full object-cover opacity-90 transition duration-500 group-hover:scale-105" 
+                    fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    className="object-cover opacity-90 transition duration-500 group-hover:scale-105" 
                   />
                   {/* Subtle overlay to blend with the bottom part */}
                   <div className="absolute inset-0 bg-gradient-to-t from-[#1e463a] to-transparent opacity-60" />

@@ -4,19 +4,29 @@ import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 
 // We use the service role key to bypass RLS for public parent-hub data.
 // Since these are Server Actions, the key is safely kept on the server.
-const supabase = createSupabaseClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+function getSupabase() {
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    console.error("CRITICAL: SUPABASE_SERVICE_ROLE_KEY is missing in environment variables. Please add it to Vercel.");
+  }
+  return createSupabaseClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL || '',
+    process.env.SUPABASE_SERVICE_ROLE_KEY || ''
+  )
+}
 
 export async function getPublicPrograms() {
-  const { data, error } = await supabase.from('programs').select('*').eq('is_active', true).order('name')
+  const supabase = getSupabase()
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) return []
+  
+  const { data, error } = await supabase.from('programs').select('id, name, description').eq('is_active', true).order('name')
   if (error) throw error
   return data
 }
 
 export async function getPublicProgramTeachers(programId: string) {
   if (!programId) return []
+  const supabase = getSupabase()
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) return []
 
   const { data: classes, error: classError } = await supabase
     .from('classes')
@@ -51,10 +61,13 @@ export async function getPublicProgramTeachers(programId: string) {
 }
 
 export async function getPublicActiveClasses() {
+  const supabase = getSupabase()
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) return []
+
   const { data, error } = await supabase
     .from('classes')
     .select(`
-      *,
+      id, name, level, schedule, room, program_id,
       class_teachers ( users (id, full_name, roles, profile_picture_url, bio) )
     `)
     .eq('is_active', true)
@@ -68,6 +81,9 @@ export async function getPublicActiveClasses() {
 }
 
 export async function getPublicClass(id: string) {
+  const supabase = getSupabase()
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) throw new Error("Missing SUPABASE_SERVICE_ROLE_KEY")
+
   const { data, error } = await supabase
     .from('classes')
     .select(`
@@ -85,9 +101,12 @@ export async function getPublicClass(id: string) {
 }
 
 export async function getPublicActiveGalleryItems(category?: string) {
+  const supabase = getSupabase()
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) return []
+
   let query = supabase
     .from('gallery_items')
-    .select('*')
+    .select('id, title, description, image_url, category, event_date, is_active, created_at')
     .eq('is_active', true)
     .order('created_at', { ascending: false })
 
@@ -101,6 +120,9 @@ export async function getPublicActiveGalleryItems(category?: string) {
 }
 
 export async function getPublicPreschoolMagazines() {
+  const supabase = getSupabase()
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) return []
+
   const { data: classes, error: classErr } = await supabase
     .from('classes')
     .select('id, name')
@@ -115,7 +137,7 @@ export async function getPublicPreschoolMagazines() {
 
   const { data, error } = await supabase
     .from('class_documents')
-    .select('*, classes(name)')
+    .select('id, title, document_url, document_type, cover_image_url, file_size_mb, classes(name)')
     .eq('document_type', 'MAGAZINE')
     .in('class_id', preschoolClassIds)
     .order('created_at', { ascending: false })
@@ -125,6 +147,9 @@ export async function getPublicPreschoolMagazines() {
 }
 
 export async function getPublicPreschoolTeachers() {
+  const supabase = getSupabase()
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) return []
+
   // 1. Get classes that belong to MEC PRESCHOOL
   const { data: programs, error: progError } = await supabase
     .from('programs')
@@ -169,10 +194,12 @@ export async function getPublicPreschoolTeachers() {
 
 export async function getPublicClassDocuments(classId?: string, documentType?: string) {
   if (!classId) return []
+  const supabase = getSupabase()
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) return []
   
   let query = supabase
     .from('class_documents')
-    .select('*')
+    .select('id, title, document_url, document_type, cover_image_url, file_size_mb')
     .eq('class_id', classId)
     .order('created_at', { ascending: false })
 

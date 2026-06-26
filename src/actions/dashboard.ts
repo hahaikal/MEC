@@ -11,10 +11,14 @@ export async function getDashboardStats() {
     throw new Error('Unauthorized')
   }
 
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    throw new Error('Server misconfiguration: SUPABASE_SERVICE_ROLE_KEY is missing on Vercel')
+  }
+
   // Use service role to bypass RLS for global dashboard aggregates
   const supabase = createSupabaseClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
+    process.env.SUPABASE_SERVICE_ROLE_KEY
   )
 
   const now = new Date()

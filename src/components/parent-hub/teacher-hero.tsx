@@ -4,6 +4,7 @@ import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";
 import type { Teacher } from "@/lib/parent-hub-data";
 import { useActiveClasses } from "@/lib/hooks/use-classes";
+import Image from "next/image";
 
 export function TeacherHero({
   teachers,
@@ -33,8 +34,8 @@ export function TeacherHero({
             {teachers.map((teacher) => (
               <div key={teacher.id} className="min-w-0 flex-[0_0_100%]">
               <div className="relative grid items-center gap-8 md:grid-cols-[260px_1fr]">
-                <div className="mx-auto h-60 w-60 overflow-hidden rounded-3xl border-4 border-white/40 shadow-2xl md:mx-0">
-                  <img src={teacher.image} alt={teacher.name} className="h-full w-full object-cover" />
+                <div className="relative mx-auto h-60 w-60 overflow-hidden rounded-3xl border-4 border-white/40 shadow-2xl md:mx-0">
+                  <Image src={teacher.image} alt={teacher.name} fill sizes="(max-width: 768px) 240px, 240px" className="object-cover" />
                 </div>
                 <div className="text-white">
                   {context && (
