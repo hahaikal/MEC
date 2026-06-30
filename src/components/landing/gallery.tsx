@@ -5,9 +5,9 @@ export function Gallery() {
   const items = [
     { src: GAL_1, label: "End Of Year Concert 2025", h: "h-72" },
     { src: GAL_2, label: "Open House 2026", h: "h-96" },
-    { src: GAL_3, label: "Halloween 2025", h: "h-80" },
+    { src: GAL_3, label: "Dress-up Day 2025", h: "h-80" },
     { src: GAL_4, label: "Field Trip - JCO", h: "h-72" },
-    { src: GAL_5, label: "Music Education", h: "h-72" },
+    { src: GAL_5, label: "Music Class", h: "h-72" },
     { src: GAL_6, label: "Field Trip - Ichiban Sushi", h: "h-96" },
   ];
   return (

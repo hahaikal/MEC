@@ -13,11 +13,18 @@ import { toast } from 'sonner'
 import { Textarea } from '@/components/ui/textarea'
 import { uploadUserPhoto } from '@/lib/upload-user-photo'
 import { useRef } from 'react'
+import { ImageCropper } from '@/components/ui/image-cropper'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 
 export function EditUserDialog({ user }: { user: any }) {
   const [open, setOpen] = useState(false)
   const { updateUser } = useInternalUsers()
   const [loading, setLoading] = useState(false)
+  const [showConfirm, setShowConfirm] = useState(false)
+  
+  // Cropper states
+  const [showCropper, setShowCropper] = useState(false)
+  const [cropImageSrc, setCropImageSrc] = useState<string>('')
   
   const [formData, setFormData] = useState({
     full_name: user.full_name || '',
@@ -36,12 +43,27 @@ export function EditUserDialog({ user }: { user: any }) {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selected = e.target.files?.[0]
     if (!selected) return
-    setFile(selected)
-    setPreview(URL.createObjectURL(selected))
+    const url = URL.createObjectURL(selected)
+    setCropImageSrc(url)
+    setShowCropper(true)
+    // Clear input so same file can be selected again
+    if (fileRef.current) {
+      fileRef.current.value = ''
+    }
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleCropComplete = (croppedFile: File) => {
+    setFile(croppedFile)
+    setPreview(URL.createObjectURL(croppedFile))
+    setShowCropper(false)
+  }
+
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    setShowConfirm(true)
+  }
+
+  const executeSubmit = async () => {
     setLoading(true)
     try {
       let photoUrl = user.profile_picture_url
@@ -78,6 +100,8 @@ export function EditUserDialog({ user }: { user: any }) {
     } catch (err: any) {
       toast.error(err.message || 'Gagal mengunggah foto profil')
       setLoading(false)
+    } finally {
+      setShowConfirm(false)
     }
   }
 
@@ -209,6 +233,23 @@ export function EditUserDialog({ user }: { user: any }) {
           </Button>
         </form>
       </DialogContent>
+
+      <ImageCropper
+        imageSrc={cropImageSrc}
+        aspectRatio={1}
+        open={showCropper}
+        onCancel={() => setShowCropper(false)}
+        onCropComplete={handleCropComplete}
+      />
+
+      <ConfirmDialog
+        open={showConfirm}
+        onOpenChange={setShowConfirm}
+        title="Simpan Perubahan?"
+        description="Apakah Anda yakin ingin menyimpan perubahan data pengguna ini?"
+        onConfirm={executeSubmit}
+        isProcessing={loading}
+      />
     </Dialog>
   )
 }

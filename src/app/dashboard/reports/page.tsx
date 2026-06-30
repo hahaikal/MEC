@@ -4,19 +4,46 @@ import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useFinancialReports } from '@/lib/hooks/use-reports'
+import { usePrograms } from '@/lib/hooks/use-programs'
 import { Skeleton } from '@/components/ui/skeleton'
-import { TrendingUp, TrendingDown, DollarSign } from 'lucide-react'
+import { TrendingUp, TrendingDown, DollarSign, Check, ChevronsUpDown } from 'lucide-react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer } from 'recharts'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
+import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 
 const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+const monthOptions = monthNames.map((name, idx) => ({ value: (idx + 1).toString(), label: name }))
 
 export default function ReportsPage() {
   const [selectedYear, setSelectedYear] = useState<string>(new Date().getFullYear().toString())
+  const [selectedPrograms, setSelectedPrograms] = useState<string[]>([])
+  const [selectedMonths, setSelectedMonths] = useState<string[]>([])
+  const [openProgramFilter, setOpenProgramFilter] = useState(false)
+  const [openMonthFilter, setOpenMonthFilter] = useState(false)
 
   const currentYear = new Date().getFullYear()
   const years = Array.from({ length: 5 }, (_, i) => currentYear - 2 + i)
 
-  const { data: reportData, isLoading } = useFinancialReports(parseInt(selectedYear))
+  const { data: programs, isLoading: isLoadingPrograms } = usePrograms()
+  const { data: reportData, isLoading } = useFinancialReports({
+    year: parseInt(selectedYear),
+    programIds: selectedPrograms,
+    months: selectedMonths
+  })
+
+  const toggleProgram = (id: string) => {
+    setSelectedPrograms(current =>
+      current.includes(id) ? current.filter(p => p !== id) : [...current, id]
+    )
+  }
+
+  const toggleMonth = (id: string) => {
+    setSelectedMonths(current =>
+      current.includes(id) ? current.filter(m => m !== id) : [...current, id]
+    )
+  }
 
   const totalIncome = reportData?.reduce((sum, item) => sum + item.income, 0) || 0
   const totalExpense = reportData?.reduce((sum, item) => sum + item.expense, 0) || 0
@@ -36,12 +63,67 @@ export default function ReportsPage() {
           <p className="text-muted-foreground mt-1">Pantau arus kas masuk dan keluar secara real-time.</p>
         </div>
 
-        <Select value={selectedYear} onValueChange={setSelectedYear}>
-          <SelectTrigger className="w-[120px]"><SelectValue /></SelectTrigger>
-          <SelectContent>
-            {years.map(y => <SelectItem key={y} value={y.toString()}>{y}</SelectItem>)}
-          </SelectContent>
-        </Select>
+        <div className="flex flex-wrap gap-2">
+          {/* Month Filter */}
+          <Popover open={openMonthFilter} onOpenChange={setOpenMonthFilter}>
+            <PopoverTrigger asChild>
+              <Button variant="outline" role="combobox" aria-expanded={openMonthFilter} className="w-[160px] justify-between">
+                {selectedMonths.length === 0 ? "Semua Bulan" : `${selectedMonths.length} Bulan Dipilih`}
+                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[160px] p-0">
+              <Command>
+                <CommandInput placeholder="Cari..." />
+                <CommandList>
+                  <CommandEmpty>Bulan tidak ditemukan.</CommandEmpty>
+                  <CommandGroup>
+                    {monthOptions.map((m) => (
+                      <CommandItem key={m.value} value={m.label} onSelect={() => toggleMonth(m.value)}>
+                        <Check className={cn("mr-2 h-4 w-4", selectedMonths.includes(m.value) ? "opacity-100" : "opacity-0")} />
+                        {m.label}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
+
+          {/* Program Filter */}
+          <Popover open={openProgramFilter} onOpenChange={setOpenProgramFilter}>
+            <PopoverTrigger asChild>
+              <Button variant="outline" role="combobox" aria-expanded={openProgramFilter} className="w-[180px] justify-between" disabled={isLoadingPrograms}>
+                {selectedPrograms.length === 0 ? "Semua Program" : `${selectedPrograms.length} Program`}
+                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[200px] p-0">
+              <Command>
+                <CommandInput placeholder="Cari..." />
+                <CommandList>
+                  <CommandEmpty>Program tidak ditemukan.</CommandEmpty>
+                  <CommandGroup>
+                    {programs?.map((p) => (
+                      <CommandItem key={p.id} value={p.name} onSelect={() => toggleProgram(p.id)}>
+                        <Check className={cn("mr-2 h-4 w-4", selectedPrograms.includes(p.id) ? "opacity-100" : "opacity-0")} />
+                        {p.name}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
+
+          {/* Year Filter */}
+          <Select value={selectedYear} onValueChange={setSelectedYear}>
+            <SelectTrigger className="w-[100px]"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              {years.map(y => <SelectItem key={y} value={y.toString()}>{y}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {isLoading ? (

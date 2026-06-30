@@ -16,6 +16,7 @@ export function useClassActivities(classId?: string) {
         .order('created_at', { ascending: false })
 
       if (error) throw error
+      return data ?? []
     },
     enabled: !!classId
   })

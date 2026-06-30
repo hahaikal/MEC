@@ -10,6 +10,7 @@ import { StudentStats } from '@/components/students/student-stats'
 import { AddStudentDialog } from '@/components/students/add-student-dialog'
 import { useStudents } from '@/lib/hooks/use-students'
 import { useClassList } from '@/lib/hooks/use-students-by-class'
+import { usePrograms } from '@/lib/hooks/use-programs'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Check, ChevronsUpDown } from 'lucide-react'
 import {
@@ -37,11 +38,14 @@ import { cn } from '@/lib/utils'
 export default function StudentsPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedClasses, setSelectedClasses] = useState<string[]>([])
+  const [selectedPrograms, setSelectedPrograms] = useState<string[]>([])
   const [openClassFilter, setOpenClassFilter] = useState(false)
+  const [openProgramFilter, setOpenProgramFilter] = useState(false)
   const [statusFilter, setStatusFilter] = useState('ACTIVE') // 'ACTIVE', 'INACTIVE', or 'ALL'
   
   const { data: students, isLoading, isError } = useStudents()
   const { data: classes, isLoading: isLoadingClasses } = useClassList()
+  const { data: programs, isLoading: isLoadingPrograms } = usePrograms()
 
   // Filter client-side
   const filteredStudents = students?.filter(student => {
@@ -54,10 +58,14 @@ export default function StudentsPage() {
     const matchesClass = selectedClasses.length === 0 ||
       (student.class_name && selectedClasses.includes(student.class_name));
 
-    // 3. Filter by Status
+    // 3. Filter by Program
+    const matchesProgram = selectedPrograms.length === 0 ||
+      (student.programs && student.programs.some((p: string) => selectedPrograms.includes(p)));
+
+    // 4. Filter by Status
     const matchesStatus = statusFilter === 'ALL' || student.status === statusFilter;
 
-    return matchesSearch && matchesClass && matchesStatus;
+    return matchesSearch && matchesClass && matchesProgram && matchesStatus;
   }) || []
 
   const toggleClass = (className: string) => {
@@ -65,6 +73,14 @@ export default function StudentsPage() {
       current.includes(className)
         ? current.filter(c => c !== className)
         : [...current, className]
+    )
+  }
+
+  const toggleProgram = (programName: string) => {
+    setSelectedPrograms(current =>
+      current.includes(programName)
+        ? current.filter(p => p !== programName)
+        : [...current, programName]
     )
   }
 
@@ -151,6 +167,51 @@ export default function StudentsPage() {
                                     )}
                                   />
                                   {c.name}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+
+                  {/* Multi-Program Filter */}
+                  <div className="w-full sm:w-[200px]">
+                    <Popover open={openProgramFilter} onOpenChange={setOpenProgramFilter}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={openProgramFilter}
+                          className="w-full justify-between h-9"
+                          disabled={isLoadingPrograms}
+                        >
+                          {selectedPrograms.length === 0
+                            ? "Semua Program"
+                            : `${selectedPrograms.length} Program Dipilih`}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[200px] p-0">
+                        <Command>
+                          <CommandInput placeholder="Cari program..." />
+                          <CommandList>
+                            <CommandEmpty>Program tidak ditemukan.</CommandEmpty>
+                            <CommandGroup>
+                              {programs?.map((p) => (
+                                <CommandItem
+                                  key={p.id}
+                                  value={p.name}
+                                  onSelect={() => toggleProgram(p.name)}
+                                >
+                                  <Check
+                                    className={cn(
+                                      "mr-2 h-4 w-4",
+                                      selectedPrograms.includes(p.name) ? "opacity-100" : "opacity-0"
+                                    )}
+                                  />
+                                  {p.name}
                                 </CommandItem>
                               ))}
                             </CommandGroup>

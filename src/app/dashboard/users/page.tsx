@@ -14,6 +14,7 @@ import { UserPlus, Ban, Loader2, CheckCircle2 } from 'lucide-react'
 import { EditUserDialog } from '@/components/users/edit-user-dialog'
 import { ChangePasswordDialog } from '@/components/users/change-password-dialog'
 import { toast } from 'sonner'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 
 export default function UsersPage() {
   const { users, isLoading, createUser, isCreating, updateUser, deleteUser } = useInternalUsers()
@@ -24,9 +25,14 @@ export default function UsersPage() {
     full_name: '',
     roles: ['Staff']
   })
+  const [showConfirm, setShowConfirm] = useState(false)
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    setShowConfirm(true)
+  }
+
+  const executeSubmit = () => {
     createUser(formData, {
       onSuccess: () => {
         setIsDialogOpen(false)
@@ -35,6 +41,9 @@ export default function UsersPage() {
       },
       onError: (err: any) => {
         toast.error(err.message || 'Gagal menambahkan pengguna')
+      },
+      onSettled: () => {
+        setShowConfirm(false)
       }
     })
   }
@@ -124,6 +133,15 @@ export default function UsersPage() {
             </form>
           </DialogContent>
         </Dialog>
+
+        <ConfirmDialog
+          open={showConfirm}
+          onOpenChange={setShowConfirm}
+          title="Tambah Pengguna"
+          description={`Apakah Anda yakin ingin menambahkan ${formData.full_name || 'pengguna'}?`}
+          onConfirm={executeSubmit}
+          isProcessing={isCreating}
+        />
       </div>
 
       <div className="rounded-md border bg-white overflow-x-auto">

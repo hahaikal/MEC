@@ -3,19 +3,19 @@ import { Star } from "lucide-react";
 export function Testimonials() {
   const quotes = [
     {
-      q: "My daughter went from shy to confidently presenting in English in just one term. The tutors truly care.",
-      n: "Sarah W.",
-      r: "Parent of Aisyah, Basic 3",
+      q: "Best English course in Bagan batu , with qualified teachers and many staff admins to handle more than 300students. May MEC be succeed and get more students each year.",
+      n: "Sylvia Limyap",
+      r: "Parent of ...",
     },
     {
-      q: "The Parent Hub is brilliant — I always know exactly how my son is doing without needing to ask.",
-      n: "Andre P.",
-      r: "Parent of Reza, Starter 4",
+      q: "Kedua anak saya les di sini dan hasilnya sangat memuaskan! Sistem belajarnya sangat disukai anak-anak, ditambah lagi para pengajarnya sangat berpengalaman. Si adik sudah mulai ikut dari usia 3 tahun, sedangkan si abang sejak usia TK. Anak-anak selalu pulang dengan ceria dan senang belajar di sini.",
+      n: "Beby Susanti",
+      r: "Parent of Rassya & ...",
     },
     {
-      q: "I passed my exam at School. thanks to MEC's coaching. The mock tests felt exactly like the real thing.",
-      n: "Mira L.",
-      r: "Foresight Student",
+      q: "Sangat puas dengan perkembangan anak pertama saya sejak les di sini. Kedekatan para Miss dengan anak-anak membuat suasana belajar jadi begitu nyaman. Itulah yang membuat saya mantap untuk mendaftarkan kedua adiknya juga. Rekomendasi tempat les terbaik, semoga kualitasnya tetap terjaga dan semakin maju!",
+      n: "Laurenzia Tambunan",
+      r: "Parent of ...",
     },
   ];
   return (

@@ -3,10 +3,8 @@
 import { useRef, useState } from 'react'
 import { Camera, Loader2 } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { uploadStudentPhoto } from '@/lib/upload-student-photo'
-import { updateStudentPhoto } from '@/actions/students'
-import { useToast } from '@/components/ui/use-toast'
 import { useQueryClient } from '@tanstack/react-query'
+import { ImageCropper } from '@/components/ui/image-cropper'
 
 interface AvatarUploadProps {
   studentId: string | null
@@ -41,7 +39,9 @@ export function AvatarUpload({
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isUploading, setIsUploading] = useState(false)
   const [previewUrl, setPreviewUrl] = useState<string | null>(currentPhotoUrl)
-  const { toast } = useToast()
+  const [showCropper, setShowCropper] = useState(false)
+  const [cropImageSrc, setCropImageSrc] = useState<string>('')
+  
   const queryClient = useQueryClient()
 
   const initials = studentName
@@ -58,102 +58,72 @@ export function AvatarUpload({
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
-      toast({
-        variant: 'destructive',
-        title: 'Format tidak valid',
-        description: 'Silakan pilih file gambar (JPG, PNG, WebP).',
-      })
+      alert('Format tidak valid. Silakan pilih file gambar (JPG, PNG, WebP).')
       return
     }
 
-    // Show local preview immediately
     const localPreview = URL.createObjectURL(file)
-    setPreviewUrl(localPreview)
-
-    // If no studentId yet (new student), store file for later
-    if (!studentId) {
-      onFileSelected?.(file)
-      toast({
-        title: 'Foto dipilih',
-        description: 'Foto akan di-upload setelah data siswa disimpan.',
-      })
-      return
-    }
-
-    // Upload immediately for existing students
-    setIsUploading(true)
-    try {
-      const publicUrl = await uploadStudentPhoto(file, studentId)
-
-      // Persist to database
-      const result = await updateStudentPhoto(studentId, publicUrl)
-      if (result.error) {
-        throw new Error(result.error)
-      }
-
-      setPreviewUrl(publicUrl)
-      onPhotoUploaded?.(publicUrl)
-
-      // Invalidate student queries to refresh data table
-      queryClient.invalidateQueries({ queryKey: ['students'] })
-
-      toast({
-        title: 'Foto berhasil di-upload',
-        description: 'Foto profil siswa telah diperbarui.',
-      })
-    } catch (error: any) {
-      console.error('Photo upload error:', error)
-      setPreviewUrl(currentPhotoUrl) // Revert preview
-      toast({
-        variant: 'destructive',
-        title: 'Upload gagal',
-        description: error.message || 'Terjadi kesalahan saat meng-upload foto.',
-      })
-    } finally {
-      setIsUploading(false)
-      // Reset input so same file can be re-selected
-      if (fileInputRef.current) {
-        fileInputRef.current.value = ''
-      }
+    setCropImageSrc(localPreview)
+    setShowCropper(true)
+    
+    // Reset input so same file can be re-selected
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
     }
   }
 
+  const handleCropComplete = (croppedFile: File) => {
+    const localPreview = URL.createObjectURL(croppedFile)
+    setPreviewUrl(localPreview)
+    onFileSelected?.(croppedFile)
+    setShowCropper(false)
+  }
+
   return (
-    <div className="relative group cursor-pointer" onClick={handleClick}>
-      <Avatar className={`${sizeClasses[size]} border-4 border-slate-100 shadow-md transition-transform group-hover:scale-105`}>
-        <AvatarImage
-          src={previewUrl || undefined}
-          alt={studentName}
-          className="object-cover"
-        />
-        <AvatarFallback className={`bg-primary/10 text-primary ${textSizeClasses[size]} font-bold`}>
-          {initials}
-        </AvatarFallback>
-      </Avatar>
+    <>
+      <div className="relative group cursor-pointer" onClick={handleClick}>
+        <Avatar className={`${sizeClasses[size]} border-4 border-slate-100 shadow-md transition-transform group-hover:scale-105`}>
+          <AvatarImage
+            src={previewUrl || undefined}
+            alt={studentName}
+            className="object-cover"
+          />
+          <AvatarFallback className={`bg-primary/10 text-primary ${textSizeClasses[size]} font-bold`}>
+            {initials}
+          </AvatarFallback>
+        </Avatar>
 
-      {/* Overlay */}
-      <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-        {isUploading ? (
-          <Loader2 className="text-white h-6 w-6 animate-spin" />
-        ) : (
-          <Camera className="text-white h-6 w-6" />
+        {/* Overlay */}
+        <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+          {isUploading ? (
+            <Loader2 className="text-white h-6 w-6 animate-spin" />
+          ) : (
+            <Camera className="text-white h-6 w-6" />
+          )}
+        </div>
+
+        {/* Uploading indicator ring */}
+        {isUploading && (
+          <div className="absolute inset-0 rounded-full border-2 border-blue-500 animate-pulse" />
         )}
+
+        {/* Hidden file input */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp,image/gif"
+          className="hidden"
+          onChange={handleFileChange}
+          onClick={(e) => e.stopPropagation()}
+        />
       </div>
-
-      {/* Uploading indicator ring */}
-      {isUploading && (
-        <div className="absolute inset-0 rounded-full border-2 border-blue-500 animate-pulse" />
-      )}
-
-      {/* Hidden file input */}
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/jpeg,image/png,image/webp,image/gif"
-        className="hidden"
-        onChange={handleFileChange}
-        onClick={(e) => e.stopPropagation()}
+      <ImageCropper
+        imageSrc={cropImageSrc}
+        aspectRatio={1}
+        open={showCropper}
+        onCancel={() => setShowCropper(false)}
+        onCropComplete={handleCropComplete}
       />
-    </div>
+    </>
   )
 }

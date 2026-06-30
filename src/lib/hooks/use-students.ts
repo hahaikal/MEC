@@ -13,7 +13,7 @@ export function useStudents() {
       // Need to join with class_enrollments and classes to get the class_name
       const { data, error } = await supabase
         .from('students')
-        .select('*, class_enrollments(classes(id, name))')
+        .select('*, class_enrollments(classes(id, name, programs(name)))')
         .order('created_at', { ascending: false })
 
       if (error) throw error
@@ -21,17 +21,24 @@ export function useStudents() {
       return data.map((d: any) => {
         let class_name = null
         let class_id = null
+        let programs = []
+        
         if (d.class_enrollments && d.class_enrollments.length > 0) {
             const enrollment = d.class_enrollments[0]
             if (enrollment.classes) {
                class_name = enrollment.classes.name
                class_id = enrollment.classes.id
+               if (enrollment.classes.programs?.name) {
+                   programs.push(enrollment.classes.programs.name)
+               }
             }
         }
+        
         return {
            ...d,
            class_name,
-           class_id
+           class_id,
+           programs
         }
       })
     },

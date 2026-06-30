@@ -157,10 +157,11 @@ export async function getDashboardStats() {
   const outstandingCount = Math.max(0, (activeStudents || 0) - paidStudentIds.size);
 
   // 3. Total income this month
-  // Get first day of this month
-  const firstDay = new Date(currentYear, currentMonth, 1).toISOString();
-  // Get first day of next month
-  const firstDayNextMonth = new Date(currentYear, currentMonth + 1, 1).toISOString();
+  // Get first day of this month (local timezone safe for YYYY-MM-DD)
+  const firstDay = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-01`;
+  const nextM = currentMonth + 1;
+  const nextY = nextM > 11 ? currentYear + 1 : currentYear;
+  const firstDayNextMonth = `${nextY}-${String((nextM % 12) + 1).padStart(2, '0')}-01`;
 
   const { data: incomeData, error: err3 } = await supabase
     .from('payments')

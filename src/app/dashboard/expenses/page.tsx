@@ -8,19 +8,58 @@ import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { CalendarIcon, FilterX } from 'lucide-react'
-import { format } from 'date-fns'
+import { format, startOfMonth, endOfMonth, setMonth, setYear } from 'date-fns'
 import { id as idLocale } from 'date-fns/locale'
 import { cn } from '@/lib/utils'
 import { DateRange } from 'react-day-picker'
 
+const months = [
+  "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+  "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+]
+
 export default function ExpensesPage() {
   const [dateRange, setDateRange] = useState<DateRange | undefined>()
   const [category, setCategory] = useState<string>('all')
+  const [selectedMonth, setSelectedMonth] = useState<string>('all')
+  const [selectedYear, setSelectedYear] = useState<string>(new Date().getFullYear().toString())
 
   const resetFilters = () => {
     setDateRange(undefined)
     setCategory('all')
+    setSelectedMonth('all')
   }
+
+  const handleMonthChange = (val: string) => {
+    setSelectedMonth(val)
+    if (val === 'all') {
+      setDateRange(undefined)
+    } else {
+      const mIdx = parseInt(val)
+      const y = parseInt(selectedYear)
+      const date = setYear(setMonth(new Date(), mIdx), y)
+      setDateRange({
+        from: startOfMonth(date),
+        to: endOfMonth(date)
+      })
+    }
+  }
+
+  const handleYearChange = (val: string) => {
+    setSelectedYear(val)
+    if (selectedMonth !== 'all') {
+      const mIdx = parseInt(selectedMonth)
+      const y = parseInt(val)
+      const date = setYear(setMonth(new Date(), mIdx), y)
+      setDateRange({
+        from: startOfMonth(date),
+        to: endOfMonth(date)
+      })
+    }
+  }
+
+  const currentYear = new Date().getFullYear()
+  const years = Array.from({ length: 5 }, (_, i) => currentYear - 2 + i)
 
   return (
     <div className="space-y-6">
@@ -78,7 +117,7 @@ export default function ExpensesPage() {
 
           {/* Category Filter */}
           <Select value={category} onValueChange={setCategory}>
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-[150px]">
               <SelectValue placeholder="Kategori" />
             </SelectTrigger>
             <SelectContent>
@@ -89,6 +128,31 @@ export default function ExpensesPage() {
               <SelectItem value="maintenance">Maintenance</SelectItem>
               <SelectItem value="marketing">Marketing</SelectItem>
               <SelectItem value="other">Lainnya</SelectItem>
+            </SelectContent>
+          </Select>
+
+          {/* Month Filter */}
+          <Select value={selectedMonth} onValueChange={handleMonthChange}>
+            <SelectTrigger className="w-[140px]">
+              <SelectValue placeholder="Bulan" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Semua Bulan</SelectItem>
+              {months.map((m, i) => (
+                <SelectItem key={i} value={i.toString()}>{m}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          {/* Year Filter */}
+          <Select value={selectedYear} onValueChange={handleYearChange}>
+            <SelectTrigger className="w-[100px]">
+              <SelectValue placeholder="Tahun" />
+            </SelectTrigger>
+            <SelectContent>
+              {years.map(y => (
+                <SelectItem key={y} value={y.toString()}>{y}</SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>

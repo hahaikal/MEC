@@ -34,6 +34,7 @@ import { cn } from '@/lib/utils'
 import { Calendar } from '@/components/ui/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { useClassList } from '@/lib/hooks/use-students-by-class'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 
 interface StudentFormProps {
   initialData?: any 
@@ -61,6 +62,9 @@ export function StudentForm({ initialData, onSuccess }: StudentFormProps) {
   const isLoading = createStudent.isPending || updateStudent.isPending
   const [pendingPhotoFile, setPendingPhotoFile] = useState<File | null>(null)
   const [photoUrl, setPhotoUrl] = useState<string | null>(initialData?.photo_url || null)
+  
+  const [showConfirm, setShowConfirm] = useState(false)
+  const [formDataToSubmit, setFormDataToSubmit] = useState<StudentFormValues | null>(null)
 
   const form = useForm<StudentFormValues>({
     resolver: zodResolver(studentSchema),
@@ -98,15 +102,35 @@ export function StudentForm({ initialData, onSuccess }: StudentFormProps) {
     },
   })
 
-  async function onSubmit(data: StudentFormValues) {
+  const onSubmit = (data: StudentFormValues) => {
+    setFormDataToSubmit(data)
+    setShowConfirm(true)
+  }
+
+  const executeSubmit = async () => {
+    if (!formDataToSubmit) return
+    const data = formDataToSubmit
+    
     try {
       if (isEditing) {
         await updateStudent.mutateAsync({ id: initialData.id, data })
+        
+        // If there's a new photo to upload
+        if (pendingPhotoFile) {
+          try {
+            const publicUrl = await uploadStudentPhoto(pendingPhotoFile, initialData.id)
+            await updateStudentPhoto(initialData.id, publicUrl)
+            toast.success('Foto profil berhasil diperbarui!')
+          } catch (photoError) {
+            console.error('Photo upload failed:', photoError)
+            toast.error('Gagal mengunggah foto profil.')
+          }
+        }
+        
         toast.success('Data siswa berhasil diperbarui!')
       } else {
         const result = await createStudent.mutateAsync(data)
-        toast.success('Siswa baru berhasil ditambahkan!')
-
+        
         // If there's a pending photo for the new student, upload it now
         if (pendingPhotoFile && result && 'studentId' in result && result.studentId) {
           try {
@@ -118,6 +142,8 @@ export function StudentForm({ initialData, onSuccess }: StudentFormProps) {
             toast.error('Gagal mengunggah foto profil.')
           }
         }
+        
+        toast.success('Siswa baru berhasil ditambahkan!')
       }
       
       if (!isEditing) {
@@ -126,12 +152,15 @@ export function StudentForm({ initialData, onSuccess }: StudentFormProps) {
         setPhotoUrl(null)
       }
 
+      setShowConfirm(false)
+      
       if (onSuccess) {
         onSuccess()
       }
     } catch (error: any) {
       console.error(error)
       toast.error(error?.message || 'Gagal menyimpan data siswa.')
+      setShowConfirm(false)
     }
   }
 
@@ -439,6 +468,17 @@ export function StudentForm({ initialData, onSuccess }: StudentFormProps) {
           </Button>
         </div>
       </form>
+      
+      <ConfirmDialog
+        open={showConfirm}
+        onOpenChange={setShowConfirm}
+        title={isEditing ? "Simpan Perubahan?" : "Tambah Siswa?"}
+        description={isEditing 
+          ? "Apakah Anda yakin ingin menyimpan perubahan data siswa ini?" 
+          : "Apakah Anda yakin ingin menambahkan siswa baru dengan data ini?"}
+        onConfirm={executeSubmit}
+        isProcessing={isLoading}
+      />
     </Form>
   )
 }

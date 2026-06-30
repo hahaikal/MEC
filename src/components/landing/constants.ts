@@ -7,7 +7,7 @@ export const GAL_3 = "/images/placeholder-12.png";
 export const GAL_4 = "/images/placeholder-7.png";
 export const GAL_5 = "/images/placeholder-16.png";
 export const GAL_6 = "/images/placeholder-11.png";
-export const CTA_IMG = "images/placeholder-8.png";
+export const CTA_IMG = "images/1.jpeg";
 
 export const WHATSAPP_URL =
   "https://wa.me/6281274256077?text=" +
