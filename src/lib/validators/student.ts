@@ -10,7 +10,6 @@ export const studentSchema = z.object({
 
   // Kontak & Alamat
   address: z.string().optional(),
-  email: z.string().email('Email tidak valid').optional().or(z.literal('')),
   phone_number: z.string().optional(), // No HP Siswa
   
   // Data Akademik
@@ -19,12 +18,14 @@ export const studentSchema = z.object({
   enrollment_date: z.string().optional(), // Tanggal masuk/daftar
 
   // Data Orang Tua
-  parent_name: z.string().optional(),
-  parent_occupation: z.string().optional(),
+  father_name: z.string().optional(),
+  mother_name: z.string().optional(),
+  father_occupation: z.string().optional(),
+  mother_occupation: z.string().optional(),
   parent_phone: z.string().optional(),
   
   // Data Keuangan
-  base_fee: z.coerce.number().min(0, 'Biaya SPP tidak boleh negatif').default(0),
+  base_fee: z.coerce.number().min(0, 'Biaya SPP tidak boleh negatif').default(375000),
 
   // Deprecated / Hidden fields kept for type safety if needed but removed from UI
   // nis: z.string().optional(),

@@ -100,7 +100,7 @@ export function StudentPaymentCard({ student }: StudentPaymentCardProps) {
           <div className="grid grid-cols-2 gap-3 text-sm">
             <div className="flex items-center gap-2">
               <User className="h-4 w-4 text-muted-foreground" />
-              <span className="text-muted-foreground">{student.parent_name}</span>
+              <span className="text-muted-foreground">{student.father_name || student.mother_name || "-"}</span>
             </div>
             <div className="flex items-center gap-2">
               <Phone className="h-4 w-4 text-muted-foreground" />
@@ -270,12 +270,6 @@ export function StudentPaymentCard({ student }: StudentPaymentCardProps) {
             <div>
               <h4 className="font-semibold text-sm mb-3 text-muted-foreground">DATA SISWA</h4>
               <div className="grid grid-cols-2 gap-4 text-sm">
-                {student.email && (
-                  <div>
-                    <p className="text-muted-foreground">Email</p>
-                    <p className="font-medium">{student.email}</p>
-                  </div>
-                )}
                 {student.phone_number && (
                   <div>
                     <p className="text-muted-foreground">No. Telepon</p>
@@ -304,12 +298,16 @@ export function StudentPaymentCard({ student }: StudentPaymentCardProps) {
               <h4 className="font-semibold text-sm mb-3 text-muted-foreground">DATA ORANG TUA</h4>
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <p className="text-muted-foreground">Nama</p>
-                  <p className="font-medium">{student.parent_name}</p>
+                  <p className="text-muted-foreground">Nama Ayah</p>
+                  <p className="font-medium">{student.father_name || "-"}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Nama Ibu</p>
+                  <p className="font-medium">{student.mother_name || "-"}</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">No. Telepon</p>
-                  <p className="font-medium">{student.parent_phone}</p>
+                  <p className="font-medium">{student.parent_phone || "-"}</p>
                 </div>
               </div>
             </div>
@@ -351,7 +349,6 @@ export function StudentPaymentCard({ student }: StudentPaymentCardProps) {
           <StudentForm
             defaultValues={{
               ...student,
-              email: student.email || "",
               phone_number: student.phone_number || "",
               address: student.address || "",
               date_of_birth: student.date_of_birth ? new Date(student.date_of_birth) : undefined,

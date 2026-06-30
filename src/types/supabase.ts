@@ -13,11 +13,12 @@ export type Database = {
         Row: {
           id: string
           name: string
-          email: string | null
           phone_number: string | null
-          parent_name: string | null
+          father_name: string | null
+          mother_name: string | null
+          father_occupation: string | null
+          mother_occupation: string | null
           parent_phone: string | null
-          parent_occupation: string | null
           date_of_birth: string | null
           address: string | null
           place_of_birth: string | null
@@ -38,11 +39,12 @@ export type Database = {
         Insert: {
           id?: string
           name: string
-          email?: string | null
           phone_number?: string | null
-          parent_name?: string | null
+          father_name?: string | null
+          mother_name?: string | null
+          father_occupation?: string | null
+          mother_occupation?: string | null
           parent_phone?: string | null
-          parent_occupation?: string | null
           date_of_birth?: string | null
           address?: string | null
           place_of_birth?: string | null
@@ -63,11 +65,12 @@ export type Database = {
         Update: {
           id?: string
           name?: string
-          email?: string | null
           phone_number?: string | null
-          parent_name?: string | null
+          father_name?: string | null
+          mother_name?: string | null
+          father_occupation?: string | null
+          mother_occupation?: string | null
           parent_phone?: string | null
-          parent_occupation?: string | null
           date_of_birth?: string | null
           address?: string | null
           place_of_birth?: string | null

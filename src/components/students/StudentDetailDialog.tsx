@@ -123,12 +123,6 @@ export function StudentDetailDialog({
                     </h3>
                     <div className="space-y-3">
                         <div className="flex flex-col">
-                           <span className="text-xs text-muted-foreground">Email</span>
-                           <span className="text-sm font-medium flex items-center gap-2">
-                             {student.email || "-"}
-                           </span>
-                        </div>
-                        <div className="flex flex-col">
                            <span className="text-xs text-muted-foreground">No. Handphone</span>
                            <span className="text-sm font-medium">
                              {student.phone_number || "-"}
@@ -151,15 +145,15 @@ export function StudentDetailDialog({
                     </h3>
                     <div className="space-y-3">
                         <div className="flex flex-col">
-                           <span className="text-xs text-muted-foreground">Nama Orang Tua</span>
+                           <span className="text-xs text-muted-foreground">Nama Ayah</span>
                            <span className="text-sm font-medium">
-                             {student.parent_name || "-"}
+                             {student.father_name || "-"} {student.father_occupation ? `(${student.father_occupation})` : ''}
                            </span>
                         </div>
                         <div className="flex flex-col">
-                           <span className="text-xs text-muted-foreground">Pekerjaan</span>
+                           <span className="text-xs text-muted-foreground">Nama Ibu</span>
                            <span className="text-sm font-medium">
-                             {student.parent_occupation || "-"}
+                             {student.mother_name || "-"} {student.mother_occupation ? `(${student.mother_occupation})` : ''}
                            </span>
                         </div>
                         <div className="flex flex-col">

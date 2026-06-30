@@ -72,9 +72,11 @@ export function StudentForm({ initialData, onSuccess }: StudentFormProps) {
       ...initialData,
       // Pastikan field optional memiliki fallback string kosong jika null
       class_id: initialData.class_id || '',
-      email: initialData.email || '',
       phone_number: initialData.phone_number || '',
-      parent_name: initialData.parent_name || '',
+      father_name: initialData.father_name || '',
+      mother_name: initialData.mother_name || '',
+      father_occupation: initialData.father_occupation || '',
+      mother_occupation: initialData.mother_occupation || '',
       parent_phone: initialData.parent_phone || '',
       address: initialData.address || '',
       place_of_birth: initialData.place_of_birth || '',
@@ -82,7 +84,6 @@ export function StudentForm({ initialData, onSuccess }: StudentFormProps) {
       gender: initialData.gender || 'MALE',
       religion: initialData.religion || '',
       school_origin: initialData.school_origin || '',
-      parent_occupation: initialData.parent_occupation || '',
       enrollment_date: initialData.enrollment_date || '',
     } : {
       name: '',
@@ -91,14 +92,15 @@ export function StudentForm({ initialData, onSuccess }: StudentFormProps) {
       gender: 'MALE',
       religion: '',
       address: '',
-      email: '',
       phone_number: '',
       school_origin: '',
       class_id: '',
-      parent_name: '',
-      parent_occupation: '',
+      father_name: '',
+      mother_name: '',
+      father_occupation: '',
+      mother_occupation: '',
       parent_phone: '',
-      base_fee: 0,
+      base_fee: 375000,
     },
   })
 
@@ -366,12 +368,12 @@ export function StudentForm({ initialData, onSuccess }: StudentFormProps) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField
               control={form.control}
-              name="parent_name"
+              name="father_name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nama Orang Tua</FormLabel>
+                  <FormLabel>Nama Ayah</FormLabel>
                   <FormControl>
-                    <Input placeholder="Nama Ayah/Ibu" {...field} />
+                    <Input placeholder="Nama Ayah" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -380,12 +382,40 @@ export function StudentForm({ initialData, onSuccess }: StudentFormProps) {
 
             <FormField
               control={form.control}
-              name="parent_occupation"
+              name="mother_name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Pekerjaan Orang Tua</FormLabel>
+                  <FormLabel>Nama Ibu</FormLabel>
                   <FormControl>
-                    <Input placeholder="Pekerjaan" {...field} />
+                    <Input placeholder="Nama Ibu" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="father_occupation"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Pekerjaan Ayah</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Pekerjaan Ayah" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="mother_occupation"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Pekerjaan Ibu</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Pekerjaan Ibu" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -414,20 +444,6 @@ export function StudentForm({ initialData, onSuccess }: StudentFormProps) {
                   <FormLabel>No. HP Siswa (Opsional)</FormLabel>
                   <FormControl>
                     <Input placeholder="08..." {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email Siswa (Opsional)</FormLabel>
-                  <FormControl>
-                    <Input type="email" placeholder="contoh@email.com" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

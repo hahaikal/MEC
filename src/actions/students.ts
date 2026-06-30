@@ -29,11 +29,12 @@ export async function createStudent(data: StudentFormValues) {
 
   const { data: student, error } = await supabase.from('students').insert({
     name: validatedFields.data.name,
-    email: validatedFields.data.email || null,
     phone_number: validatedFields.data.phone_number || null,
-    parent_name: validatedFields.data.parent_name || null,
+    father_name: validatedFields.data.father_name || null,
+    mother_name: validatedFields.data.mother_name || null,
+    father_occupation: validatedFields.data.father_occupation || null,
+    mother_occupation: validatedFields.data.mother_occupation || null,
     parent_phone: validatedFields.data.parent_phone || null,
-    parent_occupation: validatedFields.data.parent_occupation || null,
     base_fee: validatedFields.data.base_fee,
     address: validatedFields.data.address || null,
     place_of_birth: validatedFields.data.place_of_birth || null,
@@ -86,11 +87,12 @@ export async function updateStudent(id: string, data: StudentFormValues) {
 
   const updateData = {
     name: validatedFields.data.name,
-    email: validatedFields.data.email || null,
     phone_number: validatedFields.data.phone_number || null,
-    parent_name: validatedFields.data.parent_name || null,
+    father_name: validatedFields.data.father_name || null,
+    mother_name: validatedFields.data.mother_name || null,
+    father_occupation: validatedFields.data.father_occupation || null,
+    mother_occupation: validatedFields.data.mother_occupation || null,
     parent_phone: validatedFields.data.parent_phone || null,
-    parent_occupation: validatedFields.data.parent_occupation || null,
     base_fee: validatedFields.data.base_fee,
     address: validatedFields.data.address || null,
     place_of_birth: validatedFields.data.place_of_birth || null,

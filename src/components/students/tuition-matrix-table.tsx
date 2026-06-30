@@ -33,9 +33,11 @@ type Student = {
   status: string;
   nis: string | null;
   class_year: string | null;
-  email: string | null;
   phone_number: string | null;
-  parent_name: string | null;
+  father_name: string | null;
+  mother_name: string | null;
+  father_occupation: string | null;
+  mother_occupation: string | null;
   parent_phone: string | null;
   base_fee: number;
   billing_cycle_date: number;
@@ -91,7 +93,7 @@ export function TuitionMatrixTable() {
       // 1. Fetch Students (Active only usually, but let's get all for history)
       const { data: studentsData, error: studentsError } = await supabase
         .from("students")
-        .select("id, name, status, nis, class_year, email, phone_number, parent_name, parent_phone, base_fee, billing_cycle_date, address, date_of_birth, created_at, class_enrollments(classes(program_id))")
+        .select("id, name, status, nis, class_year, phone_number, father_name, mother_name, father_occupation, mother_occupation, parent_phone, base_fee, billing_cycle_date, address, date_of_birth, created_at, class_enrollments(classes(program_id))")
         .order("name");
 
       if (studentsError) throw studentsError;

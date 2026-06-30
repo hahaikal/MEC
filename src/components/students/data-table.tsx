@@ -54,16 +54,11 @@ function getRowColorClass(data: any) {
   const hasFee = data.base_fee !== undefined && data.base_fee !== null && data.base_fee > 0;
   const hasGender = !!data.gender && data.gender.trim() !== "";
 
-  // Merah: Nama, kelas, SPP Fee, Jenis Kelamin tidak terisi (salah satu tidak ada)
-  if (!hasName || !hasClass || !hasFee || !hasGender) {
-    return "bg-red-100 hover:bg-red-100/50";
-  }
-
   // Cek field lainnya untuk kelengkapan penuh (Hijau)
   const isComplete =
     hasName && hasClass && hasFee && hasGender &&
     !!data.phone_number && data.phone_number.trim() !== "" &&
-    !!data.parent_name && data.parent_name.trim() !== "" &&
+    (!!data.father_name && data.father_name.trim() !== "" || !!data.mother_name && data.mother_name.trim() !== "") &&
     !!data.address && data.address.trim() !== "" &&
     !!data.date_of_birth && data.date_of_birth.trim() !== "" &&
     !!data.place_of_birth && data.place_of_birth.trim() !== "" &&

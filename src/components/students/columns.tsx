@@ -35,11 +35,9 @@ export type Student = {
   id: string
   name: string
   // nis: string | null // Deprecated
-  email: string | null
   class_name: string | null
   // class_year: string | null // Deprecated
   // status: 'ACTIVE' | 'GRADUATED' | 'DROPOUT' | 'ON_LEAVE' // Deprecated
-  parent_name: string | null
   phone_number: string | null
   enrollment_date: string | null
   base_fee: number
@@ -51,7 +49,10 @@ export type Student = {
   gender?: string | null
   religion?: string | null
   school_origin?: string | null
-  parent_occupation?: string | null
+  father_name?: string | null
+  mother_name?: string | null
+  father_occupation?: string | null
+  mother_occupation?: string | null
   address?: string | null
   parent_phone?: string | null
   photo_url?: string | null

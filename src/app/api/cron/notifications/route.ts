@@ -24,7 +24,7 @@ export async function GET(request: Request) {
     // 1. Process ALPHA Attendance Notifications
     const { data: alphaLogs, error: alphaError } = await supabase
       .from('attendance_logs')
-      .select('id, student_id, date, students(name, parent_phone, parent_name)')
+      .select('id, student_id, date, students(name, parent_phone, father_name, mother_name)')
       .eq('status', 'ALPHA')
       .eq('date', today)
 
@@ -32,7 +32,8 @@ export async function GET(request: Request) {
 
     for (const log of alphaLogs || []) {
       if (log.students?.parent_phone) {
-        const message = `Hello ${log.students.parent_name}, this is an automated message from MEC. Your child, ${log.students.name}, was marked as ALPHA (absent without notice) for their class today (${today}). Please contact us for more information.`
+        const parentName = log.students.father_name || log.students.mother_name || 'Orang Tua / Wali';
+        const message = `Hello Bapak/Ibu ${parentName}, this is an automated message from MEC. Your child, ${log.students.name}, was marked as ALPHA (absent without notice) for their class today (${today}). Please contact us for more information.`
 
         notificationsToSend.push({
           recipient: log.students.parent_phone,
@@ -50,7 +51,7 @@ export async function GET(request: Request) {
     if (currentDay === 11) {
        const { data: activeStudents, error: studentError } = await supabase
         .from('students')
-        .select('id, name, parent_phone, parent_name, email')
+        .select('id, name, parent_phone, father_name, mother_name')
         .eq('status', 'ACTIVE')
 
        if (studentError) throw studentError
@@ -71,7 +72,8 @@ export async function GET(request: Request) {
          if (!paidIds.has(student.id)) {
            // Student has not paid yet
            if (student.parent_phone) {
-             const message = `Reminder: Hello ${student.parent_name}, the tuition fee for ${student.name} for month ${currentMonth}/${currentYear} is currently overdue. Please process the payment at your earliest convenience.`
+             const parentName = student.father_name || student.mother_name || 'Orang Tua / Wali';
+             const message = `Reminder: Hello Bapak/Ibu ${parentName}, the tuition fee for ${student.name} for month ${currentMonth}/${currentYear} is currently overdue. Please process the payment at your earliest convenience.`
              notificationsToSend.push({
                recipient: student.parent_phone,
                type: 'WHATSAPP', // Or EMAIL if preferred
