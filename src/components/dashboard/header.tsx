@@ -21,8 +21,7 @@ export function DashboardHeader() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
-    router.push('/login')
-    router.refresh()
+    window.location.href = '/login'
   }
 
   return (
@@ -37,9 +36,13 @@ export function DashboardHeader() {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="gap-2">
-              <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm font-semibold">
-                {user?.email?.[0]?.toUpperCase() || 'U'}
-              </div>
+              {user?.profile_picture_url ? (
+                <img src={user.profile_picture_url} alt="Profile" className="w-8 h-8 rounded-full object-cover border border-slate-200" />
+              ) : (
+                <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm font-semibold">
+                  {user?.full_name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase() || 'U'}
+                </div>
+              )}
               <ChevronDown className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
@@ -50,9 +53,6 @@ export function DashboardHeader() {
                 <p className="text-xs text-slate-500">{user?.email}</p>
               </div>
             </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>Profile Settings</DropdownMenuItem>
-            <DropdownMenuItem>Account Settings</DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleLogout} className="text-red-600">
               Sign out

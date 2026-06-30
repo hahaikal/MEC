@@ -59,8 +59,7 @@ export function Sidebar() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
-    router.push('/login')
-    router.refresh()
+    window.location.href = '/login'
   }
 
   return (
@@ -87,8 +86,8 @@ export function Sidebar() {
         <div className="p-6 space-y-8 h-full flex flex-col overflow-y-auto scrollbar-hide">
           {/* Logo */}
           <div>
-            <h1 className="text-2xl font-bold">MEC Finance</h1>
-            <p className="text-xs text-slate-400 mt-1">Financial Management System</p>
+            <h1 className="text-2xl font-bold">My English Course</h1>
+            <p className="text-xs text-slate-400 mt-1">Academic & Operations System</p>
           </div>
 
           {/* Navigation */}
@@ -97,7 +96,7 @@ export function Sidebar() {
               const isAdminOrDirector = userRoles.some(r => ['admin', 'director', 'manager'].includes(r.toLowerCase()));
               
               if (!isAdminOrDirector) {
-                const allowedRoutes = ['/dashboard', '/dashboard/students', '/dashboard/attendance', '/dashboard/teacher-workspace', '/dashboard/settings'];
+                const allowedRoutes = ['/dashboard', '/dashboard/attendance', '/dashboard/teacher-workspace'];
                 if (!allowedRoutes.includes(item.href)) return null;
                 if (item.href === '/dashboard/teacher-workspace' && userRoles.some(r => r.toLowerCase() === 'parent')) return null;
               }

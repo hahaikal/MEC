@@ -16,7 +16,10 @@ export function OperationalDashboard({ user }: { user: any }) {
     return `${sign}${growth.toFixed(1)}%`
   }
 
-  const stats = [
+  const userRoles = user?.roles || (user?.role ? [user.role] : [])
+  const isAdminOrDirector = userRoles.some((r: string) => ['admin', 'director', 'manager'].includes(r.toLowerCase()))
+
+  const baseStats = [
     {
       title: 'Total Students',
       value: isLoading ? '...' : (statsData?.totalStudents?.toString() || '0'),
@@ -24,16 +27,19 @@ export function OperationalDashboard({ user }: { user: any }) {
       color: 'bg-blue-100 text-blue-600',
     },
     {
-      title: 'Total Revenue',
-      value: isLoading ? '...' : formatCurrency(statsData?.totalRevenue || 0),
-      icon: CreditCard,
-      color: 'bg-green-100 text-green-600',
-    },
-    {
       title: 'Active Programs',
       value: isLoading ? '...' : (statsData?.activePrograms?.toString() || '0'),
       icon: BarChart3,
       color: 'bg-purple-100 text-purple-600',
+    },
+  ]
+
+  const adminStats = [
+    {
+      title: 'Total Revenue',
+      value: isLoading ? '...' : formatCurrency(statsData?.totalRevenue || 0),
+      icon: CreditCard,
+      color: 'bg-green-100 text-green-600',
     },
     {
       title: 'Monthly Growth',
@@ -42,6 +48,8 @@ export function OperationalDashboard({ user }: { user: any }) {
       color: 'bg-orange-100 text-orange-600',
     },
   ]
+
+  const stats = isAdminOrDirector ? [...baseStats, ...adminStats] : baseStats
 
   return (
     <div className="space-y-8">

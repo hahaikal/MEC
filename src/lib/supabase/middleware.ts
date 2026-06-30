@@ -53,15 +53,14 @@ export async function updateSession(request: NextRequest) {
     
     const isAdminOrDirector = userRoles.some(r => ['admin', 'director', 'manager'].includes(r.toLowerCase()))
 
-    if (!isAdminOrDirector) {
+    const path = request.nextUrl.pathname;
+
+    if (!isAdminOrDirector && path.startsWith('/dashboard')) {
       const allowedRoutes = [
-        '/dashboard/students',
         '/dashboard/attendance',
-        '/dashboard/teacher-workspace',
-        '/dashboard/settings'
+        '/dashboard/teacher-workspace'
       ];
       
-      const path = request.nextUrl.pathname;
       const isAllowed = path === '/dashboard' || allowedRoutes.some(route => path.startsWith(route));
       
       if (!isAllowed) {
