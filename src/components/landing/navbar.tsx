@@ -13,7 +13,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { WHATSAPP_URL } from "./constants";
 
-export function Navbar() {
+export function Navbar({ phone = "+62 812-7425-6077" }: { phone?: string }) {
+  const cleanPhone = phone.replace(/\D/g, "");
+  const dynamicWhatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent("Halo Admin MEC, saya ingin konsultasi mengenai program kursus")}`;
   const [open, setOpen] = useState(false);
   const links = [
     { href: "#about", label: "About" },
@@ -56,7 +58,7 @@ export function Navbar() {
           </nav>
 
           <div className="hidden md:flex items-center gap-3">
-            <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer">
+            <a href={dynamicWhatsappUrl} target="_blank" rel="noopener noreferrer">
               <Button variant="ghost" className="rounded-full gap-2">
                 <MessageCircle className="h-4 w-4" />
                 WhatsApp
@@ -91,7 +93,7 @@ export function Navbar() {
                 {l.label}
               </a>
             ))}
-            <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer">
+            <a href={dynamicWhatsappUrl} target="_blank" rel="noopener noreferrer">
               <Button variant="outline" className="w-full rounded-full gap-2 mt-2">
                 <MessageCircle className="h-4 w-4" /> WhatsApp
               </Button>

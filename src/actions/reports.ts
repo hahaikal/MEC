@@ -130,8 +130,21 @@ export async function getDashboardStats() {
   const supabase = await createClient();
 
   const now = new Date();
-  const currentMonth = now.getMonth(); // 0-indexed to match DB storage
+  const { data: settings } = await supabase.from('system_settings').select('setting_key, setting_value').eq('setting_key', 'dueDate').single();
+  const dueDate = Number(settings?.setting_value) || 5;
+
+  const currentMonthNum = now.getMonth(); // 0-indexed to match DB storage
   const currentYear = now.getFullYear();
+  
+  // If today is past the due date, we check the current month.
+  // If today is on or before the due date, we check the previous month.
+  let targetMonth = currentMonthNum;
+  let targetYear = currentYear;
+  
+  if (now.getDate() <= dueDate) {
+    targetMonth = currentMonthNum === 0 ? 11 : currentMonthNum - 1;
+    targetYear = currentMonthNum === 0 ? currentYear - 1 : currentYear;
+  }
 
   // 1. Active students count
   const { count: activeStudents, error: err1 } = await supabase
@@ -141,25 +154,26 @@ export async function getDashboardStats() {
 
   if (err1) console.error(err1);
 
-  // 2. Outstanding count (dummy simple logic for now, or just active students minus those who paid)
-  // Let's count who has paid for this month
+  // 2. Outstanding count
   const { data: paidPayments, error: err2 } = await supabase
     .from('payments')
     .select('student_id')
     .eq('payment_status', 'completed')
     .eq('category', 'tuition')
-    .eq('month', currentMonth)
-    .eq('year', currentYear);
+    .eq('month', targetMonth)
+    .eq('year', targetYear);
 
   if (err2) console.error(err2);
 
   const paidStudentIds = new Set((paidPayments || []).map(p => p.student_id));
   const outstandingCount = Math.max(0, (activeStudents || 0) - paidStudentIds.size);
+  
+  const targetMonthName = new Date(targetYear, targetMonth, 1).toLocaleString('id-ID', { month: 'long' });
 
   // 3. Total income this month
   // Get first day of this month (local timezone safe for YYYY-MM-DD)
-  const firstDay = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-01`;
-  const nextM = currentMonth + 1;
+  const firstDay = `${currentYear}-${String(currentMonthNum + 1).padStart(2, '0')}-01`;
+  const nextM = currentMonthNum + 1;
   const nextY = nextM > 11 ? currentYear + 1 : currentYear;
   const firstDayNextMonth = `${nextY}-${String((nextM % 12) + 1).padStart(2, '0')}-01`;
 
@@ -177,6 +191,7 @@ export async function getDashboardStats() {
   return {
     activeStudents: activeStudents || 0,
     outstandingCount: outstandingCount,
-    totalIncome: totalIncome
+    totalIncome: totalIncome,
+    targetMonthName: targetMonthName
   };
 }

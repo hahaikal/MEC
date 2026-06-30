@@ -1,7 +1,9 @@
 import { Baby, Library, Mic, BookOpen, Calculator, ArrowRight } from "lucide-react";
 import { WHATSAPP_URL } from "./constants";
 
-export function Programs() {
+export function Programs({ phone = "+62 812-7425-6077" }: { phone?: string }) {
+  const cleanPhone = phone.replace(/\D/g, "");
+  const dynamicWhatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent("Halo Admin MEC, saya ingin konsultasi mengenai program kursus")}`;
   const programs = [
     {
       tag: "Ages 2–6",
@@ -95,7 +97,7 @@ export function Programs() {
                   {p.desc}
                 </p>
                 <a
-                  href={WHATSAPP_URL}
+                  href={dynamicWhatsappUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className={[

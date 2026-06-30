@@ -4,7 +4,9 @@ import { Button } from "@/components/ui/button";
 import { WHATSAPP_URL, HERO_IMG } from "./constants";
 import { Blob } from "./blob";
 
-export function Hero() {
+export function Hero({ phone = "+62 812-7425-6077" }: { phone?: string }) {
+  const cleanPhone = phone.replace(/\D/g, "");
+  const dynamicWhatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent("Halo Admin MEC, saya ingin konsultasi mengenai program kursus")}`;
   return (
     <section id="top" className="relative overflow-hidden">
       <Blob className="absolute -top-24 -left-24 h-96 w-96 opacity-[0.08]" color="primary" />
@@ -32,7 +34,7 @@ export function Hero() {
             </p>
 
             <div className="mt-8 flex flex-col sm:flex-row gap-3">
-              <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer">
+              <a href={dynamicWhatsappUrl} target="_blank" rel="noopener noreferrer">
                 <Button
                   size="lg"
                   className="rounded-full bg-accent text-accent-foreground hover:bg-accent/90 shadow-soft h-12 px-6 gap-2 w-full sm:w-auto"

@@ -193,25 +193,12 @@ export default function SettingsPage() {
           <div>
             <CardTitle className="text-lg">Konfigurasi SPP</CardTitle>
             <CardDescription className="mt-1">
-              Atur nominal SPP dan tanggal jatuh tempo pembayaran
+              Atur tanggal jatuh tempo pembayaran
             </CardDescription>
           </div>
         </CardHeader>
         <CardContent className="pt-6 space-y-6">
           <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="sppAmount" className="text-sm font-semibold">
-                Nominal SPP per Bulan (Rp)
-              </Label>
-              <Input
-                id="sppAmount"
-                type="number"
-                value={settings.sppAmount}
-                onChange={(e) => handleInputChange('sppAmount', Number(e.target.value))}
-                placeholder="500000"
-                className="h-9"
-              />
-            </div>
             <div className="space-y-2">
               <Label htmlFor="dueDate" className="text-sm font-semibold">
                 Tanggal Jatuh Tempo (Tanggal)

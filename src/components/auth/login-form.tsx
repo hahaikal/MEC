@@ -59,8 +59,7 @@ export function LoginForm() {
 
       if (signInError) throw signInError
 
-      router.push('/dashboard')
-      router.refresh()
+      window.location.href = '/dashboard'
     } catch (err) {
       const message = err instanceof Error ? err.message : 'An error occurred during login'
       setError(message)

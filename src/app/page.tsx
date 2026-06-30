@@ -7,21 +7,26 @@ import { Gallery } from "@/components/landing/gallery";
 import { Testimonials } from "@/components/landing/testimonials";
 import { CTABanner } from "@/components/landing/cta-banner";
 import { Footer } from "@/components/landing/footer";
+import { getSystemSettings } from "@/actions/settings";
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  const settings = await getSystemSettings() || {};
+  const phone = settings.schoolPhone || "+62 812-7425-6077";
+  const email = settings.schoolEmail || "myenglishcoursebaganbatu@gmail.com";
+
   return (
     <div className="bg-background">
-      <Navbar />
+      <Navbar phone={phone} />
       <main>
-        <Hero />
+        <Hero phone={phone} />
         <About />
-        <Programs />
+        <Programs phone={phone} />
         <WhyUs />
         <Gallery />
         <Testimonials />
-        <CTABanner />
+        <CTABanner phone={phone} />
       </main>
-      <Footer />
+      <Footer phone={phone} email={email} />
     </div>
   );
 }

@@ -4,7 +4,9 @@ import { Button } from "@/components/ui/button";
 import { WHATSAPP_URL, CTA_IMG } from "./constants";
 import { Blob } from "./blob";
 
-export function CTABanner() {
+export function CTABanner({ phone = "+62 812-7425-6077" }: { phone?: string }) {
+  const cleanPhone = phone.replace(/\D/g, "");
+  const dynamicWhatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent("Halo Admin MEC, saya ingin konsultasi mengenai program kursus")}`;
   return (
     <section id="contact" className="py-20 md:py-28">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -26,7 +28,7 @@ export function CTABanner() {
               </p>
 
               <div className="mt-8 flex flex-col sm:flex-row gap-3">
-                <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer">
+                <a href={dynamicWhatsappUrl} target="_blank" rel="noopener noreferrer">
                   <Button
                     size="lg"
                     className="rounded-full bg-accent text-accent-foreground hover:bg-accent/90 h-12 px-6 gap-2 w-full sm:w-auto"

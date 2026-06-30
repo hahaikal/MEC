@@ -58,7 +58,7 @@ export function StudentStats({ students }: StudentStatsProps) {
         <CardContent>
           <div className="text-2xl font-bold text-destructive">{stats?.outstandingCount || 0}</div>
           <p className="text-xs text-muted-foreground">
-             Belum bayar SPP {currentMonthName}
+             Belum bayar SPP {stats?.targetMonthName || currentMonthName}
           </p>
         </CardContent>
       </Card>

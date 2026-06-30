@@ -23,7 +23,9 @@ function Tiktok(props: React.SVGProps<SVGSVGElement>) {
   );
 }
 
-export function Footer() {
+export function Footer({ phone = "+62 812-7425-6077", email = "myenglishcoursebaganbatu@gmail.com" }: { phone?: string, email?: string }) {
+  const cleanPhone = phone.replace(/\D/g, "");
+  const dynamicWhatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent("Halo Admin MEC, saya ingin konsultasi mengenai program kursus")}`;
   return (
     <footer className="bg-[var(--color-surface)] border-t border-border">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-14">
@@ -50,7 +52,7 @@ export function Footer() {
               {[
                 { Icon: Instagram, href: "https://instagram.com/myenglishcoursebaganbatu", label: "Instagram" },
                 { Icon: Tiktok, href: "https://tiktok.com/@myenglishcoursebaganbatu", label: "Tiktok" },
-                { Icon: MessageCircle, href: WHATSAPP_URL, label: "WhatsApp" },
+                { Icon: MessageCircle, href: dynamicWhatsappUrl, label: "WhatsApp" },
                 { Icon: Facebook, href: "https://facebook.com/myenglishcoursebaganbatu", label: "Facebook" },
               ].map(({ Icon, href, label }) => (
                 <a
@@ -82,13 +84,13 @@ export function Footer() {
             <ul className="mt-4 space-y-3 text-sm text-muted-foreground">
               <li className="flex items-start gap-2">
                 <Phone className="h-4 w-4 mt-0.5 text-primary shrink-0" />
-                <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="hover:text-primary">
-                  +62 812-7425-6077
+                <a href={dynamicWhatsappUrl} target="_blank" rel="noopener noreferrer" className="hover:text-primary">
+                  {phone}
                 </a>
               </li>
               <li className="flex items-start gap-2">
                 <Mail className="h-4 w-4 mt-0.5 text-primary shrink-0" />
-                myenglishcoursebaganbatu@gmail.com
+                {email}
               </li>
               <li className="flex items-start gap-2">
                 <MapPin className="h-4 w-4 mt-0.5 text-primary shrink-0" />

@@ -28,7 +28,6 @@ const navItems = [
   { icon: Users, label: 'Students', href: '/dashboard/students' },
   { icon: ClipboardList, label: 'Absensi & Kehadiran', href: '/dashboard/attendance' },
   { icon: Receipt, label: 'Expenses', href: '/dashboard/expenses' },
-  { icon: CreditCard, label: 'Penggajian', href: '/dashboard/payroll', adminOnly: true },
   { icon: BarChart3, label: 'Reports', href: '/dashboard/reports' },
   { icon: Users, label: 'Manajemen Kelas', href: '/dashboard/classes', adminOnly: true },
   { icon: Users, label: 'Manajemen Staff', href: '/dashboard/users', adminOnly: true },
