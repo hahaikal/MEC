@@ -49,6 +49,7 @@ export type Student = {
   gender?: string | null
   religion?: string | null
   school_origin?: string | null
+  joined_since_class?: string | null
   father_name?: string | null
   mother_name?: string | null
   father_occupation?: string | null

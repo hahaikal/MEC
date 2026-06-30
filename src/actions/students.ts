@@ -42,6 +42,7 @@ export async function createStudent(data: StudentFormValues) {
     gender: validatedFields.data.gender || 'MALE',
     religion: validatedFields.data.religion || null,
     school_origin: validatedFields.data.school_origin || null,
+    joined_since_class: validatedFields.data.joined_since_class || null,
     enrollment_date: toDateValue(validatedFields.data.enrollment_date) || new Date().toISOString(),
     status: 'ACTIVE',
     created_by: user.id,
@@ -100,6 +101,7 @@ export async function updateStudent(id: string, data: StudentFormValues) {
     gender: validatedFields.data.gender || 'MALE',
     religion: validatedFields.data.religion || null,
     school_origin: validatedFields.data.school_origin || null,
+    joined_since_class: validatedFields.data.joined_since_class || null,
     enrollment_date: toDateValue(validatedFields.data.enrollment_date),
     updated_at: new Date().toISOString(),
   }

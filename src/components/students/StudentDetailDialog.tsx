@@ -157,7 +157,7 @@ export function StudentDetailDialog({
                            </span>
                         </div>
                         <div className="flex flex-col">
-                           <span className="text-xs text-muted-foreground">No. Handphone Darurat</span>
+                           <span className="text-xs text-muted-foreground">No. Handphone orang tua</span>
                            <span className="text-sm font-medium">
                              {student.parent_phone || "-"}
                            </span>
@@ -176,6 +176,12 @@ export function StudentDetailDialog({
                            <span className="text-xs text-muted-foreground">Sekolah Asal</span>
                            <span className="text-sm font-medium">
                              {student.school_origin || "-"}
+                           </span>
+                        </div>
+                        <div className="flex flex-col">
+                           <span className="text-xs text-muted-foreground">Masuk Sejak Kelas</span>
+                           <span className="text-sm font-medium">
+                             {student.joined_since_class || "-"}
                            </span>
                         </div>
                         <div className="flex flex-col">

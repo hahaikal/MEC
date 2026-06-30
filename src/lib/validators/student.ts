@@ -16,6 +16,7 @@ export const studentSchema = z.object({
   school_origin: z.string().optional(),
   class_id: z.string().optional(),
   enrollment_date: z.string().optional(), // Tanggal masuk/daftar
+  joined_since_class: z.string().optional(), // Masuk sejak kelas
 
   // Data Orang Tua
   father_name: z.string().optional(),

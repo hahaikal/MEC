@@ -32,6 +32,7 @@ export type Database = {
           parent_id: string | null
           photo_url: string | null
           enrollment_date: string | null
+          joined_since_class: string | null
           created_by: string
           created_at: string
           updated_at: string
@@ -58,6 +59,7 @@ export type Database = {
           parent_id?: string | null
           photo_url?: string | null
           enrollment_date?: string | null
+          joined_since_class?: string | null
           created_by: string
           created_at?: string
           updated_at?: string
@@ -84,6 +86,7 @@ export type Database = {
           parent_id?: string | null
           photo_url?: string | null
           enrollment_date?: string | null
+          joined_since_class?: string | null
           created_by?: string
           created_at?: string
           updated_at?: string

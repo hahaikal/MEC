@@ -84,6 +84,7 @@ export function StudentForm({ initialData, onSuccess }: StudentFormProps) {
       gender: initialData.gender || 'MALE',
       religion: initialData.religion || '',
       school_origin: initialData.school_origin || '',
+      joined_since_class: initialData.joined_since_class || '',
       enrollment_date: initialData.enrollment_date || '',
     } : {
       name: '',
@@ -94,6 +95,7 @@ export function StudentForm({ initialData, onSuccess }: StudentFormProps) {
       address: '',
       phone_number: '',
       school_origin: '',
+      joined_since_class: '',
       class_id: '',
       father_name: '',
       mother_name: '',
@@ -271,12 +273,12 @@ export function StudentForm({ initialData, onSuccess }: StudentFormProps) {
                     </FormControl>
                     <SelectContent>
                       <SelectItem value="ISLAM">Islam</SelectItem>
-                      <SelectItem value="KRISTEN">Kristen</SelectItem>
-                      <SelectItem value="KATOLIK">Katolik</SelectItem>
-                      <SelectItem value="HINDU">Hindu</SelectItem>
-                      <SelectItem value="BUDDHA">Buddha</SelectItem>
-                      <SelectItem value="KONGHUCU">Konghucu</SelectItem>
-                      <SelectItem value="LAINNYA">Lainnya</SelectItem>
+                      <SelectItem value="CHRISTIANITY">Christianity</SelectItem>
+                      <SelectItem value="CATHOLICISM">Catholicism</SelectItem>
+                      <SelectItem value="HINDUISM">Hinduism</SelectItem>
+                      <SelectItem value="BUDDHISM">Buddhism</SelectItem>
+                      <SelectItem value="CONFUCIANISM">Confucianism</SelectItem>
+                      <SelectItem value="OTHER">Other</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -320,6 +322,20 @@ export function StudentForm({ initialData, onSuccess }: StudentFormProps) {
 
             <FormField
               control={form.control}
+              name="joined_since_class"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Masuk Sejak Kelas?</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Ex: Basic 1" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
               name="class_id"
               render={({ field }) => (
                 <FormItem>
@@ -349,10 +365,13 @@ export function StudentForm({ initialData, onSuccess }: StudentFormProps) {
                   <FormLabel>Tanggal Masuk / Gabung</FormLabel>
                   <FormControl>
                      <Input
-                       type="date"
+                       type="month"
                        {...field}
-                       value={field.value ? format(new Date(field.value), "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd")}
-                       onChange={(e) => field.onChange(e.target.value)}
+                       value={field.value ? format(new Date(field.value), "yyyy-MM") : format(new Date(), "yyyy-MM")}
+                       onChange={(e) => {
+                         const val = e.target.value;
+                         field.onChange(val ? `${val}-01` : "");
+                       }}
                      />
                   </FormControl>
                   <FormMessage />
@@ -429,7 +448,7 @@ export function StudentForm({ initialData, onSuccess }: StudentFormProps) {
                 <FormItem>
                   <FormLabel>No. HP Orang Tua</FormLabel>
                   <FormControl>
-                    <Input placeholder="08..." {...field} />
+                    <Input placeholder="+62 8..." {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -443,7 +462,7 @@ export function StudentForm({ initialData, onSuccess }: StudentFormProps) {
                 <FormItem>
                   <FormLabel>No. HP Siswa (Opsional)</FormLabel>
                   <FormControl>
-                    <Input placeholder="08..." {...field} />
+                    <Input placeholder="+62 8..." {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
