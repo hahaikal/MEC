@@ -118,21 +118,21 @@ export default function StudentsPage() {
             <DataTable 
               columns={columns} 
               data={filteredStudents} 
-              toolbarElements={
+              searchElement={
+                <div className="relative w-full sm:w-[300px]">
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Cari nama atau NIS..."
+                    className="pl-8 h-9"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
+              }
+              filterElements={
                 <>
-                  {/* Search Input */}
-                  <div className="relative w-full sm:w-[250px]">
-                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      placeholder="Cari nama atau NIS..."
-                      className="pl-8 h-9"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                  </div>
-
                   {/* Multi-Class Filter */}
-                  <div className="w-full sm:w-[200px]">
+                  <div className="w-full sm:w-[300px]">
                     <Popover open={openClassFilter} onOpenChange={setOpenClassFilter}>
                       <PopoverTrigger asChild>
                         <Button
@@ -148,13 +148,13 @@ export default function StudentsPage() {
                           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-[200px] p-0">
+                      <PopoverContent className="w-[300px] p-0">
                         <Command>
                           <CommandInput placeholder="Cari kelas..." />
                           <CommandList>
                             <CommandEmpty>Kelas tidak ditemukan.</CommandEmpty>
                             <CommandGroup>
-                              {classes?.map((c) => (
+                              {classes && [...classes].sort((a, b) => a.name.localeCompare(b.name)).map((c) => (
                                 <CommandItem
                                   key={c.id}
                                   value={c.name}
@@ -199,7 +199,7 @@ export default function StudentsPage() {
                           <CommandList>
                             <CommandEmpty>Program tidak ditemukan.</CommandEmpty>
                             <CommandGroup>
-                              {programs?.map((p) => (
+                              {programs && [...programs].sort((a, b) => a.name.localeCompare(b.name)).map((p) => (
                                 <CommandItem
                                   key={p.id}
                                   value={p.name}
@@ -234,6 +234,23 @@ export default function StudentsPage() {
                       </SelectContent>
                     </Select>
                   </div>
+                  
+                  {/* Clear Filters Button */}
+                  {(selectedClasses.length > 0 || selectedPrograms.length > 0 || statusFilter !== 'ACTIVE' || searchQuery !== '') && (
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-9 text-muted-foreground hover:text-foreground"
+                      onClick={() => {
+                        setSelectedClasses([])
+                        setSelectedPrograms([])
+                        setStatusFilter('ACTIVE')
+                        setSearchQuery('')
+                      }}
+                    >
+                      Reset Filter
+                    </Button>
+                  )}
                 </>
               }
             />

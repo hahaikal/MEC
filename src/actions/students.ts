@@ -154,17 +154,23 @@ export async function deleteStudent(id: string) {
   const supabase = await createClient()
   
   // Instead of hard deleting, we soft delete the student by setting status to 'INACTIVE'
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('students')
     .update({
       status: 'INACTIVE',
       updated_at: new Date().toISOString(),
     })
     .eq('id', id)
+    .select()
 
   if (error) {
     console.error('Update Student Status Error:', error)
     return { error: error.message }
+  }
+
+  if (!data || data.length === 0) {
+    console.error('No rows updated. RLS or invalid ID.')
+    return { error: 'Gagal memperbarui status. Pastikan Anda memiliki akses.' }
   }
 
   revalidatePath('/dashboard/students')

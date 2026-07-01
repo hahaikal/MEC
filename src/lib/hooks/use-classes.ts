@@ -3,28 +3,11 @@ import { getPublicActiveClasses, getPublicClass } from '@/actions/parent-hub-pub
 import { createClient } from '@/lib/supabase/client'
 
 export function useClasses() {
-  const supabase = createClient()
-
   return useQuery({
     queryKey: ['classes'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('classes')
-        .select(`
-          *,
-          class_teachers ( users (id, full_name) ),
-          programs:program_id (id, name),
-          class_enrollments(count)
-        `)
-        .order('created_at', { ascending: false })
-
-      if (error) throw error
-
-      return data.map((c: any) => ({
-        ...c,
-        teachers: c.class_teachers?.map((ct: any) => ct.users) || [],
-        enrolled_count: c.class_enrollments[0]?.count || 0
-      }))
+      const { getClasses } = await import('@/actions/classes')
+      return await getClasses()
     },
   })
 }

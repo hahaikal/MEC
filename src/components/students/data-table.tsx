@@ -37,16 +37,17 @@ import { cn } from "@/lib/utils";
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
-  toolbarElements?: React.ReactNode;
+  searchElement?: React.ReactNode;
+  filterElements?: React.ReactNode;
 }
 
 // Helper to determine row color based on student data completeness
 function getRowColorClass(data: any) {
   if (!data) return "";
 
-  // If student is INACTIVE, return dark gray background with white text
+  // If student is INACTIVE, return light red background
   if (data.status === 'INACTIVE' || data.status === 'inactive') {
-    return "bg-gray-800 text-white";
+    return "bg-red-100 hover:bg-red-100/50";
   }
 
   const hasName = !!data.name && data.name.trim() !== "";
@@ -75,7 +76,8 @@ function getRowColorClass(data: any) {
 export function DataTable<TData, TValue>({
   columns,
   data,
-  toolbarElements,
+  searchElement,
+  filterElements,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -107,37 +109,47 @@ export function DataTable<TData, TValue>({
   return (
     <div className="w-full h-full flex flex-col space-y-4">
       {/* Table Toolbar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between py-2 px-1 gap-4">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full flex-1">
-          {toolbarElements}
-        </div>
-        <div className="flex items-center gap-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="ml-auto h-9">
-                Columns <ChevronDown className="ml-2 h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {table
-                .getAllColumns()
-                .filter((column) => column.getCanHide())
-                .map((column) => {
-                  return (
-                    <DropdownMenuCheckboxItem
-                      key={column.id}
-                      className="capitalize"
-                      checked={column.getIsVisible()}
-                      onCheckedChange={(value) =>
-                        column.toggleVisibility(!!value)
-                      }
-                    >
-                      {column.id}
-                    </DropdownMenuCheckboxItem>
-                  );
-                })}
-            </DropdownMenuContent>
-          </DropdownMenu>
+      <div className="flex flex-col py-2 px-1 gap-3">
+        {/* Row 1: Search Element */}
+        {searchElement && (
+          <div className="w-full">
+            {searchElement}
+          </div>
+        )}
+        
+        {/* Row 2: Filters and Columns */}
+        <div className="flex flex-wrap items-center justify-between gap-2 w-full">
+          <div className="flex flex-wrap items-center gap-2 flex-1">
+            {filterElements}
+          </div>
+          <div className="flex items-center gap-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="ml-auto h-9">
+                  Columns <ChevronDown className="ml-2 h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {table
+                  .getAllColumns()
+                  .filter((column) => column.getCanHide())
+                  .map((column) => {
+                    return (
+                      <DropdownMenuCheckboxItem
+                        key={column.id}
+                        className="capitalize"
+                        checked={column.getIsVisible()}
+                        onCheckedChange={(value) =>
+                          column.toggleVisibility(!!value)
+                        }
+                      >
+                        {column.id}
+                      </DropdownMenuCheckboxItem>
+                    );
+                  })}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
       </div>
 

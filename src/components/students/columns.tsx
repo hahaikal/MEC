@@ -65,6 +65,12 @@ export type Student = {
 
 export const columns: ColumnDef<Student>[] = [
   {
+    id: 'index',
+    header: () => <div className="w-8 text-center text-xs font-medium">No</div>,
+    size: 40,
+    cell: ({ row }) => <div className="text-center text-xs text-muted-foreground">{row.index + 1}</div>,
+  },
+  {
     accessorKey: 'name',
     header: ({ column }) => {
       return (

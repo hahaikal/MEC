@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
@@ -26,6 +26,15 @@ export function ClassDialog({ classToEdit, children }: { classToEdit?: any, chil
   const [teacherIds, setTeacherIds] = useState<string[]>(classToEdit?.teachers?.map((t: any) => t.id) || [])
   const [programId, setProgramId] = useState(classToEdit?.program_id || 'none')
   const [loading, setLoading] = useState(false)
+  
+  useEffect(() => {
+    if (open) {
+      setName(classToEdit?.name || '')
+      setScheduleDays(classToEdit?.schedule_days || [])
+      setTeacherIds(classToEdit?.teachers?.map((t: any) => t.id) || [])
+      setProgramId(classToEdit?.program_id || 'none')
+    }
+  }, [open, classToEdit])
 
   const { data: teachers, isLoading: isLoadingTeachers } = useTeachers()
   const supabase = createClient()

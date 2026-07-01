@@ -3,6 +3,31 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 
+export async function getClasses() {
+  const supabase = await createClient()
+
+  const { data, error } = await supabase
+    .from('classes')
+    .select(`
+      *,
+      class_teachers ( users (id, full_name) ),
+      programs:program_id (id, name),
+      class_enrollments(count)
+    `)
+    .order('created_at', { ascending: false })
+
+  if (error) {
+    console.error('Fetch Classes Error:', error)
+    throw new Error(error.message)
+  }
+
+  return data.map((c: any) => ({
+    ...c,
+    teachers: c.class_teachers?.map((ct: any) => ct.users) || [],
+    enrolled_count: c.class_enrollments[0]?.count || 0
+  }))
+}
+
 export async function createClass(data: any) {
   const supabase = await createClient()
 
