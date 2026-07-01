@@ -64,7 +64,7 @@ export function Sidebar() {
   return (
     <>
       {/* Mobile menu button */}
-      <div className="md:hidden fixed top-4 left-4 z-50">
+      <div className="lg:hidden fixed top-4 left-4 z-50">
         <Button
           variant="ghost"
           size="icon"
@@ -78,7 +78,7 @@ export function Sidebar() {
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed left-0 top-0 h-screen w-64 bg-slate-900 text-white z-40 transition-transform duration-300 md:translate-x-0 overflow-hidden',
+          'fixed left-0 top-0 h-screen w-64 bg-slate-900 text-white z-40 transition-transform duration-300 lg:translate-x-0 overflow-hidden',
           isOpen ? 'translate-x-0' : '-translate-x-full'
         )}
       >
@@ -136,7 +136,7 @@ export function Sidebar() {
       {/* Mobile overlay */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-30 md:hidden"
+          className="fixed inset-0 bg-black/50 z-30 lg:hidden"
           onClick={() => setIsOpen(false)}
         />
       )}

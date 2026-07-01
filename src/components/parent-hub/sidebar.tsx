@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronDown, GraduationCap, BookOpen, Calendar, Baby, LogOut } from "lucide-react";
+import { ChevronDown, GraduationCap, BookOpen, Calendar, Baby, LogOut, Menu, X } from "lucide-react";
 import { useActiveClasses } from "@/lib/hooks/use-classes";
 import { usePrograms } from "@/lib/hooks/use-programs";
 
@@ -11,6 +11,7 @@ export function ParentHubSidebar({ onLogout }: { onLogout: () => void }) {
   const pathname = usePathname() || "";
   const [openProgram, setOpenProgram] = useState(pathname.includes("/program/"));
   const [openClass, setOpenClass] = useState(pathname.includes("/class/"));
+  const [isOpen, setIsOpen] = useState(false);
   const { data: programs = [], isLoading: isProgramsLoading } = usePrograms();
   const { data: dynamicClasses = [], isLoading } = useActiveClasses();
 
@@ -22,7 +23,28 @@ export function ParentHubSidebar({ onLogout }: { onLogout: () => void }) {
   const isActive = (path: string) => pathname === path;
 
   return (
-    <aside className="sticky top-6 w-72 shrink-0 rounded-3xl bg-white p-5 shadow-[0_8px_40px_-20px_rgba(0,0,0,0.2)]">
+    <>
+      {/* Mobile menu button */}
+      <div className="lg:hidden fixed top-4 left-4 z-50">
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="bg-white rounded-lg p-2 shadow-md border text-neutral-600 hover:text-neutral-900"
+        >
+          {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+        </button>
+      </div>
+
+      {/* Mobile overlay */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-30 lg:hidden"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
+
+      <aside 
+        className={`fixed left-0 top-0 h-screen w-72 shrink-0 bg-white p-5 shadow-2xl z-40 transition-transform duration-300 overflow-y-auto lg:sticky lg:top-6 lg:h-auto lg:rounded-3xl lg:shadow-[0_8px_40px_-20px_rgba(0,0,0,0.2)] lg:translate-x-0 lg:overflow-visible ${isOpen ? "translate-x-0" : "-translate-x-full"}`}
+      >
       <div className="mb-4 flex items-center gap-2 px-2">
         <div
           className="grid h-9 w-9 place-items-center rounded-xl text-white font-bold"
@@ -131,5 +153,6 @@ export function ParentHubSidebar({ onLogout }: { onLogout: () => void }) {
         <LogOut className="h-4 w-4" /> Logout
       </button>
     </aside>
+    </>
   );
 }
