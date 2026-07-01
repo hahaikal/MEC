@@ -35,12 +35,10 @@ export type Student = {
   id: string
   name: string
   // nis: string | null // Deprecated
+  enrollments: any[]
   class_name: string | null
-  // class_year: string | null // Deprecated
-  // status: 'ACTIVE' | 'GRADUATED' | 'DROPOUT' | 'ON_LEAVE' // Deprecated
   phone_number: string | null
   enrollment_date: string | null
-  base_fee: number
   created_at: string
 
   // New Fields
@@ -114,11 +112,18 @@ export const columns: ColumnDef<Student>[] = [
     },
   },
   {
-    accessorKey: 'class_name',
+    accessorKey: 'enrollments',
     header: 'Kelas',
     cell: ({ row }) => {
-      const className = row.getValue('class_name') as string
-      return className ? <Badge variant="outline">{className}</Badge> : <span className="text-muted-foreground">-</span>
+      const enrollments = row.getValue('enrollments') as any[]
+      if (!enrollments || enrollments.length === 0) return <span className="text-muted-foreground">-</span>
+      return (
+        <div className="flex flex-wrap gap-1">
+          {enrollments.map((enr: any, i: number) => (
+            <Badge key={i} variant="outline">{enr.class_name}</Badge>
+          ))}
+        </div>
+      )
     },
   },
   {

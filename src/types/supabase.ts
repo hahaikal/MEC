@@ -26,8 +26,6 @@ export type Database = {
           religion: string | null
           school_origin: string | null
           status: string
-          base_fee: number
-          discount: number | null
           nis: string | null
           parent_id: string | null
           photo_url: string | null
@@ -53,8 +51,6 @@ export type Database = {
           religion?: string | null
           school_origin?: string | null
           status?: string
-          base_fee?: number
-          discount?: number | null
           nis?: string | null
           parent_id?: string | null
           photo_url?: string | null
@@ -80,8 +76,6 @@ export type Database = {
           religion?: string | null
           school_origin?: string | null
           status?: string
-          base_fee?: number
-          discount?: number | null
           nis?: string | null
           parent_id?: string | null
           photo_url?: string | null
@@ -268,18 +262,21 @@ export type Database = {
           class_id: string
           student_id: string
           enrolled_at: string
+          base_fee: number | null
         }
         Insert: {
           id?: string
           class_id: string
           student_id: string
           enrolled_at?: string
+          base_fee?: number | null
         }
         Update: {
           id?: string
           class_id?: string
           student_id?: string
           enrolled_at?: string
+          base_fee?: number | null
         }
       }
       expenses: {

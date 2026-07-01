@@ -6,10 +6,19 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { format } from 'date-fns'
 import { id as idLocale } from 'date-fns/locale'
-import { Loader2, CalendarIcon, Check } from 'lucide-react'
+import { Loader2, CalendarIcon, Check, ChevronsUpDown } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command'
 import {
   Form,
   FormControl,
@@ -47,7 +56,7 @@ interface QuickPaymentFormProps {
   student: {
     id: string
     name: string
-    base_fee?: number
+    enrollments?: any[]
   }
   month: number
   year: number
@@ -57,6 +66,20 @@ interface QuickPaymentFormProps {
 
 export function QuickPaymentForm({ student, month, year, isRegistration = false, onSuccess }: QuickPaymentFormProps) {
   const { mutate: createPayment, isPending } = useCreatePayment()
+  const [openClassSelect, setOpenClassSelect] = useState(false)
+  
+  // Default to selecting all classes for convenience
+  const [selectedClassIds, setSelectedClassIds] = useState<string[]>(
+    student.enrollments ? student.enrollments.map((e: any) => e.class_id) : []
+  )
+
+  const toggleClass = (classId: string) => {
+    setSelectedClassIds(current =>
+      current.includes(classId)
+        ? current.filter(c => c !== classId)
+        : [...current, classId]
+    )
+  }
 
   const form = useForm<QuickPaymentFormValues>({
     resolver: zodResolver(quickPaymentSchema),
@@ -90,30 +113,52 @@ export function QuickPaymentForm({ student, month, year, isRegistration = false,
 
   // Kalkulasi Total
   const discount = form.watch("discount_amount") || 0;
-  const baseFee = isRegistration ? 300000 : (student.base_fee || 0);
+  
+  // Calculate total base fee from selected classes
+  const selectedEnrollments = student.enrollments?.filter(e => selectedClassIds.includes(e.class_id)) || [];
+  const selectedBaseFee = selectedEnrollments.reduce((sum, e) => sum + (e.base_fee || 0), 0);
+  
+  const baseFee = isRegistration ? 300000 : selectedBaseFee;
   const finalAmount = Math.max(0, baseFee - discount);
 
   function onSubmit(data: QuickPaymentFormValues) {
-    // Construct payment object
-    const paymentData = {
-      student_id: student.id,
-      amount: finalAmount, // Final amount after discount
-      discount_amount: data.discount_amount, // Store discount for record
-      payment_date: data.payment_date.toISOString(),
-      payment_method: data.payment_method,
-      month: isRegistration ? null : month, // Store target month
-      year: isRegistration ? new Date(data.payment_date).getFullYear() : year,   // Store target year
-      category: isRegistration ? 'registration' : 'tuition',
-      payment_status: 'completed',
-      notes: isRegistration ? 'Biaya Registrasi' : `Pembayaran SPP ${monthName}`,
-      created_at: new Date().toISOString(),
+    if (!isRegistration && selectedClassIds.length === 0) {
+       // Should select at least one class
+       return;
     }
 
-    createPayment(paymentData, {
-      onSuccess: () => {
-        form.reset()
-        if (onSuccess) onSuccess()
-      },
+    // Determine how many payments to create based on selected classes
+    // (We will submit one payment record per selected class to keep reporting accurate per program)
+    const classesToPay = isRegistration ? [{ class_id: null, base_fee: baseFee }] : selectedEnrollments;
+
+    // To prevent rapid successive inserts causing issues, we might just submit multiple mutations
+    // However, the action useCreatePayment takes one payment object. 
+    // We can map over them and submit each, or ideally adjust useCreatePayment to accept arrays.
+    // For now, we will call createPayment multiple times if needed.
+    
+    classesToPay.forEach((enr: any, index: number) => {
+      const paymentData = {
+        student_id: student.id,
+        amount: Math.max(0, (enr.base_fee || 300000) - (index === 0 ? data.discount_amount : 0)), // Apply discount only to first to avoid double discounting
+        discount_amount: index === 0 ? data.discount_amount : 0, 
+        payment_date: data.payment_date.toISOString(),
+        payment_method: data.payment_method,
+        month: isRegistration ? null : month,
+        year: isRegistration ? new Date(data.payment_date).getFullYear() : year,
+        category: isRegistration ? 'registration' : 'tuition',
+        payment_status: 'completed',
+        notes: isRegistration ? 'Biaya Registrasi' : `Pembayaran SPP ${monthName} (${enr.class_name || ''})`,
+        created_at: new Date().toISOString(),
+      }
+
+      createPayment(paymentData, {
+        onSuccess: () => {
+          if (index === classesToPay.length - 1) {
+            form.reset()
+            if (onSuccess) onSuccess()
+          }
+        },
+      })
     })
   }
 
@@ -140,6 +185,57 @@ export function QuickPaymentForm({ student, month, year, isRegistration = false,
                   <span className="font-medium capitalize">Registration</span>
                </div>
              )}
+
+             {!isRegistration && student.enrollments && student.enrollments.length > 0 && (
+               <div className="pt-2 border-t mt-2">
+                 <p className="text-muted-foreground mb-2">Pilih Kelas yang Dibayar:</p>
+                 <Popover open={openClassSelect} onOpenChange={setOpenClassSelect}>
+                   <PopoverTrigger asChild>
+                     <Button
+                       variant="outline"
+                       role="combobox"
+                       aria-expanded={openClassSelect}
+                       className="w-full justify-between bg-white font-normal"
+                     >
+                       {selectedClassIds.length === 0
+                         ? "Pilih kelas..."
+                         : `${selectedClassIds.length} Kelas Dipilih`}
+                       <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                     </Button>
+                   </PopoverTrigger>
+                   <PopoverContent className="w-[400px] p-0" align="start">
+                     <Command>
+                       <CommandList>
+                         <CommandGroup>
+                           {student.enrollments.map((enr: any) => (
+                             <CommandItem
+                               key={enr.class_id}
+                               value={enr.class_name}
+                               onSelect={() => toggleClass(enr.class_id)}
+                               className="flex items-center justify-between"
+                             >
+                               <div className="flex items-center">
+                                 <Check
+                                   className={cn(
+                                     "mr-2 h-4 w-4",
+                                     selectedClassIds.includes(enr.class_id) ? "opacity-100 text-primary" : "opacity-0"
+                                   )}
+                                 />
+                                 <span>{enr.class_name}</span>
+                               </div>
+                               <span className="text-muted-foreground text-xs font-mono">
+                                 {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(enr.base_fee)}
+                               </span>
+                             </CommandItem>
+                           ))}
+                         </CommandGroup>
+                       </CommandList>
+                     </Command>
+                   </PopoverContent>
+                 </Popover>
+               </div>
+             )}
+
              <div className="flex justify-between border-t pt-2 mt-2">
                 <span className="text-muted-foreground">Nominal{isRegistration ? ' Registrasi' : ' (SPP)'}:</span>
                 <span className="font-medium">
@@ -247,8 +343,8 @@ export function QuickPaymentForm({ student, month, year, isRegistration = false,
           />
         </div>
 
-        <div className="flex justify-end">
-          <Button type="submit" disabled={isPending}>
+        <div className="flex justify-end pt-2">
+          <Button type="submit" disabled={isPending || (!isRegistration && selectedClassIds.length === 0)}>
             {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Simpan Pembayaran
           </Button>

@@ -10,34 +10,29 @@ export function useStudents() {
   return useQuery({
     queryKey: ['students'],
     queryFn: async () => {
-      // Need to join with class_enrollments and classes to get the class_name
+      // Join with class_enrollments and classes
       const { data, error } = await supabase
         .from('students')
-        .select('*, class_enrollments(classes(id, name, programs(name)))')
+        .select('*, class_enrollments(class_id, base_fee, classes(id, name, programs(name)))')
         .order('created_at', { ascending: false })
 
       if (error) throw error
 
       return data.map((d: any) => {
-        let class_name = null
-        let class_id = null
-        let programs = []
+        const enrollments = d.class_enrollments?.map((enr: any) => ({
+          class_id: enr.class_id,
+          class_name: enr.classes?.name,
+          program_name: enr.classes?.programs?.name,
+          base_fee: enr.base_fee
+        })) || []
         
-        if (d.class_enrollments && d.class_enrollments.length > 0) {
-            const enrollment = d.class_enrollments[0]
-            if (enrollment.classes) {
-               class_name = enrollment.classes.name
-               class_id = enrollment.classes.id
-               if (enrollment.classes.programs?.name) {
-                   programs.push(enrollment.classes.programs.name)
-               }
-            }
-        }
+        const programs = Array.from(new Set(enrollments.map((e: any) => e.program_name).filter(Boolean)))
         
         return {
            ...d,
-           class_name,
-           class_id,
+           enrollments,
+           // for backward compatibility or simple display
+           class_name: enrollments.map((e: any) => e.class_name).join(', '),
            programs
         }
       })
@@ -53,26 +48,22 @@ export function useStudent(id: string) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('students')
-        .select('*, class_enrollments(classes(id, name))')
+        .select('*, class_enrollments(class_id, base_fee, classes(id, name))')
         .eq('id', id)
         .single()
 
       if (error) throw error
 
-      let class_name = null
-      let class_id = null
-      if (data.class_enrollments && data.class_enrollments.length > 0) {
-          const enrollment = (data.class_enrollments as any)[0]
-          if (enrollment.classes) {
-             class_name = enrollment.classes.name
-             class_id = enrollment.classes.id
-          }
-      }
+      const enrollments = data.class_enrollments?.map((enr: any) => ({
+        class_id: enr.class_id,
+        class_name: enr.classes?.name,
+        base_fee: enr.base_fee
+      })) || []
 
       return {
          ...data,
-         class_name,
-         class_id
+         enrollments,
+         class_name: enrollments.map((e: any) => e.class_name).join(', ')
       } as any
     },
     enabled: !!id,

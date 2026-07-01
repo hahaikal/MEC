@@ -35,7 +35,7 @@ export function AddStudentDialog({ open, onOpenChange, studentToEdit }: AddStude
           </Button>
         </DialogTrigger>
       )}
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-2xl lg:max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{studentToEdit ? 'Edit Siswa' : 'Tambah Siswa Baru'}</DialogTitle>
           <DialogDescription>

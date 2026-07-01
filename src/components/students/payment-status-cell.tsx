@@ -194,7 +194,7 @@ export function PaymentStatusCell({ student, month, year, isRegistration = false
             <span className="sr-only">Pay for {monthName}</span>
           </Button>
         </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{isRegistration ? 'Record Registration Payment' : 'Record Payment'}</DialogTitle>
           <DialogDescription>

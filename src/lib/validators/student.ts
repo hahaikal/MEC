@@ -14,9 +14,13 @@ export const studentSchema = z.object({
   
   // Data Akademik
   school_origin: z.string().optional(),
-  class_id: z.string().optional(),
   enrollment_date: z.string().optional(), // Tanggal masuk/daftar
   joined_since_class: z.string().optional(), // Masuk sejak kelas
+  
+  enrollments: z.array(z.object({
+    class_id: z.string().min(1, 'Kelas wajib dipilih'),
+    base_fee: z.coerce.number().min(0, 'Biaya SPP tidak boleh negatif').default(375000),
+  })).default([]),
 
   // Data Orang Tua
   father_name: z.string().optional(),
@@ -24,9 +28,6 @@ export const studentSchema = z.object({
   father_occupation: z.string().optional(),
   mother_occupation: z.string().optional(),
   parent_phone: z.string().optional(),
-  
-  // Data Keuangan
-  base_fee: z.coerce.number().min(0, 'Biaya SPP tidak boleh negatif').default(375000),
 
   // Deprecated / Hidden fields kept for type safety if needed but removed from UI
   // nis: z.string().optional(),

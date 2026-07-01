@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Loader2 } from 'lucide-react'
 import { studentSchema, type StudentFormValues } from '@/lib/validators/student'
@@ -11,6 +11,7 @@ import { updateStudentPhoto } from '@/actions/students'
 import { useCreateStudent, useUpdateStudent } from '@/lib/hooks/use-mutations'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
+import { Plus, Trash2 } from 'lucide-react'
 import {
   Form,
   FormControl,
@@ -86,6 +87,12 @@ export function StudentForm({ initialData, onSuccess }: StudentFormProps) {
       school_origin: initialData.school_origin || '',
       joined_since_class: initialData.joined_since_class || '',
       enrollment_date: initialData.enrollment_date || '',
+      enrollments: initialData.enrollments && initialData.enrollments.length > 0 
+        ? initialData.enrollments.map((enr: any) => ({
+            class_id: enr.class_id,
+            base_fee: enr.base_fee ?? 375000,
+          }))
+        : [],
     } : {
       name: '',
       place_of_birth: '',
@@ -96,14 +103,16 @@ export function StudentForm({ initialData, onSuccess }: StudentFormProps) {
       phone_number: '',
       school_origin: '',
       joined_since_class: '',
-      class_id: '',
-      father_name: '',
-      mother_name: '',
       father_occupation: '',
       mother_occupation: '',
       parent_phone: '',
-      base_fee: 375000,
+      enrollments: [],
     },
+  })
+
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: "enrollments"
   })
 
   const onSubmit = (data: StudentFormValues) => {
@@ -334,50 +343,91 @@ export function StudentForm({ initialData, onSuccess }: StudentFormProps) {
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="class_id"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Class</FormLabel>
-                  <FormControl>
-                    <Select onValueChange={field.onChange} value={field.value || ''}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Pilih Kelas" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <ClassOptions />
-                      </SelectContent>
-                    </Select>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+          </div>
+        </div>
 
-            <FormField
-              control={form.control}
-              name="enrollment_date"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Tanggal Masuk / Gabung</FormLabel>
-                  <FormControl>
-                     <Input
-                       type="month"
-                       {...field}
-                       value={field.value ? format(new Date(field.value), "yyyy-MM") : format(new Date(), "yyyy-MM")}
-                       onChange={(e) => {
-                         const val = e.target.value;
-                         field.onChange(val ? `${val}-01` : "");
-                       }}
-                     />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+        {/* SECTION: DATA KELAS & KEUANGAN */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between border-b pb-2">
+            <h3 className="text-lg font-semibold">Kelas & Biaya Pendidikan</h3>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => append({ class_id: '', base_fee: 375000 })}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Tambah Kelas
+            </Button>
+          </div>
+          
+          {fields.length === 0 && (
+            <div className="text-center py-6 border border-dashed rounded-lg text-neutral-500">
+              Belum ada kelas yang dipilih. Klik &quot;Tambah Kelas&quot; untuk mendaftarkan siswa ke kelas.
+            </div>
+          )}
+
+          <div className="space-y-4">
+            {fields.map((field, index) => (
+              <div key={field.id} className="p-4 border rounded-xl bg-neutral-50 flex flex-col md:flex-row gap-4 items-end">
+                <div className="flex-1 w-full">
+                  <FormField
+                    control={form.control}
+                    name={`enrollments.${index}.class_id`}
+                    render={({ field: f }) => (
+                      <FormItem>
+                        <FormLabel>Pilih Kelas</FormLabel>
+                        <FormControl>
+                          <Select onValueChange={f.onChange} value={f.value || ''}>
+                            <FormControl>
+                              <SelectTrigger className="bg-white">
+                                <SelectValue placeholder="Pilih Kelas" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <ClassOptions />
+                            </SelectContent>
+                          </Select>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                
+                <div className="w-full md:w-48">
+                  <FormField
+                    control={form.control}
+                    name={`enrollments.${index}.base_fee`}
+                    render={({ field: f }) => (
+                    <FormItem>
+                        <FormLabel>Biaya SPP (Rp)</FormLabel>
+                        <FormControl>
+                        <Input 
+                            className="bg-white"
+                            type="number" 
+                            placeholder="0"
+                            {...f} 
+                            onChange={e => f.onChange(Number(e.target.value))}
+                        />
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                    )}
+                  />
+                </div>
+                
+                <Button 
+                  type="button" 
+                  variant="destructive" 
+                  size="icon" 
+                  className="mb-[2px] shrink-0" 
+                  onClick={() => remove(index)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            ))}
           </div>
         </div>
 
@@ -471,30 +521,7 @@ export function StudentForm({ initialData, onSuccess }: StudentFormProps) {
           </div>
         </div>
 
-        {/* SECTION: KEUANGAN */}
-        <div className="space-y-4">
-          <h3 className="text-lg font-semibold border-b pb-2">Pengaturan Keuangan</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-             <FormField
-                control={form.control}
-                name="base_fee"
-                render={({ field }) => (
-                <FormItem>
-                    <FormLabel>Biaya SPP Dasar (Rp)</FormLabel>
-                    <FormControl>
-                    <Input 
-                        type="number" 
-                        placeholder="0"
-                        {...field} 
-                        onChange={e => field.onChange(Number(e.target.value))}
-                    />
-                    </FormControl>
-                    <FormMessage />
-                </FormItem>
-                )}
-            />
-          </div>
-        </div>
+
 
         <div className="flex justify-end pt-4">
           <Button type="submit" disabled={isLoading}>
