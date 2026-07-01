@@ -142,8 +142,15 @@ export function DataTable<TData, TValue>({
                         onCheckedChange={(value) =>
                           column.toggleVisibility(!!value)
                         }
+                        onSelect={(e) => e.preventDefault()}
                       >
-                        {column.id}
+                        {column.id === 'name' ? 'Nama' : 
+                         column.id === 'nis' ? 'NIS' : 
+                         column.id === 'school' ? 'Sekolah' : 
+                         column.id === 'status' ? 'Status' : 
+                         column.id === 'phone_parent' ? 'No. HP Ortu' :
+                         column.id === 'classes' ? 'Kelas' :
+                         column.id}
                       </DropdownMenuCheckboxItem>
                     );
                   })}

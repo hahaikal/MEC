@@ -42,12 +42,12 @@ export default function DailyAttendancePage() {
         </CardHeader>
         <CardContent>
            <div className="flex flex-col md:flex-row gap-4 mb-6">
-              <div className="w-full md:w-1/3">
+              <div className="w-full md:w-[400px]">
                 <Select value={selectedClass} onValueChange={setSelectedClass}>
-                  <SelectTrigger>
+                  <SelectTrigger className="w-full">
                     <SelectValue placeholder="Pilih Kelas" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="max-w-[400px]">
                     {isLoadingClasses ? (
                       <div className="p-2 text-center text-sm text-muted-foreground">Loading...</div>
                     ) : (
@@ -58,9 +58,9 @@ export default function DailyAttendancePage() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="w-full md:w-1/3">
+              <div className="w-full md:w-1/4">
                 <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-                  <SelectTrigger>
+                  <SelectTrigger className="w-full">
                     <SelectValue placeholder="Pilih Bulan" />
                   </SelectTrigger>
                   <SelectContent>

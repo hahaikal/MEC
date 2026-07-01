@@ -102,3 +102,21 @@ export async function deleteClass(id: string) {
   revalidatePath('/dashboard/classes')
   return { success: true }
 }
+
+export async function updateClassSchedule(classId: string, schedule: any[]) {
+  const supabase = await createClient()
+
+  const { error } = await supabase
+    .from('classes')
+    .update({ weekly_schedule: schedule })
+    .eq('id', classId)
+
+  if (error) {
+    console.error('Update Class Schedule Error:', error)
+    return { error: error.message }
+  }
+
+  revalidatePath(`/dashboard/teacher-workspace/${classId}`)
+  revalidatePath('/parent-hub/dashboard/preschool')
+  return { success: true }
+}

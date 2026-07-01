@@ -22,12 +22,25 @@ import { Progress } from "@/components/ui/progress";
 import { ImagePlus, Loader2, X } from "lucide-react";
 import { ImageCropper } from "@/components/ui/image-cropper";
 
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
+import { CalendarIcon } from "lucide-react";
+
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
 
 const formSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters").max(100),
   description: z.string().optional(),
+  date: z.date({
+    required_error: "A date is required.",
+  }),
   file: z.any().refine((files) => files && files.length > 0, "Image is required."),
 });
 
@@ -51,6 +64,7 @@ export function UploadActivityForm({
     defaultValues: {
       title: "",
       description: "",
+      date: new Date(),
     },
   });
 
@@ -100,6 +114,7 @@ export function UploadActivityForm({
         title: values.title,
         description: values.description,
         image_url: publicUrlData.publicUrl,
+        created_at: values.date.toISOString(),
       });
 
       if (!result.success) {
@@ -147,6 +162,48 @@ export function UploadActivityForm({
               <FormControl>
                 <Textarea placeholder="Share details about this activity..." {...field} />
               </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="date"
+          render={({ field }) => (
+            <FormItem className="flex flex-col">
+              <FormLabel>Activity Date</FormLabel>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <FormControl>
+                    <Button
+                      variant={"outline"}
+                      className={cn(
+                        "w-full pl-3 text-left font-normal",
+                        !field.value && "text-muted-foreground"
+                      )}
+                    >
+                      {field.value ? (
+                        format(field.value, "PPP")
+                      ) : (
+                        <span>Pick a date</span>
+                      )}
+                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                    </Button>
+                  </FormControl>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={field.value}
+                    onSelect={field.onChange}
+                    disabled={(date) =>
+                      date > new Date() || date < new Date("1900-01-01")
+                    }
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
               <FormMessage />
             </FormItem>
           )}

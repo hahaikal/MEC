@@ -1,6 +1,7 @@
 'use client'
 
 import { useClasses } from '@/lib/hooks/use-classes'
+import { useTeachers } from '@/lib/hooks/use-teachers'
 import { ClassDialog } from '@/components/classes/class-dialog'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -31,13 +32,21 @@ const SCHEDULE_LABEL: Record<string, string> = {
 
 export default function ClassesPage() {
   const { data: classes, isLoading } = useClasses()
+  const { data: teachers, isLoading: isLoadingTeachers } = useTeachers()
   const queryClient = useQueryClient()
   const [sortBy, setSortBy] = useState('name')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
+  const [selectedTeacher, setSelectedTeacher] = useState<string>('all')
 
   const sortedClasses = useMemo(() => {
     if (!classes) return []
-    return [...classes].sort((a, b) => {
+    let filtered = classes
+    if (selectedTeacher !== 'all') {
+      filtered = filtered.filter(c => 
+        c.teachers?.some((t: any) => t.id === selectedTeacher)
+      )
+    }
+    return [...filtered].sort((a, b) => {
       if (sortBy === 'name') {
         return sortOrder === 'asc' ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name)
       } else if (sortBy === 'teacher') {
@@ -51,7 +60,7 @@ export default function ClassesPage() {
       }
       return 0
     })
-  }, [classes, sortBy, sortOrder])
+  }, [classes, sortBy, sortOrder, selectedTeacher])
 
   const handleDelete = async (id: string) => {
     const res = await deleteClass(id)
@@ -70,7 +79,19 @@ export default function ClassesPage() {
           <h1 className="text-3xl font-bold tracking-tight">Manajemen Kelas</h1>
           <p className="text-muted-foreground mt-1">Kelola data kelas dan guru pengajar.</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <Select value={selectedTeacher} onValueChange={setSelectedTeacher}>
+            <SelectTrigger className="w-[200px]">
+              <SelectValue placeholder="Semua Guru" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Semua Guru</SelectItem>
+              {!isLoadingTeachers && teachers && [...teachers].sort((a, b) => (a.full_name || a.email || '').localeCompare(b.full_name || b.email || '')).map(t => (
+                <SelectItem key={t.id} value={t.id}>{t.full_name || t.email}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
           <Select value={sortBy} onValueChange={setSortBy}>
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Urutkan berdasarkan" />

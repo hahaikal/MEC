@@ -212,3 +212,27 @@ export async function getPublicClassDocuments(classId?: string, documentType?: s
   if (error) throw error
   return data ?? []
 }
+
+export async function getPublicPreschoolClasses() {
+  const supabase = getSupabase()
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) return []
+
+  // 1. Get classes that belong to MEC PRESCHOOL
+  const { data: programs, error: progError } = await supabase
+    .from('programs')
+    .select('id')
+    .eq('name', 'MEC PRESCHOOL')
+    .single()
+    
+  if (progError || !programs) return []
+
+  const { data, error } = await supabase
+    .from('classes')
+    .select('id, name, weekly_schedule')
+    .eq('program_id', programs.id)
+    .eq('is_active', true)
+    .order('name')
+    
+  if (error) throw error
+  return data ?? []
+}

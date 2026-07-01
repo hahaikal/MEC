@@ -4,6 +4,8 @@ import Link from "next/link";
 import { ArrowLeft, FileText, Calendar, Trash2, Image as ImageIcon } from "lucide-react";
 import { UploadDocumentForm } from "@/components/teacher-workspace/upload-document-form";
 import { UploadActivityForm } from "@/components/teacher-workspace/upload-activity-form";
+import { ActivityActions } from "@/components/teacher-workspace/activity-actions";
+import { WeeklyScheduleEditor } from "@/components/teacher-workspace/weekly-schedule-editor";
 import { format } from "date-fns";
 
 export default async function ClassWorkspacePage({
@@ -61,7 +63,7 @@ export default async function ClassWorkspacePage({
       .order("created_at", { ascending: false })
   ]);
 
-  const isPreschool = cls.name?.toLowerCase().includes("preschool") || cls.name?.toLowerCase().includes("pre-school");
+  const isPreschool = cls.programs?.name?.toLowerCase().includes("preschool") || cls.programs?.name?.toLowerCase().includes("pre-school");
 
   return (
     <div className="space-y-6">
@@ -120,6 +122,15 @@ export default async function ClassWorkspacePage({
                           </span>
                         </div>
                       </div>
+                      
+                      {/* Activity Actions Component */}
+                      <div>
+                        <ActivityActions 
+                          activity={act} 
+                          currentUserId={user.id} 
+                          isAdmin={isAdmin || false} 
+                        />
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -142,9 +153,20 @@ export default async function ClassWorkspacePage({
         </div>
       </div>
 
-      {/* PDF Magazines Section (Preschool Only) */}
+      {/* PDF Magazines & Weekly Schedule Section (Preschool Only) */}
       {isPreschool && (
-        <div>
+        <div className="space-y-12">
+          {/* Weekly Schedule Editor */}
+          <div className="rounded-2xl border bg-white p-6 shadow-sm">
+            <h2 className="text-xl font-bold text-neutral-900 mb-2">
+              Weekly Schedule
+            </h2>
+            <p className="text-sm text-neutral-500 mb-6">
+              Update the weekly routine for this class.
+            </p>
+            <WeeklyScheduleEditor classId={cls.id} initialSchedule={cls.weekly_schedule} />
+          </div>
+
           <div className="grid gap-6 md:grid-cols-[1fr_400px]">
             {/* Left Column: Documents List */}
             <div className="space-y-6">

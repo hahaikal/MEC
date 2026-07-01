@@ -34,16 +34,36 @@ export function useClassList() {
   const supabase = createClient()
 
   return useQuery({
-    queryKey: ['classes'],
+    queryKey: ['class_list_simple'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('classes')
-        .select('*')
-        .order('name')
+      const { data: authData } = await supabase.auth.getUser()
+      const userId = authData.user?.id
+      if (!userId) return []
 
-      if (error) throw error
+      const { data: userRow } = await supabase.from('users').select('roles').eq('id', userId).single()
+      const roles = userRow?.roles || []
+      
+      const isTeacher = roles.some((r: string) => r.toLowerCase() === 'teacher')
+      const isAdmin = roles.some((r: string) => ['admin', 'manager', 'director', 'staff'].includes(r.toLowerCase()))
 
-      return data as any[]
+      if (isTeacher && !isAdmin) {
+        const { data, error } = await supabase
+          .from('classes')
+          .select('*, class_teachers!inner(teacher_id)')
+          .eq('class_teachers.teacher_id', userId)
+          .order('name')
+          
+        if (error) throw error
+        return data as any[]
+      } else {
+        const { data, error } = await supabase
+          .from('classes')
+          .select('*')
+          .order('name')
+
+        if (error) throw error
+        return data as any[]
+      }
     },
   })
 }

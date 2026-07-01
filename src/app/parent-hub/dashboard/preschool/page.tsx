@@ -5,14 +5,23 @@ import { useActiveGalleryItems } from "@/lib/hooks/use-gallery";
 import { PRESCHOOL_SCHEDULE } from "@/lib/parent-hub-data";
 import { usePreschoolTeachers } from "@/lib/hooks/use-teachers";
 import { usePreschoolMagazines } from "@/lib/hooks/use-documents";
+import { usePreschoolClasses } from "@/lib/hooks/use-classes";
 import { format } from "date-fns";
 import { FileText, Download } from "lucide-react";
 import Image from "next/image";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 
 export default function PreschoolPage() {
   const { data: galleryItems, isLoading } = useActiveGalleryItems("preschool");
   const { data: documents, isLoading: isDocumentsLoading } = usePreschoolMagazines();
   const { data: preschoolTeachers, isLoading: isTeachersLoading } = usePreschoolTeachers();
+  const { data: preschoolClasses, isLoading: isClassesLoading } = usePreschoolClasses();
 
   return (
     <>
@@ -56,55 +65,97 @@ export default function PreschoolPage() {
       </section>
 
       <section>
-        <h2 className="mb-4 text-2xl font-bold text-neutral-900">Weekly Schedule</h2>
-        <div className="overflow-x-auto rounded-3xl bg-white shadow-md border border-neutral-100">
-          <table className="w-full text-left text-sm text-neutral-600">
-            <thead className="bg-[color:var(--mec-grey)] text-neutral-900">
-              <tr>
-                <th className="px-6 py-4 font-bold border-b border-neutral-200">Time</th>
-                <th className="px-6 py-4 font-bold border-b border-neutral-200">Monday</th>
-                <th className="px-6 py-4 font-bold border-b border-neutral-200">Tuesday</th>
-                <th className="px-6 py-4 font-bold border-b border-neutral-200">Wednesday</th>
-                <th className="px-6 py-4 font-bold border-b border-neutral-200">Thursday</th>
-                <th className="px-6 py-4 font-bold border-b border-neutral-200">Friday</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-neutral-100">
-              {PRESCHOOL_SCHEDULE.map((row, i) => (
-                <tr key={i} className="hover:bg-neutral-50 transition">
-                  <td className="px-6 py-4 font-semibold text-neutral-900 whitespace-nowrap">
-                    {row.time}
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="inline-block px-3 py-1 rounded-full bg-blue-50 text-[color:var(--mec-blue)] font-medium text-xs">
-                      {row.Monday}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="inline-block px-3 py-1 rounded-full bg-yellow-50 text-yellow-700 font-medium text-xs">
-                      {row.Tuesday}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="inline-block px-3 py-1 rounded-full bg-blue-50 text-[color:var(--mec-blue)] font-medium text-xs">
-                      {row.Wednesday}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="inline-block px-3 py-1 rounded-full bg-yellow-50 text-yellow-700 font-medium text-xs">
-                      {row.Thursday}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="inline-block px-3 py-1 rounded-full bg-blue-50 text-[color:var(--mec-blue)] font-medium text-xs">
-                      {row.Friday}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <h2 className="mb-4 text-2xl font-bold text-neutral-900">Weekly Schedules</h2>
+        
+        {isClassesLoading ? (
+          <div className="h-64 animate-pulse rounded-3xl bg-white/60" />
+        ) : !preschoolClasses || preschoolClasses.length === 0 ? (
+          <div className="rounded-3xl bg-white p-8 text-center text-neutral-500 shadow-sm border border-neutral-100">
+            No preschool classes found.
+          </div>
+        ) : (
+          <Carousel className="w-full">
+            <CarouselContent>
+              {preschoolClasses.map((cls: any) => {
+                const schedule = Array.isArray(cls.weekly_schedule) && cls.weekly_schedule.length > 0 
+                  ? cls.weekly_schedule 
+                  : PRESCHOOL_SCHEDULE;
+
+                return (
+                  <CarouselItem key={cls.id}>
+                    <div className="overflow-x-auto rounded-3xl bg-white shadow-md border border-neutral-100 p-2">
+                      <div className="mb-4 mt-2 px-4 flex items-center justify-between">
+                        <h3 className="text-xl font-bold text-neutral-900">{cls.name} Schedule</h3>
+                      </div>
+                      <table className="w-full text-left text-sm text-neutral-600">
+                        <thead className="bg-[color:var(--mec-grey)] text-neutral-900">
+                          <tr>
+                            <th className="px-6 py-4 font-bold border-b border-neutral-200">Time</th>
+                            <th className="px-6 py-4 font-bold border-b border-neutral-200">Monday</th>
+                            <th className="px-6 py-4 font-bold border-b border-neutral-200">Tuesday</th>
+                            <th className="px-6 py-4 font-bold border-b border-neutral-200">Wednesday</th>
+                            <th className="px-6 py-4 font-bold border-b border-neutral-200">Thursday</th>
+                            <th className="px-6 py-4 font-bold border-b border-neutral-200">Friday</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-neutral-100">
+                          {schedule.map((row: any, i: number) => (
+                            <tr key={i} className="hover:bg-neutral-50 transition">
+                              <td className="px-6 py-4 font-semibold text-neutral-900 whitespace-nowrap">
+                                {row.time}
+                              </td>
+                              <td className="px-6 py-4">
+                                {row.Monday && (
+                                  <span className="inline-block px-3 py-1 rounded-full bg-blue-50 text-[color:var(--mec-blue)] font-medium text-xs">
+                                    {row.Monday}
+                                  </span>
+                                )}
+                              </td>
+                              <td className="px-6 py-4">
+                                {row.Tuesday && (
+                                  <span className="inline-block px-3 py-1 rounded-full bg-yellow-50 text-yellow-700 font-medium text-xs">
+                                    {row.Tuesday}
+                                  </span>
+                                )}
+                              </td>
+                              <td className="px-6 py-4">
+                                {row.Wednesday && (
+                                  <span className="inline-block px-3 py-1 rounded-full bg-blue-50 text-[color:var(--mec-blue)] font-medium text-xs">
+                                    {row.Wednesday}
+                                  </span>
+                                )}
+                              </td>
+                              <td className="px-6 py-4">
+                                {row.Thursday && (
+                                  <span className="inline-block px-3 py-1 rounded-full bg-yellow-50 text-yellow-700 font-medium text-xs">
+                                    {row.Thursday}
+                                  </span>
+                                )}
+                              </td>
+                              <td className="px-6 py-4">
+                                {row.Friday && (
+                                  <span className="inline-block px-3 py-1 rounded-full bg-blue-50 text-[color:var(--mec-blue)] font-medium text-xs">
+                                    {row.Friday}
+                                  </span>
+                                )}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </CarouselItem>
+                );
+              })}
+            </CarouselContent>
+            
+            {/* Carousel Navigation Buttons outside the content area */}
+            <div className="flex items-center justify-center gap-4 mt-6">
+              <CarouselPrevious className="static translate-y-0" />
+              <CarouselNext className="static translate-y-0" />
+            </div>
+          </Carousel>
+        )}
       </section>
 
       <section>

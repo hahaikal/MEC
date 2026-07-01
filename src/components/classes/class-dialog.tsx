@@ -73,6 +73,7 @@ export function ClassDialog({ classToEdit, children }: { classToEdit?: any, chil
     } else {
       toast.success(`Kelas berhasil ${classToEdit ? 'diperbarui' : 'dibuat'}!`)
       queryClient.invalidateQueries({ queryKey: ['classes'] })
+      queryClient.invalidateQueries({ queryKey: ['class_list_simple'] })
       queryClient.invalidateQueries({ queryKey: ['students', 'classes'] }) // Also invalidate class list for dropdowns
       setOpen(false)
       if (!classToEdit) {
