@@ -40,18 +40,7 @@ export default function AttendancePage() {
     return <div className="flex h-full items-center justify-center p-8"><Loader2 className="animate-spin w-8 h-8 text-primary" /></div>
   }
 
-  // If user is a teacher, only show Daily Attendance
-  if (userRole?.toLowerCase() === 'teacher') {
-    return (
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Input Kehadiran</h1>
-          <p className="text-muted-foreground mt-1">Input absensi siswa per hari.</p>
-        </div>
-        <DailyAttendancePage />
-      </div>
-    )
-  }
+
 
   return (
     <div className="space-y-6">

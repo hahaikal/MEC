@@ -48,6 +48,7 @@ const quickPaymentSchema = z.object({
     required_error: "Metode pembayaran harus dipilih",
   }),
   discount_amount: z.coerce.number().min(0).default(0),
+  notes: z.string().optional(),
 })
 
 type QuickPaymentFormValues = z.infer<typeof quickPaymentSchema>
@@ -106,6 +107,7 @@ export function QuickPaymentForm({ student, month, year, isRegistration = false,
         return targetDate;
       })(),
       payment_method: 'cash', // Updated to lowercase
+      notes: '',
     },
   })
 
@@ -147,7 +149,7 @@ export function QuickPaymentForm({ student, month, year, isRegistration = false,
         year: isRegistration ? new Date(data.payment_date).getFullYear() : year,
         category: isRegistration ? 'registration' : 'tuition',
         payment_status: 'completed',
-        notes: isRegistration ? 'Biaya Registrasi' : `Pembayaran SPP ${monthName} (${enr.class_name || ''})`,
+        notes: data.notes || (isRegistration ? 'Biaya Registrasi' : `Pembayaran SPP ${monthName} (${enr.class_name || ''})`),
         created_at: new Date().toISOString(),
       }
 
@@ -337,6 +339,20 @@ export function QuickPaymentForm({ student, month, year, isRegistration = false,
                     <SelectItem value="transfer">Transfer Bank</SelectItem>
                   </SelectContent>
                 </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="notes"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Catatan (Opsional)</FormLabel>
+                <FormControl>
+                  <Input placeholder="Tambahkan catatan pembayaran..." {...field} />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}

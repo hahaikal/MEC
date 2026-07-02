@@ -215,6 +215,7 @@ export function StudentDetailDialog({
                                 <tr>
                                     <th className="p-3 font-medium">Tanggal</th>
                                     <th className="p-3 font-medium">Kategori</th>
+                                    <th className="p-3 font-medium">Catatan</th>
                                     <th className="p-3 font-medium text-right">Jumlah</th>
                                     <th className="p-3 font-medium text-right">Status</th>
                                 </tr>
@@ -226,6 +227,7 @@ export function StudentDetailDialog({
                                             {p.payment_date ? format(new Date(p.payment_date), "dd MMM yyyy", { locale: id }) : "-"}
                                         </td>
                                         <td className="p-3 capitalize font-medium text-slate-700">{p.category}</td>
+                                        <td className="p-3 text-slate-500 text-xs max-w-[150px] truncate" title={p.notes || "-"}>{p.notes || "-"}</td>
                                         <td className="p-3 text-right font-medium">
                                             {new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(p.amount)}
                                         </td>

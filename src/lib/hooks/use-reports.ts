@@ -17,7 +17,7 @@ export function useFinancialReports(filters: ReportFilters) {
       // 1. Get Income (from completed payments)
       let paymentsQuery = supabase
         .from('payments')
-        .select('amount, payment_date, program_id, students(student_programs(program_id), class_enrollments(classes(program_id)))')
+        .select('amount, payment_date, program_id, students(class_enrollments(classes(program_id)))')
         .eq('payment_status', 'completed')
         .gte('payment_date', `${year}-01-01`)
         .lte('payment_date', `${year}-12-31`)
@@ -30,12 +30,8 @@ export function useFinancialReports(filters: ReportFilters) {
         
         // 1. Check direct program_id on payment
         if (p.program_id && programIds.includes(p.program_id)) return true;
-        
-        // 2. Check student's enrolled programs
-        const sp = p.students?.student_programs;
-        if (sp && sp.some((prog: any) => programIds.includes(prog.program_id))) return true;
 
-        // 3. Check student's class enrollments
+        // 2. Check student's class enrollments
         const ce = p.students?.class_enrollments;
         if (ce && ce.some((enroll: any) => enroll.classes?.program_id && programIds.includes(enroll.classes.program_id))) return true;
 
