@@ -90,6 +90,30 @@ export function useMarkHolidayForClass() {
   })
 }
 
+export function useCancelHolidayForClass() {
+  const supabase = createClient()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (params: { class_id: string, date: string }) => {
+      const { error } = await supabase
+        .from('attendance_logs')
+        .delete()
+        .eq('class_id', params.class_id)
+        .eq('date', params.date)
+        .eq('status', 'HOLIDAY')
+
+      if (error) throw error
+      return true
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: ['attendance'],
+      })
+    },
+  })
+}
+
 export function useUpsertDailyAttendance() {
   const supabase = createClient()
   const queryClient = useQueryClient()

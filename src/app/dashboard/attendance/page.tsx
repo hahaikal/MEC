@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { createClient } from '@/lib/supabase/client'
 import DailyAttendancePage from './daily/page'
 import AttendanceReportPage from './report/page'
+import { AttendanceCompletion } from './completion'
 import { Loader2 } from 'lucide-react'
 
 export default function AttendancePage() {
@@ -18,17 +19,8 @@ export default function AttendancePage() {
       if (user) {
         const { data } = await supabase.from('users').select('roles').eq('id', user.id).single()
         if (data && data.roles) {
-          const isTeacherOnly = data.roles.length === 1 && data.roles[0].toLowerCase() === 'teacher';
-          const isTeacher = data.roles.some((r: string) => r.toLowerCase() === 'teacher');
-          
-          if (isTeacherOnly) {
-             setUserRole('teacher')
-          } else if (isTeacher) {
-             // they might be teacher AND admin. For safety, if they have other roles, treat them as admin unless we want to be strict.
-             // Actually, let's just check if they are ONLY a teacher. Or check if they have Admin/Director.
-             const isAdmin = data.roles.some((r: string) => ['admin', 'manager', 'director', 'staff'].includes(r.toLowerCase()));
-             setUserRole(isAdmin ? 'admin' : 'teacher');
-          }
+          const isAdmin = data.roles.some((r: string) => ['admin', 'manager', 'director', 'staff'].includes(r.toLowerCase()));
+          setUserRole(isAdmin ? 'admin' : 'teacher');
         }
       }
       setLoading(false)
@@ -53,6 +45,9 @@ export default function AttendancePage() {
         <TabsList className="mb-4">
           <TabsTrigger value="daily">Input Kehadiran</TabsTrigger>
           <TabsTrigger value="report">Laporan Absensi</TabsTrigger>
+          {userRole === 'admin' && (
+            <TabsTrigger value="completion">Status Pengisian</TabsTrigger>
+          )}
         </TabsList>
         <TabsContent value="daily">
           <DailyAttendancePage />
@@ -60,6 +55,11 @@ export default function AttendancePage() {
         <TabsContent value="report">
           <AttendanceReportPage />
         </TabsContent>
+        {userRole === 'admin' && (
+          <TabsContent value="completion">
+            <AttendanceCompletion />
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   )
