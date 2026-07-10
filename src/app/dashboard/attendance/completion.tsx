@@ -1,21 +1,51 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useMemo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { format } from 'date-fns'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { format, endOfMonth } from 'date-fns'
 import { id as idLocale } from 'date-fns/locale'
 import { useQuery } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/client'
 import { Loader2 } from 'lucide-react'
-import { Progress } from '@/components/ui/progress'
+import { useLocalStorage } from '@/lib/hooks/use-local-storage'
+
+const MONTHS = [
+  { value: 1, label: 'Januari' },
+  { value: 2, label: 'Februari' },
+  { value: 3, label: 'Maret' },
+  { value: 4, label: 'April' },
+  { value: 5, label: 'Mei' },
+  { value: 6, label: 'Juni' },
+  { value: 7, label: 'Juli' },
+  { value: 8, label: 'Agustus' },
+  { value: 9, label: 'September' },
+  { value: 10, label: 'Oktober' },
+  { value: 11, label: 'November' },
+  { value: 12, label: 'Desember' }
+]
+
+function getWeekdaysInMonth(month: number, year: number, weekdays: number[]) {
+  let count = 0;
+  const daysInMonth = new Date(year, month, 0).getDate();
+  for (let i = 1; i <= daysInMonth; i++) {
+    const d = new Date(year, month - 1, i).getDay();
+    if (weekdays.includes(d)) count++;
+  }
+  return count;
+}
 
 export function AttendanceCompletion() {
-  const [selectedDate, setSelectedDate] = useState<string>(format(new Date(), 'yyyy-MM-dd'))
+  const [viewMode, setViewMode] = useLocalStorage<'daily' | 'monthly'>('attendance_completion_mode', 'daily')
+  const [selectedDate, setSelectedDate] = useLocalStorage<string>('attendance_completion_date', format(new Date(), 'yyyy-MM-dd'))
+  const [selectedMonth, setSelectedMonth] = useLocalStorage<string>('attendance_completion_month', (new Date().getMonth() + 1).toString())
+  const [selectedYear, setSelectedYear] = useLocalStorage<string>('attendance_completion_year', new Date().getFullYear().toString())
+  
   const supabase = createClient()
 
   const { data, isLoading } = useQuery({
-    queryKey: ['attendance-completion', selectedDate],
+    queryKey: ['attendance-completion', viewMode, selectedDate, selectedMonth, selectedYear],
     queryFn: async () => {
       // 1. Get all classes and their enrolled students
       const { data: classesData, error: classesError } = await supabase
@@ -25,27 +55,39 @@ export function AttendanceCompletion() {
 
       if (classesError) throw classesError
 
-      // 2. Get all attendance logs for the selected date
-      const { data: logsData, error: logsError } = await supabase
-        .from('attendance_logs')
-        .select('class_id, student_id, status')
-        .eq('date', selectedDate)
+      // 2. Get attendance logs based on mode
+      let logsQuery = supabase.from('attendance_logs').select('class_id, student_id, status')
+      
+      if (viewMode === 'daily') {
+        logsQuery = logsQuery.eq('date', selectedDate)
+      } else {
+        const monthInt = parseInt(selectedMonth)
+        const yearInt = parseInt(selectedYear)
+        const startDate = `${yearInt}-${monthInt.toString().padStart(2, '0')}-01`
+        const endDate = format(endOfMonth(new Date(yearInt, monthInt - 1)), 'yyyy-MM-dd')
+        logsQuery = logsQuery.gte('date', startDate).lte('date', endDate)
+      }
 
+      const { data: logsData, error: logsError } = await logsQuery
       if (logsError) throw logsError
 
       const dayMap: Record<string, number> = {
         'Sunday': 0, 'Monday': 1, 'Tuesday': 2, 'Wednesday': 3,
         'Thursday': 4, 'Friday': 5, 'Saturday': 6
       }
-      const selectedDayOfWeek = new Date(selectedDate).getDay()
-
+      
       // Calculate completion for each class
       const completionData = classesData
         .filter((cls) => {
-           // Only include classes that meet on the selected date's day of week
            if (!cls.schedule_days || cls.schedule_days.length === 0) return false;
-           const allowedDays = (cls.schedule_days as string[]).map(d => dayMap[d])
-           return allowedDays.includes(selectedDayOfWeek)
+           
+           if (viewMode === 'daily') {
+             const selectedDayOfWeek = new Date(selectedDate).getDay()
+             const allowedDays = (cls.schedule_days as string[]).map(d => dayMap[d])
+             return allowedDays.includes(selectedDayOfWeek)
+           }
+           
+           return true; // For monthly, include all classes that have a schedule
         })
         .map((cls) => {
           const activeStudents = cls.class_enrollments?.filter((e: any) => 
@@ -55,11 +97,20 @@ export function AttendanceCompletion() {
           const logsForClass = logsData.filter((log) => log.class_id === cls.id)
           const filledLogs = logsForClass.length
           
-          let percentage = 0
-          if (activeStudents > 0) {
-            percentage = Math.round((filledLogs / activeStudents) * 100)
+          let expectedLogs = 0;
+          if (viewMode === 'daily') {
+             expectedLogs = activeStudents;
           } else {
-            percentage = 100 // If no active students, consider it 100% complete so it doesn't look like 0%
+             const allowedDays = (cls.schedule_days as string[]).map(d => dayMap[d])
+             const sessionsInMonth = getWeekdaysInMonth(parseInt(selectedMonth), parseInt(selectedYear), allowedDays)
+             expectedLogs = activeStudents * sessionsInMonth;
+          }
+          
+          let percentage = 0
+          if (expectedLogs > 0) {
+            percentage = Math.round((filledLogs / expectedLogs) * 100)
+          } else {
+            percentage = 100 // If no expected logs (e.g. 0 active students), consider 100% complete
           }
           
           if (percentage > 100) percentage = 100
@@ -67,7 +118,7 @@ export function AttendanceCompletion() {
           return {
             id: cls.id,
             name: cls.name,
-            enrolled: activeStudents,
+            expected: expectedLogs,
             filled: filledLogs,
             percentage
           }
@@ -84,14 +135,55 @@ export function AttendanceCompletion() {
         <CardTitle>Status Pengisian Absensi Kelas</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="mb-6 flex items-center gap-4">
-          <label className="text-sm font-medium">Tanggal:</label>
-          <Input 
-            type="date" 
-            value={selectedDate} 
-            onChange={(e) => setSelectedDate(e.target.value)} 
-            className="w-[200px]"
-          />
+        <div className="mb-6 flex flex-col md:flex-row items-start md:items-center gap-4">
+          <div className="w-full md:w-[200px]">
+            <Select value={viewMode} onValueChange={(v: 'daily' | 'monthly') => setViewMode(v)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Mode Tampilan" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="daily">Harian</SelectItem>
+                <SelectItem value="monthly">Bulanan</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          {viewMode === 'daily' ? (
+            <div className="flex items-center gap-2">
+              <label className="text-sm font-medium">Tanggal:</label>
+              <Input 
+                type="date" 
+                value={selectedDate} 
+                onChange={(e) => setSelectedDate(e.target.value)} 
+                className="w-[200px]"
+              />
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 w-full md:w-auto">
+              <label className="text-sm font-medium mr-2">Bulan:</label>
+              <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+                <SelectTrigger className="w-[150px]">
+                  <SelectValue placeholder="Pilih Bulan" />
+                </SelectTrigger>
+                <SelectContent>
+                  {MONTHS.map(m => (
+                    <SelectItem key={m.value} value={m.value.toString()}>{m.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={selectedYear} onValueChange={setSelectedYear}>
+                <SelectTrigger className="w-[120px]">
+                  <SelectValue placeholder="Tahun" />
+                </SelectTrigger>
+                <SelectContent>
+                  {[0, 1, 2].map(offset => {
+                    const y = new Date().getFullYear() - offset
+                    return <SelectItem key={y} value={y.toString()}>{y}</SelectItem>
+                  })}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
         </div>
 
         {isLoading ? (
@@ -105,7 +197,7 @@ export function AttendanceCompletion() {
                 <div className="flex justify-between items-center text-sm">
                   <span className="font-medium">{cls.name}</span>
                   <span className="text-muted-foreground">
-                    {cls.filled} / {cls.enrolled} ({cls.percentage}%)
+                    {cls.filled} / {cls.expected} ({cls.percentage}%)
                   </span>
                 </div>
                 <div className="relative w-full h-3 bg-slate-100 rounded-full overflow-hidden">
@@ -127,7 +219,7 @@ export function AttendanceCompletion() {
           </div>
         ) : (
           <div className="text-center p-8 text-muted-foreground border rounded-lg">
-            Tidak ada data kelas.
+            Tidak ada kelas yang dijadwalkan pada waktu tersebut.
           </div>
         )}
       </CardContent>

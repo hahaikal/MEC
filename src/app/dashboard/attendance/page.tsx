@@ -19,7 +19,9 @@ export default function AttendancePage() {
       if (user) {
         const { data } = await supabase.from('users').select('roles').eq('id', user.id).single()
         if (data && data.roles) {
-          const isAdmin = data.roles.some((r: string) => ['admin', 'manager', 'director', 'staff'].includes(r.toLowerCase()));
+          const isAdmin = data.roles.some((r: string) => 
+            ['admin', 'manager', 'director', 'staff', 'head of department', 'principal'].includes(r.toLowerCase())
+          );
           setUserRole(isAdmin ? 'admin' : 'teacher');
         }
       }

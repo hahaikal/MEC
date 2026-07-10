@@ -25,6 +25,7 @@ interface StudentDetailDialogProps {
   children?: React.ReactNode;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
+  profileOnly?: boolean;
 }
 
 export function StudentDetailDialog({
@@ -32,6 +33,7 @@ export function StudentDetailDialog({
   children,
   open,
   onOpenChange,
+  profileOnly = false,
 }: StudentDetailDialogProps) {
   const { data: payments, isLoading } = useStudentPayments(open ? student?.id : null);
 
@@ -77,11 +79,13 @@ export function StudentDetailDialog({
         </DialogHeader>
 
         <Tabs defaultValue="profile" className="w-full mt-2">
-          <TabsList className="grid w-full grid-cols-3 bg-slate-200/50 p-1 rounded-lg mb-6">
-            <TabsTrigger value="profile" className="rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm">Profil Lengkap</TabsTrigger>
-            <TabsTrigger value="history" className="rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm">Riwayat Bayar</TabsTrigger>
-            <TabsTrigger value="billing" className="rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm">Tagihan & SPP</TabsTrigger>
-          </TabsList>
+          {!profileOnly && (
+            <TabsList className="grid w-full grid-cols-3 bg-slate-200/50 p-1 rounded-lg mb-6">
+              <TabsTrigger value="profile" className="rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm">Profil Lengkap</TabsTrigger>
+              <TabsTrigger value="history" className="rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm">Riwayat Bayar</TabsTrigger>
+              <TabsTrigger value="billing" className="rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm">Tagihan & SPP</TabsTrigger>
+            </TabsList>
+          )}
 
           {/* TAB 1: PROFIL READ-ONLY (CV Style) */}
           <TabsContent value="profile" className="space-y-6">
@@ -196,85 +200,89 @@ export function StudentDetailDialog({
              </div>
           </TabsContent>
 
-          {/* TAB 2: RIWAYAT TABLE */}
-          <TabsContent value="history">
-             <div className="bg-white rounded-xl border shadow-sm p-5">
-                 <h3 className="font-semibold mb-4 flex items-center gap-2 text-primary">
-                    <Calendar className="w-4 h-4" />
-                    Riwayat Transaksi Terakhir
-                 </h3>
+          {!profileOnly && (
+            <>
+              {/* TAB 2: RIWAYAT TABLE */}
+              <TabsContent value="history">
+                 <div className="bg-white rounded-xl border shadow-sm p-5">
+                     <h3 className="font-semibold mb-4 flex items-center gap-2 text-primary">
+                        <Calendar className="w-4 h-4" />
+                        Riwayat Transaksi Terakhir
+                     </h3>
 
-                 {isLoading ? (
-                     <div className="text-center py-10 text-muted-foreground bg-slate-50 rounded-lg border border-dashed animate-pulse">
-                        Memuat riwayat pembayaran...
-                     </div>
-                 ) : payments && payments.length > 0 ? (
-                     <div className="rounded-md border overflow-hidden">
-                        <table className="w-full text-sm text-left">
-                            <thead className="bg-slate-50 text-slate-600 border-b">
-                                <tr>
-                                    <th className="p-3 font-medium">Tanggal</th>
-                                    <th className="p-3 font-medium">Kategori</th>
-                                    <th className="p-3 font-medium">Catatan</th>
-                                    <th className="p-3 font-medium text-right">Jumlah</th>
-                                    <th className="p-3 font-medium text-right">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y">
-                                {payments.map((p: any, idx: number) => (
-                                    <tr key={idx} className="hover:bg-slate-50/50 transition-colors">
-                                        <td className="p-3 text-slate-600">
-                                            {p.payment_date ? format(new Date(p.payment_date), "dd MMM yyyy", { locale: id }) : "-"}
-                                        </td>
-                                        <td className="p-3 capitalize font-medium text-slate-700">{p.category}</td>
-                                        <td className="p-3 text-slate-500 text-xs max-w-[150px] truncate" title={p.notes || "-"}>{p.notes || "-"}</td>
-                                        <td className="p-3 text-right font-medium">
-                                            {new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(p.amount)}
-                                        </td>
-                                        <td className="p-3 text-right">
-                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                {p.payment_status}
-                                            </span>
-                                        </td>
+                     {isLoading ? (
+                         <div className="text-center py-10 text-muted-foreground bg-slate-50 rounded-lg border border-dashed animate-pulse">
+                            Memuat riwayat pembayaran...
+                         </div>
+                     ) : payments && payments.length > 0 ? (
+                         <div className="rounded-md border overflow-hidden">
+                            <table className="w-full text-sm text-left">
+                                <thead className="bg-slate-50 text-slate-600 border-b">
+                                    <tr>
+                                        <th className="p-3 font-medium">Tanggal</th>
+                                        <th className="p-3 font-medium">Kategori</th>
+                                        <th className="p-3 font-medium">Catatan</th>
+                                        <th className="p-3 font-medium text-right">Jumlah</th>
+                                        <th className="p-3 font-medium text-right">Status</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                     </div>
-                 ) : (
-                     <div className="text-center py-10 text-muted-foreground bg-slate-50 rounded-lg border border-dashed">
-                        Belum ada riwayat pembayaran yang tercatat.
-                     </div>
-                 )}
-             </div>
-          </TabsContent>
+                                </thead>
+                                <tbody className="divide-y">
+                                    {payments.map((p: any, idx: number) => (
+                                        <tr key={idx} className="hover:bg-slate-50/50 transition-colors">
+                                            <td className="p-3 text-slate-600">
+                                                {p.payment_date ? format(new Date(p.payment_date), "dd MMM yyyy", { locale: id }) : "-"}
+                                            </td>
+                                            <td className="p-3 capitalize font-medium text-slate-700">{p.category}</td>
+                                            <td className="p-3 text-slate-500 text-xs max-w-[150px] truncate" title={p.notes || "-"}>{p.notes || "-"}</td>
+                                            <td className="p-3 text-right font-medium">
+                                                {new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(p.amount)}
+                                            </td>
+                                            <td className="p-3 text-right">
+                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                    {p.payment_status}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                         </div>
+                     ) : (
+                         <div className="text-center py-10 text-muted-foreground bg-slate-50 rounded-lg border border-dashed">
+                            Belum ada riwayat pembayaran yang tercatat.
+                         </div>
+                     )}
+                 </div>
+              </TabsContent>
 
-          {/* TAB 3: BILLING / TAGIHAN */}
-          <TabsContent value="billing">
-            <div className="space-y-4">
-                <div className="flex items-center gap-4 p-5 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 rounded-xl shadow-sm">
-                    <div className="p-3 bg-white border border-blue-100 rounded-full shadow-sm">
-                        <CreditCard className="w-6 h-6 text-blue-600" />
+              {/* TAB 3: BILLING / TAGIHAN */}
+              <TabsContent value="billing">
+                <div className="space-y-4">
+                    <div className="flex items-center gap-4 p-5 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 rounded-xl shadow-sm">
+                        <div className="p-3 bg-white border border-blue-100 rounded-full shadow-sm">
+                            <CreditCard className="w-6 h-6 text-blue-600" />
+                        </div>
+                        <div>
+                            <p className="text-sm font-medium text-blue-600/80 mb-1">SPP Bulanan (Base Fee)</p>
+                            <p className="text-2xl font-bold text-slate-900">
+                                {new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(student.base_fee || 0)}
+                            </p>
+                        </div>
+                        <div className="ml-auto">
+                            <Button size="sm" variant="outline" className="bg-white hover:bg-slate-50">Buat Tagihan Manual</Button>
+                        </div>
                     </div>
-                    <div>
-                        <p className="text-sm font-medium text-blue-600/80 mb-1">SPP Bulanan (Base Fee)</p>
-                        <p className="text-2xl font-bold text-slate-900">
-                            {new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(student.base_fee || 0)}
-                        </p>
-                    </div>
-                    <div className="ml-auto">
-                        <Button size="sm" variant="outline" className="bg-white hover:bg-slate-50">Buat Tagihan Manual</Button>
+
+                    <div className="bg-white p-5 border rounded-xl shadow-sm">
+                        <h4 className="font-semibold text-primary mb-3">Informasi Tagihan</h4>
+                        <div className="p-6 border border-dashed rounded-lg text-sm text-slate-500 text-center bg-slate-50">
+                            Sistem tagihan otomatis akan muncul di sini. Saat ini tagihan dikelola secara manual via Matrix.
+                        </div>
                     </div>
                 </div>
-
-                <div className="bg-white p-5 border rounded-xl shadow-sm">
-                    <h4 className="font-semibold text-primary mb-3">Informasi Tagihan</h4>
-                    <div className="p-6 border border-dashed rounded-lg text-sm text-slate-500 text-center bg-slate-50">
-                        Sistem tagihan otomatis akan muncul di sini. Saat ini tagihan dikelola secara manual via Matrix.
-                    </div>
-                </div>
-            </div>
-          </TabsContent>
+              </TabsContent>
+            </>
+          )}
         </Tabs>
       </DialogContent>
     </Dialog>

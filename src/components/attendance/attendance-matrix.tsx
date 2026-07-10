@@ -11,6 +11,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
+import { StudentDetailDialog } from '@/components/students/StudentDetailDialog'
 
 const DAY_MAP: Record<string, number> = {
   'Sunday': 0, 'Monday': 1, 'Tuesday': 2, 'Wednesday': 3,
@@ -198,7 +199,11 @@ export function AttendanceMatrix({ classData, month, year }: AttendanceMatrixPro
           {students.map((student: any) => (
             <TableRow key={student.id}>
               <TableCell className="font-medium sticky left-0 bg-white z-10 shadow-[1px_0_0_0_#e2e8f0]">
-                {student.name}
+                <StudentDetailDialog student={student} profileOnly>
+                  <Button variant="link" className="p-0 h-auto font-medium text-slate-900 hover:text-primary whitespace-nowrap">
+                    {student.name}
+                  </Button>
+                </StudentDetailDialog>
               </TableCell>
               {validDates.map(date => {
                 const log = logs?.find((l: any) => l.student_id === student.id && l.date === date)

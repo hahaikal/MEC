@@ -6,6 +6,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useClassList } from '@/lib/hooks/use-students-by-class'
 import { AttendanceMatrix } from '@/components/attendance/attendance-matrix'
 
+import { useLocalStorage } from '@/lib/hooks/use-local-storage'
+
 const MONTHS = [
   { value: 1, label: 'Januari' },
   { value: 2, label: 'Februari' },
@@ -22,8 +24,8 @@ const MONTHS = [
 ]
 
 export default function DailyAttendancePage() {
-  const [selectedClass, setSelectedClass] = useState<string>('')
-  const [selectedMonth, setSelectedMonth] = useState<string>((new Date().getMonth() + 1).toString())
+  const [selectedClass, setSelectedClass] = useLocalStorage<string>('attendance_daily_class', '')
+  const [selectedMonth, setSelectedMonth] = useLocalStorage<string>('attendance_daily_month', (new Date().getMonth() + 1).toString())
   
   const { data: classes, isLoading: isLoadingClasses } = useClassList()
   

@@ -21,9 +21,11 @@ import { useAttendanceBySemester } from '@/lib/hooks/use-attendance'
 import { AttendanceRow } from './_components/attendance-row'
 import { Loader2 } from 'lucide-react'
 
+import { useLocalStorage } from '@/lib/hooks/use-local-storage'
+
 export default function AttendancePage() {
-  const [selectedSemester, setSelectedSemester] = useState<string>('')
-  const [selectedClass, setSelectedClass] = useState<string>('')
+  const [selectedSemester, setSelectedSemester] = useLocalStorage<string>('attendance_report_semester', '')
+  const [selectedClass, setSelectedClass] = useLocalStorage<string>('attendance_report_class', '')
 
   // Fetch Classes
   const { data: classes, isLoading: isLoadingClasses } = useClassList()
