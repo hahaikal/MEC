@@ -63,6 +63,69 @@ export type Student = {
 
 export const columns: ColumnDef<Student>[] = [
   {
+    id: 'actions',
+    cell: ({ row }) => {
+      const student = row.original
+      const deleteStudent = useDeleteStudent()
+      const [showDeleteAlert, setShowDeleteAlert] = useState(false)
+      const [showDetailDialog, setShowDetailDialog] = useState(false)
+
+      return (
+        <>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <span className="sr-only">Open menu</span>
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start">
+              <DropdownMenuLabel>Aksi</DropdownMenuLabel>
+              <DropdownMenuItem onClick={() => setShowDetailDialog(true)}>
+                <Pencil className="mr-2 h-4 w-4" />
+                Lihat Detail & Edit
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem 
+                className="text-red-600 focus:text-red-600"
+                onClick={() => setShowDeleteAlert(true)}
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Nonaktifkan Siswa
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <AlertDialog open={showDeleteAlert} onOpenChange={setShowDeleteAlert}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Apakah anda yakin?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Data siswa ini akan dinonaktifkan. Data siswa dan riwayat pembayarannya tetap tersimpan.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Batal</AlertDialogCancel>
+                <AlertDialogAction 
+                  className="bg-red-600 hover:bg-red-700"
+                  onClick={() => deleteStudent.mutate(student.id)}
+                >
+                  Nonaktifkan
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+          
+           <AddStudentDialog 
+             open={showDetailDialog} 
+             onOpenChange={setShowDetailDialog}
+             studentToEdit={student} 
+           />
+        </>
+      )
+    },
+  },
+  {
     id: 'index',
     header: () => <div className="w-8 text-center text-xs font-medium">No</div>,
     size: 40,
@@ -131,6 +194,12 @@ export const columns: ColumnDef<Student>[] = [
     header: () => <div className="w-20 text-center text-xs font-medium">Reg</div>,
     size: 80,
     cell: ({ row }) => <PaymentStatusCell student={row.original} isRegistration={true} month={-1} />,
+  },
+  {
+    id: 'book_fee',
+    header: () => <div className="w-20 text-center text-xs font-medium">Book</div>,
+    size: 80,
+    cell: ({ row }) => <PaymentStatusCell student={row.original} isBookFee={true} month={-2} />,
   },
   {
     id: 'januari',
@@ -203,68 +272,5 @@ export const columns: ColumnDef<Student>[] = [
     header: () => <div className="w-20 text-center text-xs font-medium">Des</div>,
     size: 80,
     cell: ({ row }) => <PaymentStatusCell student={row.original} month={11} />,
-  },
-  {
-    id: 'actions',
-    cell: ({ row }) => {
-      const student = row.original
-      const deleteStudent = useDeleteStudent()
-      const [showDeleteAlert, setShowDeleteAlert] = useState(false)
-      const [showDetailDialog, setShowDetailDialog] = useState(false)
-
-      return (
-        <>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Open menu</span>
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Aksi</DropdownMenuLabel>
-              <DropdownMenuItem onClick={() => setShowDetailDialog(true)}>
-                <Pencil className="mr-2 h-4 w-4" />
-                Lihat Detail & Edit
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem 
-                className="text-red-600 focus:text-red-600"
-                onClick={() => setShowDeleteAlert(true)}
-              >
-                <Trash2 className="mr-2 h-4 w-4" />
-                Nonaktifkan Siswa
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          <AlertDialog open={showDeleteAlert} onOpenChange={setShowDeleteAlert}>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Apakah anda yakin?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Data siswa ini akan dinonaktifkan. Data siswa dan riwayat pembayarannya tetap tersimpan.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Batal</AlertDialogCancel>
-                <AlertDialogAction 
-                  className="bg-red-600 hover:bg-red-700"
-                  onClick={() => deleteStudent.mutate(student.id)}
-                >
-                  Nonaktifkan
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-          
-           <AddStudentDialog 
-             open={showDetailDialog} 
-             onOpenChange={setShowDetailDialog}
-             studentToEdit={student} 
-           />
-        </>
-      )
-    },
   },
 ]

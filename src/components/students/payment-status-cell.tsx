@@ -7,7 +7,8 @@ import {
   CheckCircle2,
   CreditCard,
   Info,
-  Loader2
+  Loader2,
+  Edit
 } from "lucide-react";
 import {
   Popover,
@@ -56,8 +57,9 @@ interface PaymentStatusCellProps {
   isRegistration?: boolean;
 }
 
-export function PaymentStatusCell({ student, month, year, isRegistration = false }: PaymentStatusCellProps) {
+export function PaymentStatusCell({ student, month, year, isRegistration = false, isBookFee = false }: PaymentStatusCellProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const router = useRouter();
 
   // Use provided month/year or default to current
@@ -65,8 +67,8 @@ export function PaymentStatusCell({ student, month, year, isRegistration = false
   const targetMonth = month ?? currentDate.getMonth();
   const targetYear = year ?? currentDate.getFullYear();
 
-  const targetDate = isRegistration ? currentDate : new Date(targetYear, targetMonth, 1);
-  const monthName = isRegistration ? 'Registration' : format(targetDate, 'MMMM yyyy');
+  const targetDate = isRegistration || isBookFee ? currentDate : new Date(targetYear, targetMonth, 1);
+  const monthName = isRegistration ? 'Registration' : isBookFee ? 'Book Fee' : format(targetDate, 'MMMM yyyy');
 
   // OPTIMIZATION: Fetch ALL payments for the year at once.
   // React Query will dedupe this call across all cells for the same student/year.
@@ -74,21 +76,27 @@ export function PaymentStatusCell({ student, month, year, isRegistration = false
 
   // Find payment for this specific month in the cached yearly data
   // We check if the payment 'month' matches OR if the payment_date falls in the month
-  const payment = yearlyPayments?.find((p: any) => {
+  const paymentsForCell = yearlyPayments?.filter((p: any) => {
       if (isRegistration) {
           // Check if category is registration (case insensitive usually better)
           return p.category === 'registration';
       }
+      if (isBookFee) {
+          return p.category === 'books';
+      }
 
       // 1. Check explicit 'month' column if available (preferred)
       if (p.month !== null && p.month !== undefined) {
-          return p.month === targetMonth && p.year === targetYear && p.category !== 'registration';
+          return p.month === targetMonth && p.year === targetYear && p.category === 'tuition';
       }
       
       // 2. Fallback: Check payment_date only if month is not explicitly set
       const pDate = new Date(p.payment_date);
-      return pDate.getMonth() === targetMonth && pDate.getFullYear() === targetYear && p.category !== 'registration';
-  });
+      return pDate.getMonth() === targetMonth && pDate.getFullYear() === targetYear && p.category === 'tuition';
+  }) || [];
+
+  const payment = paymentsForCell[0];
+  const totalAmount = paymentsForCell.reduce((sum: number, p: any) => sum + Number(p.amount), 0);
 
   if (isLoading) {
       return <div className="h-8 w-8 rounded-full bg-slate-100 animate-pulse mx-auto" />;
@@ -129,7 +137,7 @@ export function PaymentStatusCell({ student, month, year, isRegistration = false
                     style: "currency",
                     currency: "IDR",
                     maximumFractionDigits: 0,
-                  }).format(payment.amount)}
+                  }).format(totalAmount)}
                 </div>
 
                 <div className="text-muted-foreground">Date</div>
@@ -160,10 +168,40 @@ export function PaymentStatusCell({ student, month, year, isRegistration = false
                     </div>
                   </>
                 )}
+
+                <div className="pt-2 border-t flex justify-end">
+                  <Button variant="outline" size="sm" className="h-8" onClick={() => setIsEditDialogOpen(true)}>
+                    <Edit className="h-3 w-3 mr-1" /> Edit
+                  </Button>
+                </div>
               </div>
             </div>
           </PopoverContent>
         </Popover>
+
+        {/* Edit Dialog */}
+        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+          <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Edit Payment</DialogTitle>
+              <DialogDescription>
+                Edit payment details for <strong>{student.name}</strong>.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="mt-4">
+              <QuickPaymentForm
+                student={student}
+                month={targetMonth}
+                year={targetYear}
+                isRegistration={isRegistration}
+                isBookFee={isBookFee}
+                existingPayment={payment}
+                existingPayments={paymentsForCell}
+                onSuccess={() => setIsEditDialogOpen(false)}
+              />
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     );
   }
@@ -209,6 +247,7 @@ export function PaymentStatusCell({ student, month, year, isRegistration = false
               month={targetMonth}
               year={targetYear}
               isRegistration={isRegistration}
+              isBookFee={isBookFee}
               onSuccess={() => setIsDialogOpen(false)}
             />
           </div>

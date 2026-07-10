@@ -19,12 +19,33 @@ export async function createPayment(data: any) {
     category: data.category || 'tuition',
     month: data.month,
     year: data.year,
+    payment_date: data.payment_date,
     discount_amount: data.discount_amount || 0,
     received_by: user?.id,
   })
 
   if (error) {
     console.error('Create Payment Error:', error)
+    return { error: error.message }
+  }
+
+  revalidatePath('/dashboard/payments')
+  return { success: true }
+}
+
+export async function updatePayment(id: string, data: any) {
+  const supabase = await createClient()
+
+  const { error } = await supabase.from('payments').update({
+    amount: data.amount,
+    payment_method: data.payment_method,
+    notes: data.notes,
+    discount_amount: data.discount_amount,
+    payment_date: data.payment_date,
+  }).eq('id', id)
+
+  if (error) {
+    console.error('Update Payment Error:', error)
     return { error: error.message }
   }
 

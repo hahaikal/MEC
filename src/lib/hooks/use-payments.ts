@@ -109,7 +109,8 @@ export function useStudentPaymentsYearly(studentId: string, year: number) {
         .select('*')
         .eq('student_id', studentId)
         .eq('year', year)
-        .order('month', { ascending: true });
+        .order('month', { ascending: true })
+        .order('created_at', { ascending: true });
 
       if (error) {
         throw error;
@@ -129,6 +130,25 @@ export function useCreatePayment() {
   return useMutation({
     mutationFn: async (data: any) => {
       const result = await createPayment(data);
+      if (result.error) throw new Error(result.error);
+      return result;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['student-payments-yearly'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['reports'] });
+    },
+  });
+}
+
+import { updatePayment } from '@/actions/payments';
+
+export function useUpdatePayment() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: any }) => {
+      const result = await updatePayment(id, data);
       if (result.error) throw new Error(result.error);
       return result;
     },

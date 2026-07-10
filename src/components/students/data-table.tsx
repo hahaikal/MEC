@@ -83,8 +83,23 @@ export function DataTable<TData, TValue>({
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   );
-  const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({});
+  const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('student-table-columns')
+      if (saved) {
+        try {
+          return JSON.parse(saved)
+        } catch (e) {
+          return {}
+        }
+      }
+    }
+    return {}
+  })
+
+  React.useEffect(() => {
+    localStorage.setItem('student-table-columns', JSON.stringify(columnVisibility))
+  }, [columnVisibility])
   const [rowSelection, setRowSelection] = React.useState({});
 
   const table = useReactTable({
