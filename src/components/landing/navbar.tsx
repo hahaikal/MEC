@@ -64,6 +64,12 @@ export function Navbar({ phone = "+62 812-7425-6077" }: { phone?: string }) {
                 WhatsApp
               </Button>
             </a>
+            <Link href="/preschool">
+              <Button variant="outline" className="rounded-full gap-2 border-primary text-primary hover:bg-primary/10 shadow-sm">
+                <Sparkles className="h-4 w-4" />
+                MEC Preschool
+              </Button>
+            </Link>
             <Link href="/parent-hub/login">
               <Button className="rounded-full gap-2 shadow-soft px-5">
                 <LogIn className="h-4 w-4" />
@@ -98,6 +104,11 @@ export function Navbar({ phone = "+62 812-7425-6077" }: { phone?: string }) {
                 <MessageCircle className="h-4 w-4" /> WhatsApp
               </Button>
             </a>
+            <Link href="/preschool">
+              <Button variant="outline" className="w-full rounded-full gap-2 border-primary text-primary">
+                <Sparkles className="h-4 w-4" /> MEC Preschool
+              </Button>
+            </Link>
             <Link href="/parent-hub/login">
               <Button className="w-full rounded-full gap-2">
                 <LogIn className="h-4 w-4" /> Parent Hub Login
