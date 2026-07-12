@@ -4,7 +4,10 @@ import { motion } from "framer-motion";
 import { ArrowRight, Play } from "lucide-react";
 import { Star4, Cloud, Balloon, ScallopEdge } from "./Doodles";
 
-export function Hero() {
+export function Hero({ phone = "+62 812-7425-6077" }: { phone?: string }) {
+  const cleanPhone = phone.replace(/\D/g, "");
+  const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent("Halo Admin MEC, saya ingin konsultasi mengenai program MEC Preschool")}`;
+
   return (
     <section id="home" className="relative overflow-hidden bg-primary-soft" aria-labelledby="hero-title">
       <Cloud className="absolute left-4 top-40 w-20 text-primary/40 md:left-1/3 md:top-32" />
@@ -20,7 +23,7 @@ export function Hero() {
         >
           <span className="inline-flex items-center gap-2 rounded-full bg-accent px-4 py-1.5 text-xs font-bold uppercase tracking-wide text-accent-foreground">
             <Star4 className="w-3.5" />
-            Kindergarten &amp; Baby Care
+            Early Childhood Education Centre
           </span>
           <h1 id="hero-title" className="mt-5 font-display text-4xl font-bold leading-tight text-foreground md:text-5xl lg:text-6xl">
             <span className="block relative z-10">Kids&apos; Bright</span>
@@ -31,11 +34,13 @@ export function Hero() {
             <span className="block mt-1 relative z-10">Starts Here</span>
           </h1>
           <p className="mt-5 max-w-md text-base leading-relaxed text-muted-foreground md:text-lg">
-            MEC Preschool helps your little one grow confidently through fun, safe, and loving English learning — from their very first steps.
+            Developing a globally ready, highly curious, and strong-charactered generation through quality early childhood education.
           </p>
           <div className="mt-8 flex flex-wrap items-center gap-4 relative z-10">
             <a
-              href="#classes"
+              href={waUrl}
+              target="_blank"
+              rel="noopener noreferrer"
               className="inline-flex items-center gap-2 rounded-full bg-primary px-7 py-3.5 text-sm font-bold text-primary-foreground shadow-lg transition-transform hover:-translate-y-0.5"
             >
               Apply Today
@@ -75,7 +80,7 @@ export function Hero() {
             animate={{ y: [0, -8, 0] }}
             transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
           >
-            <p className="font-display text-xl font-bold text-primary">15+</p>
+            <p className="font-display text-xl font-bold text-primary">4+</p>
             <p className="text-xs font-semibold text-muted-foreground">Years Experience</p>
           </motion.div>
         </motion.div>

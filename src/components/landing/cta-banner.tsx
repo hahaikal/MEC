@@ -24,7 +24,7 @@ export function CTABanner({ phone = "+62 812-7425-6077" }: { phone?: string }) {
               </h2>
               <p className="mt-4 text-primary-foreground/85 max-w-lg">
                 Chat with our team on WhatsApp for class schedules and a free
-                placement test — or log into your Parent Hub to manage enrollment.
+                placement test or log into your Parent Hub to manage enrollment.
               </p>
 
               <div className="mt-8 flex flex-col sm:flex-row gap-3">

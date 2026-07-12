@@ -42,7 +42,7 @@ export function Footer({ phone = "+62 812-7425-6077", email = "myenglishcourseba
                 My English Course & Academy
               </span>
               <span className="font-display font-extrabold text-lg text-foreground min-[1400px]:hidden">
-                MEC&A<span className="text-primary">.</span>
+                My English Course & Academy<span className="text-primary">.</span>
               </span>
             </div>
             <p className="mt-4 text-sm text-muted-foreground max-w-xs">

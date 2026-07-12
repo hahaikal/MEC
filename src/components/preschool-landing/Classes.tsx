@@ -37,7 +37,9 @@ const classes = [
   },
 ];
 
-export function Classes() {
+export function Classes({ phone = "+62 812-7425-6077" }: { phone?: string }) {
+  const cleanPhone = phone.replace(/\D/g, "");
+
   return (
     <section id="classes" className="relative overflow-hidden bg-muted py-20 md:py-28" aria-labelledby="classes-title">
       <Cloud className="absolute left-10 top-12 w-16 text-primary/30" />
@@ -57,40 +59,46 @@ export function Classes() {
         </div>
 
         <div className="mt-14 grid gap-8 md:grid-cols-3">
-          {classes.map((c, i) => (
-            <motion.article
-              key={c.title}
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-60px" }}
-              transition={{ duration: 0.5, delay: i * 0.12 }}
-              whileHover={{ y: -8 }}
-              className={`pill-card ${c.bg} ${c.text} px-6 pb-8 pt-6 text-center shadow-xl`}
-            >
-              <div className="blob-frame mx-auto w-40 bg-background/20">
-                <img
-                  src={c.img}
-                  alt={c.alt}
-                  width={800}
-                  height={800}
-                  loading="lazy"
-                  className="aspect-square w-full object-cover"
-                />
-              </div>
-              <span className={`mt-5 inline-block rounded-full px-3 py-1 text-xs font-bold ${c.badge}`}>
-                {c.age}
-              </span>
-              <h3 className="mt-3 font-display text-2xl font-bold">{c.title}</h3>
-              <p className="mt-2 text-sm leading-relaxed opacity-90">{c.desc}</p>
-              <a
-                href="#footer"
-                className="mt-5 inline-flex size-10 items-center justify-center rounded-full bg-background text-foreground shadow-md transition-transform hover:scale-110"
-                aria-label={`Register for ${c.title} class`}
+          {classes.map((c, i) => {
+            const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(`Halo Admin MEC, saya ingin konsultasi mengenai kelas ${c.title} Preschool`)}`;
+
+            return (
+              <motion.article
+                key={c.title}
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-60px" }}
+                transition={{ duration: 0.5, delay: i * 0.12 }}
+                whileHover={{ y: -8 }}
+                className={`pill-card ${c.bg} ${c.text} px-6 pb-8 pt-6 text-center shadow-xl`}
               >
-                <ArrowRight className="size-4" />
-              </a>
-            </motion.article>
-          ))}
+                <div className="blob-frame mx-auto w-40 bg-background/20">
+                  <img
+                    src={c.img}
+                    alt={c.alt}
+                    width={800}
+                    height={800}
+                    loading="lazy"
+                    className="aspect-square w-full object-cover"
+                  />
+                </div>
+                <span className={`mt-5 inline-block rounded-full px-3 py-1 text-xs font-bold ${c.badge}`}>
+                  {c.age}
+                </span>
+                <h3 className="mt-3 font-display text-2xl font-bold">{c.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed opacity-90">{c.desc}</p>
+                <a
+                  href={waUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-5 inline-flex size-10 items-center justify-center rounded-full bg-background text-foreground shadow-md transition-transform hover:scale-110"
+                  aria-label={`Register for ${c.title} class`}
+                >
+                  <ArrowRight className="size-4" />
+                </a>
+              </motion.article>
+            );
+          })}
         </div>
       </div>
     </section>

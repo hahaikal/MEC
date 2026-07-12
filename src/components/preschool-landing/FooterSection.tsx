@@ -1,7 +1,17 @@
 import { MapPin, Phone, Mail, Facebook, Instagram, Youtube } from "lucide-react";
 import { ScallopEdge, Star4 } from "./Doodles";
 
-export function FooterSection() {
+export function FooterSection({ 
+  phone = "+62 812-7425-6077",
+  email = "hello@mecpreschool.id",
+  address = "Jl. Lancang Kuning Bagan Batu, Kec. Bagan Sinembah, Rokan Hilir"
+}: { 
+  phone?: string;
+  email?: string;
+  address?: string;
+}) {
+  const cleanPhone = phone.replace(/\D/g, "");
+
   return (
     <footer id="footer" className="relative bg-primary-deep text-primary-foreground">
       <ScallopEdge className="h-10 w-full text-muted" flip={true} />
@@ -18,7 +28,7 @@ export function FooterSection() {
               </span>
             </a>
             <p className="mt-4 text-sm leading-relaxed opacity-80">
-              My English Course Preschool — The place where your little one learns English in the most fun way.
+              My English Course Preschool is the place where your little one learns English in the most fun way.
             </p>
             <div className="mt-5 flex gap-3">
               {[
@@ -62,15 +72,15 @@ export function FooterSection() {
             <ul className="mt-4 space-y-3 text-sm opacity-90">
               <li className="flex items-start gap-3">
                 <MapPin className="mt-0.5 size-4 shrink-0 text-accent" />
-                Jl. Pendidikan No. 123, Jakarta Selatan
+                <span className="max-w-[200px]">{address}</span>
               </li>
               <li className="flex items-center gap-3">
                 <Phone className="size-4 shrink-0 text-accent" />
-                <a href="tel:+622112345678" className="hover:text-accent">+62 21 1234 5678</a>
+                <a href={`tel:${cleanPhone}`} className="hover:text-accent">{phone}</a>
               </li>
               <li className="flex items-center gap-3">
                 <Mail className="size-4 shrink-0 text-accent" />
-                <a href="mailto:hello@mecpreschool.id" className="hover:text-accent">hello@mecpreschool.id</a>
+                <a href={`mailto:${email}`} className="hover:text-accent break-all">{email}</a>
               </li>
             </ul>
           </address>

@@ -6,6 +6,7 @@ import { Gallery } from "@/components/preschool-landing/Gallery";
 import { Experts } from "@/components/preschool-landing/Experts";
 import { FooterSection } from "@/components/preschool-landing/FooterSection";
 import { getPublicPreschoolTeachers } from "@/actions/parent-hub-public";
+import { getSystemSettings } from "@/actions/settings";
 
 export const metadata = {
   title: "MEC Preschool | Bright Future Starts Here",
@@ -21,17 +22,22 @@ export default async function PreschoolLandingPage() {
     img: t.image || "",
   }));
 
+  const settings = await getSystemSettings() || {};
+  const phone = settings.schoolPhone || "+62 812-7425-6077";
+  const email = settings.schoolEmail || "myenglishcoursebaganbatu@gmail.com";
+  const address = settings.schoolAddress || "Jl. Pendidikan No. 123, Jakarta Selatan";
+
   return (
     <div className="preschool-theme bg-background text-foreground min-h-screen">
-      <Navbar />
+      <Navbar phone={phone} />
       <main>
-        <Hero />
+        <Hero phone={phone} />
         <WhyChoose />
-        <Classes />
+        <Classes phone={phone} />
         <Gallery />
         <Experts teachers={teachers} />
       </main>
-      <FooterSection />
+      <FooterSection phone={phone} email={email} address={address} />
     </div>
   );
 }

@@ -24,7 +24,7 @@ export function Gallery() {
             </h2>
           </div>
           <p className="text-muted-foreground max-w-md">
-            Curiosity, laughter, and learning — every day at MEC. Take a peek
+            Curiosity, laughter, and learning every day at MEC. Take a peek
             inside our friendly classrooms.
           </p>
         </div>

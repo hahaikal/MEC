@@ -11,7 +11,7 @@ export function WhyUs() {
     {
       icon: Users,
       title: "Small Class Sizes",
-      desc: "Max 10 students per group — real attention, real progress.",
+      desc: "Max 10 students per group real attention, real progress.",
       color: "accent",
     },
     {

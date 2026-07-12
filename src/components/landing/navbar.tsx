@@ -40,8 +40,8 @@ export function Navbar({ phone = "+62 812-7425-6077" }: { phone?: string }) {
             <span className="font-display font-extrabold text-lg tracking-tight text-foreground hidden min-[1400px]:block">
               My English Course & Academy
             </span>
-            <span className="font-display font-extrabold text-lg tracking-tight text-foreground min-[1400px]:hidden">
-              MEC&A<span className="text-primary">.</span>
+            <span className="font-display font-extrabold tracking-tight text-foreground min-[1400px]:hidden">
+              My English Course & Academy<span className="text-primary">.</span>
             </span>
           </a>
 
