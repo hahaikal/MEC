@@ -38,10 +38,10 @@ export function Footer({ phone = "+62 812-7425-6077", email = "myenglishcourseba
                 width={80}
                 height={80}
               />
-              <span className="font-display font-extrabold text-lg text-foreground hidden min-[1400px]:block">
-                My English Course & Academy
+              <span className="font-display font-extrabold text-lg text-foreground hidden xl:block leading-tight">
+                My English Course <br /> & Academy
               </span>
-              <span className="font-display font-extrabold text-lg text-foreground min-[1400px]:hidden">
+              <span className="font-display font-extrabold text-lg text-foreground xl:hidden">
                 My English Course & Academy<span className="text-primary">.</span>
               </span>
             </div>

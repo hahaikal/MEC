@@ -18,7 +18,7 @@ export default async function PreschoolLandingPage() {
   
   const teachers = teachersData.map((t: any) => ({
     name: t.name,
-    role: "Preschool Teacher", // or t.role
+    role: t.role || "Preschool Teacher",
     img: t.image || "",
   }));
 
@@ -32,7 +32,7 @@ export default async function PreschoolLandingPage() {
       <Navbar phone={phone} />
       <main>
         <Hero phone={phone} />
-        <WhyChoose />
+        <WhyChoose phone={phone} />
         <Classes phone={phone} />
         <Gallery />
         <Experts teachers={teachers} />

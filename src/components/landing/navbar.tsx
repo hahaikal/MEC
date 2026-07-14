@@ -37,15 +37,15 @@ export function Navbar({ phone = "+62 812-7425-6077" }: { phone?: string }) {
               height={80}
               className="rounded-md"
             />
-            <span className="font-display font-extrabold text-lg tracking-tight text-foreground hidden min-[1400px]:block">
-              My English Course & Academy
+            <span className="font-display font-extrabold text-lg tracking-tight text-foreground hidden xl:block leading-tight">
+              My English Course <br /> & Academy
             </span>
-            <span className="font-display font-extrabold tracking-tight text-foreground min-[1400px]:hidden">
-              My English Course & Academy<span className="text-primary">.</span>
+            <span className="font-display font-extrabold text-sm sm:text-base md:text-lg tracking-tight text-foreground xl:hidden leading-tight">
+              My English Course <br className="sm:hidden" /> & Academy<span className="text-primary">.</span>
             </span>
           </a>
 
-          <nav className="hidden md:flex items-center gap-8">
+          <nav className="hidden xl:flex items-center gap-8">
             {links.map((l) => (
               <a
                 key={l.href}
@@ -79,7 +79,7 @@ export function Navbar({ phone = "+62 812-7425-6077" }: { phone?: string }) {
           </div>
 
           <button
-            className="md:hidden grid h-10 w-10 place-items-center rounded-xl bg-muted text-foreground"
+            className="xl:hidden grid h-10 w-10 place-items-center rounded-xl bg-muted text-foreground"
             onClick={() => setOpen(!open)}
             aria-label="Toggle menu"
           >
@@ -88,7 +88,7 @@ export function Navbar({ phone = "+62 812-7425-6077" }: { phone?: string }) {
         </div>
 
         {open && (
-          <div className="md:hidden pb-4 flex flex-col gap-2">
+          <div className="xl:hidden pb-4 flex flex-col gap-2">
             {links.map((l) => (
               <a
                 key={l.href}
@@ -99,21 +99,23 @@ export function Navbar({ phone = "+62 812-7425-6077" }: { phone?: string }) {
                 {l.label}
               </a>
             ))}
-            <a href={dynamicWhatsappUrl} target="_blank" rel="noopener noreferrer">
-              <Button variant="outline" className="w-full rounded-full gap-2 mt-2">
-                <MessageCircle className="h-4 w-4" /> WhatsApp
-              </Button>
-            </a>
-            <Link href="/preschool">
-              <Button variant="outline" className="w-full rounded-full gap-2 border-primary text-primary">
-                <Sparkles className="h-4 w-4" /> MEC Preschool
-              </Button>
-            </Link>
-            <Link href="/parent-hub/login">
-              <Button className="w-full rounded-full gap-2">
-                <LogIn className="h-4 w-4" /> Parent Hub Login
-              </Button>
-            </Link>
+            <div className="md:hidden flex flex-col gap-2">
+              <a href={dynamicWhatsappUrl} target="_blank" rel="noopener noreferrer">
+                <Button variant="outline" className="w-full rounded-full gap-2 mt-2">
+                  <MessageCircle className="h-4 w-4" /> WhatsApp
+                </Button>
+              </a>
+              <Link href="/preschool">
+                <Button variant="outline" className="w-full rounded-full gap-2 border-primary text-primary">
+                  <Sparkles className="h-4 w-4" /> MEC Preschool
+                </Button>
+              </Link>
+              <Link href="/parent-hub/login">
+                <Button className="w-full rounded-full gap-2">
+                  <LogIn className="h-4 w-4" /> Parent Hub Login
+                </Button>
+              </Link>
+            </div>
           </div>
         )}
       </div>

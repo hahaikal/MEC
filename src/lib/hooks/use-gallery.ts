@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/client'
-import { getPublicActiveGalleryItems } from '@/actions/parent-hub-public'
+import { getPublicActiveGalleryItems, getPublicPreschoolActivities } from '@/actions/parent-hub-public'
 import { createGalleryItem, updateGalleryItem, toggleGalleryItem, deleteGalleryItem } from '@/actions/gallery'
 import type { GalleryFormValues } from '@/lib/validators/gallery'
 
@@ -30,6 +30,13 @@ export function useActiveGalleryItems(category?: string) {
   return useQuery({
     queryKey: ['gallery-items', 'active', category],
     queryFn: async () => getPublicActiveGalleryItems(category),
+  })
+}
+
+export function usePreschoolActivities() {
+  return useQuery({
+    queryKey: ['preschool-activities'],
+    queryFn: async () => getPublicPreschoolActivities(),
   })
 }
 

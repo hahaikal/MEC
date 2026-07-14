@@ -1,7 +1,7 @@
 "use client";
 
 import { GalleryGrid } from "@/components/parent-hub/gallery-grid";
-import { useActiveGalleryItems } from "@/lib/hooks/use-gallery";
+import { usePreschoolActivities } from "@/lib/hooks/use-gallery";
 import { PRESCHOOL_SCHEDULE } from "@/lib/parent-hub-data";
 import { usePreschoolTeachers } from "@/lib/hooks/use-teachers";
 import { usePreschoolMagazines } from "@/lib/hooks/use-documents";
@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/carousel";
 
 export default function PreschoolPage() {
-  const { data: galleryItems, isLoading } = useActiveGalleryItems("preschool");
+  const { data: galleryItems, isLoading } = usePreschoolActivities();
   const { data: documents, isLoading: isDocumentsLoading } = usePreschoolMagazines();
   const { data: preschoolTeachers, isLoading: isTeachersLoading } = usePreschoolTeachers();
   const { data: preschoolClasses, isLoading: isClassesLoading } = usePreschoolClasses();

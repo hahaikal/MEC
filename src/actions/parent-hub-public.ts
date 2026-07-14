@@ -146,7 +146,7 @@ export async function getPublicPreschoolMagazines() {
   return data ?? []
 }
 
-export async function getPublicPreschoolTeachers() {
+export async function getPublicPreschoolActivities() {
   const supabase = getSupabase()
   if (!process.env.SUPABASE_SERVICE_ROLE_KEY) return []
 
@@ -166,12 +166,56 @@ export async function getPublicPreschoolTeachers() {
     
   if (classError || !classes.length) return []
   
+  const classIds = classes.map((c: any) => c.id)
+
+  // 2. Fetch class activities
+  const { data, error } = await supabase
+    .from('class_activities')
+    .select('*')
+    .in('class_id', classIds)
+    .order('created_at', { ascending: false })
+
+  if (error) throw error
+
+  // 3. Map to match GalleryItemData structure expected by GalleryGrid
+  return data.map((item: any) => ({
+    id: item.id,
+    title: item.title,
+    description: item.description,
+    image_url: item.image_url,
+    category: 'preschool',
+    is_active: true,
+    event_date: item.created_at,
+    created_at: item.created_at,
+  }))
+}
+
+export async function getPublicPreschoolTeachers() {
+  const supabase = getSupabase()
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) return []
+
+  // 1. Get classes that belong to MEC PRESCHOOL
+  const { data: programs, error: progError } = await supabase
+    .from('programs')
+    .select('id')
+    .eq('name', 'MEC PRESCHOOL')
+    .single()
+    
+  if (progError || !programs) return []
+
+  const { data: classes, error: classError } = await supabase
+    .from('classes')
+    .select('id, name')
+    .eq('program_id', programs.id)
+    
+  if (classError || !classes.length) return []
+  
   const classIds = classes.map(c => c.id)
 
   // 2. Get teachers assigned to those classes
   const { data: classTeachers, error: ctError } = await supabase
     .from('class_teachers')
-    .select('users(id, full_name, roles, profile_picture_url)')
+    .select('class_id, users(id, full_name, roles, profile_picture_url)')
     .in('class_id', classIds)
     
   if (ctError || !classTeachers) return []
@@ -179,13 +223,25 @@ export async function getPublicPreschoolTeachers() {
   // 3. Deduplicate and format teachers
   const uniqueTeachers = new Map()
   classTeachers.forEach((ct: any) => {
-    if (ct.users && !uniqueTeachers.has(ct.users.id)) {
-      uniqueTeachers.set(ct.users.id, {
-        id: ct.users.id,
-        name: ct.users.full_name || 'Teacher',
-        role: ct.users.roles?.[0] || 'Teacher',
-        image: ct.users.profile_picture_url || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop'
-      })
+    if (ct.users) {
+      const className = classes.find(c => c.id === ct.class_id)?.name || ''
+      const cleanClassName = className.replace(/MEC\s*/i, '').trim()
+      
+      if (!uniqueTeachers.has(ct.users.id)) {
+        uniqueTeachers.set(ct.users.id, {
+          id: ct.users.id,
+          name: ct.users.full_name || 'Teacher',
+          image: ct.users.profile_picture_url || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop',
+          classes: [cleanClassName],
+          role: `Guru kelas ${cleanClassName}`
+        })
+      } else {
+        const teacher = uniqueTeachers.get(ct.users.id)
+        if (cleanClassName && !teacher.classes.includes(cleanClassName)) {
+          teacher.classes.push(cleanClassName)
+          teacher.role = `Guru kelas ${teacher.classes.join(' & ')}`
+        }
+      }
     }
   })
 

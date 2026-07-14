@@ -11,7 +11,10 @@ const features = [
   { icon: Users, label: "Small & Personalized Classes" },
 ];
 
-export function WhyChoose() {
+export function WhyChoose({ phone = "+62 812-7425-6077" }: { phone?: string }) {
+  const cleanPhone = phone.replace(/\D/g, "");
+  const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent("Halo Admin MEC, saya ingin konsultasi mengenai program MEC Preschool")}`;
+
   return (
     <section id="why" className="relative bg-background py-20 md:py-28" aria-labelledby="why-title">
       <DotsGrid className="absolute right-8 top-10 w-14 text-accent" />
@@ -69,19 +72,21 @@ export function WhyChoose() {
 
           <div className="mt-8 flex flex-wrap items-center gap-6">
             <a
-              href="#classes"
+              href={waUrl}
+              target="_blank"
+              rel="noopener noreferrer"
               className="inline-flex items-center gap-2 rounded-full bg-primary px-7 py-3.5 text-sm font-bold text-primary-foreground shadow-lg transition-transform hover:-translate-y-0.5"
             >
               Read More
               <ArrowRight className="size-4" />
             </a>
-            <a href="tel:+622112345678" className="flex items-center gap-3">
-              <span className="flex size-11 items-center justify-center rounded-full bg-accent text-accent-foreground">
+            <a href={`tel:${cleanPhone}`} className="flex items-center gap-3 group">
+              <span className="flex size-11 items-center justify-center rounded-full bg-accent text-accent-foreground transition-transform group-hover:scale-110">
                 <Phone className="size-4" />
               </span>
               <span>
                 <span className="block text-xs font-semibold text-muted-foreground">Contact Us</span>
-                <span className="block text-sm font-bold text-foreground">+62 21 1234 5678</span>
+                <span className="block text-sm font-bold text-foreground group-hover:text-primary transition-colors">{phone}</span>
               </span>
             </a>
           </div>
