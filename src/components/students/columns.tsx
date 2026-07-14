@@ -201,10 +201,24 @@ export const columns: ColumnDef<Student>[] = [
     cell: ({ row }) => {
       const enrollments = row.getValue('enrollments') as any[]
       if (!enrollments || enrollments.length === 0) return <span className="text-muted-foreground">-</span>
+
+      const formatSchedule = (days?: string[], time?: string) => {
+        if (!days || days.length === 0) return time || ''
+        const shortDays = days.map(d => d.slice(0, 3)).join(', ')
+        return `${shortDays} ${time || ''}`.trim()
+      }
+
       return (
-        <div className="flex flex-wrap gap-1">
+        <div className="flex flex-col gap-1">
           {enrollments.map((enr: any, i: number) => (
-            <Badge key={i} variant="outline">{enr.class_name}</Badge>
+            <div key={i} className="flex flex-col">
+              <Badge variant="outline" className="w-fit mb-0.5">{enr.class_name}</Badge>
+              {(enr.schedule_days || enr.schedule_time) && (
+                <span className="text-[10px] text-muted-foreground leading-tight">
+                  {formatSchedule(enr.schedule_days, enr.schedule_time)}
+                </span>
+              )}
+            </div>
           ))}
         </div>
       )

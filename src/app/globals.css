@@ -51,6 +51,20 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+
+  /* Pastel accents for class cards */
+  --accent-mint: oklch(0.92 0.06 155);
+  --accent-mint-foreground: oklch(0.32 0.08 155);
+  --accent-lavender: oklch(0.89 0.07 300);
+  --accent-lavender-foreground: oklch(0.35 0.12 300);
+  --accent-sky: oklch(0.9 0.06 235);
+  --accent-sky-foreground: oklch(0.34 0.1 235);
+  --accent-peach: oklch(0.9 0.07 55);
+  --accent-peach-foreground: oklch(0.38 0.12 45);
+  --accent-butter: oklch(0.94 0.09 95);
+  --accent-butter-foreground: oklch(0.38 0.09 75);
+  --accent-rose: oklch(0.88 0.08 15);
+  --accent-rose-foreground: oklch(0.38 0.14 15);
 }
 
 .dark {

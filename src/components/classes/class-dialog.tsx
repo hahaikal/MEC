@@ -23,6 +23,8 @@ export function ClassDialog({ classToEdit, children }: { classToEdit?: any, chil
   const [open, setOpen] = useState(false)
   const [name, setName] = useState(classToEdit?.name || '')
   const [scheduleDays, setScheduleDays] = useState<string[]>(classToEdit?.schedule_days || [])
+  const [startTime, setStartTime] = useState(classToEdit?.schedule_time?.split(' - ')[0] || '')
+  const [endTime, setEndTime] = useState(classToEdit?.schedule_time?.split(' - ')[1] || '')
   const [teacherIds, setTeacherIds] = useState<string[]>(classToEdit?.teachers?.map((t: any) => t.id) || [])
   const [programId, setProgramId] = useState(classToEdit?.program_id || 'none')
   const [loading, setLoading] = useState(false)
@@ -31,6 +33,8 @@ export function ClassDialog({ classToEdit, children }: { classToEdit?: any, chil
     if (open) {
       setName(classToEdit?.name || '')
       setScheduleDays(classToEdit?.schedule_days || [])
+      setStartTime(classToEdit?.schedule_time?.split(' - ')[0] || '')
+      setEndTime(classToEdit?.schedule_time?.split(' - ')[1] || '')
       setTeacherIds(classToEdit?.teachers?.map((t: any) => t.id) || [])
       setProgramId(classToEdit?.program_id || 'none')
     }
@@ -52,9 +56,12 @@ export function ClassDialog({ classToEdit, children }: { classToEdit?: any, chil
     e.preventDefault()
     setLoading(true)
 
+    const combinedTime = startTime && endTime ? `${startTime} - ${endTime}` : null
+
     const payload = {
       name,
       schedule_days: scheduleDays.length > 0 ? scheduleDays : null,
+      schedule_time: combinedTime,
       program_id: programId === 'none' ? null : programId,
       teacher_ids: teacherIds,
     }
@@ -79,6 +86,8 @@ export function ClassDialog({ classToEdit, children }: { classToEdit?: any, chil
       if (!classToEdit) {
         setName('')
         setScheduleDays([])
+        setStartTime('')
+        setEndTime('')
         setTeacherIds([])
       }
     }
@@ -126,6 +135,25 @@ export function ClassDialog({ classToEdit, children }: { classToEdit?: any, chil
                   <Label htmlFor={`day-${day.id}`} className="font-normal cursor-pointer">{day.label}</Label>
                 </div>
               ))}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Jam Kelas</Label>
+            <div className="flex items-center gap-2">
+              <Input 
+                type="time" 
+                value={startTime} 
+                onChange={e => setStartTime(e.target.value)} 
+                className="w-full"
+              />
+              <span className="text-muted-foreground">-</span>
+              <Input 
+                type="time" 
+                value={endTime} 
+                onChange={e => setEndTime(e.target.value)} 
+                className="w-full"
+              />
             </div>
           </div>
 

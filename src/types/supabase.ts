@@ -227,6 +227,7 @@ export type Database = {
           capacity: number | null
           target_meetings: number
           schedule_days: string[] | null
+          schedule_time: string | null
           is_active: boolean
           created_at: string
           updated_at: string
@@ -239,6 +240,7 @@ export type Database = {
           capacity?: number | null
           target_meetings?: number
           schedule_days?: string[] | null
+          schedule_time?: string | null
           is_active?: boolean
           created_at?: string
           updated_at?: string
@@ -251,6 +253,7 @@ export type Database = {
           capacity?: number | null
           target_meetings?: number
           schedule_days?: string[] | null
+          schedule_time?: string | null
           is_active?: boolean
           created_at?: string
           updated_at?: string

@@ -13,7 +13,7 @@ export function useStudents() {
       // Join with class_enrollments, classes, and payments
       const { data, error } = await supabase
         .from('students')
-        .select('*, class_enrollments(class_id, base_fee, classes(id, name, programs(name))), payments(amount, year, month, category, payment_status, payment_date)')
+        .select('*, class_enrollments(class_id, base_fee, classes(id, name, schedule_days, schedule_time, programs(name))), payments(amount, year, month, category, payment_status, payment_date)')
         .order('created_at', { ascending: false })
 
       if (error) throw error
@@ -25,7 +25,9 @@ export function useStudents() {
           class_id: enr.class_id,
           class_name: enr.classes?.name,
           program_name: enr.classes?.programs?.name,
-          base_fee: enr.base_fee
+          base_fee: enr.base_fee,
+          schedule_days: enr.classes?.schedule_days,
+          schedule_time: enr.classes?.schedule_time
         })) || []
         
         const programs = Array.from(new Set(enrollments.map((e: any) => e.program_name).filter(Boolean)))

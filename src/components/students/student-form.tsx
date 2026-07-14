@@ -103,6 +103,8 @@ export function StudentForm({ initialData, onSuccess }: StudentFormProps) {
       phone_number: '',
       school_origin: '',
       joined_since_class: '',
+      father_name: '',
+      mother_name: '',
       father_occupation: '',
       mother_occupation: '',
       parent_phone: '',

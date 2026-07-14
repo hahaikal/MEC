@@ -12,7 +12,7 @@ export async function getClasses() {
       *,
       class_teachers ( users (id, full_name) ),
       programs:program_id (id, name),
-      class_enrollments(count)
+      class_enrollments ( students (name) )
     `)
     .order('created_at', { ascending: false })
 
@@ -21,11 +21,20 @@ export async function getClasses() {
     throw new Error(error.message)
   }
 
-  return data.map((c: any) => ({
-    ...c,
-    teachers: c.class_teachers?.map((ct: any) => ct.users) || [],
-    enrolled_count: c.class_enrollments[0]?.count || 0
-  }))
+  return data.map((c: any) => {
+    const enrollments = c.class_enrollments || [];
+    // extract students
+    const students = enrollments
+      .map((e: any) => e.students?.name)
+      .filter(Boolean);
+
+    return {
+      ...c,
+      teachers: c.class_teachers?.map((ct: any) => ct.users) || [],
+      enrolled_count: students.length,
+      students: students,
+    };
+  })
 }
 
 export async function createClass(data: any) {
@@ -34,6 +43,7 @@ export async function createClass(data: any) {
   const { data: newClass, error } = await supabase.from('classes').insert({
     name: data.name,
     schedule_days: data.schedule_days || null,
+    schedule_time: data.schedule_time || null,
     program_id: data.program_id || null,
   }).select('id').single()
 
@@ -62,6 +72,7 @@ export async function updateClass(id: string, data: any) {
     .update({
       name: data.name,
       schedule_days: data.schedule_days || null,
+      schedule_time: data.schedule_time || null,
       program_id: data.program_id || null,
       updated_at: new Date().toISOString()
     })

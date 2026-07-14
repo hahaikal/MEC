@@ -140,11 +140,18 @@ export default function ClassesPage() {
                       <TableCell>
                         <div className="flex flex-wrap gap-1">
                            {c.schedule_days && c.schedule_days.length > 0 ? (
-                              c.schedule_days.map((d: string) => (
-                                <span key={d} className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded-md text-xs font-medium">
-                                  {SCHEDULE_LABEL[d] || d}
-                                </span>
-                              ))
+                              <>
+                                {c.schedule_days.map((d: string) => (
+                                  <span key={d} className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded-md text-xs font-medium">
+                                    {SCHEDULE_LABEL[d] || d}
+                                  </span>
+                                ))}
+                                {c.schedule_time && (
+                                  <span className="px-2 py-0.5 bg-slate-100 text-slate-700 rounded-md text-xs font-medium border border-slate-200 ml-1">
+                                    {c.schedule_time}
+                                  </span>
+                                )}
+                              </>
                            ) : (
                               <span className="text-muted-foreground text-sm italic">Belum diatur</span>
                            )}
