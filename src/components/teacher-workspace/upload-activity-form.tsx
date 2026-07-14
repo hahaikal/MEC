@@ -20,8 +20,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { Progress } from "@/components/ui/progress";
 import { ImagePlus, Loader2, X } from "lucide-react";
-import { ImageCropper } from "@/components/ui/image-cropper";
-
 import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
@@ -32,8 +30,7 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { CalendarIcon } from "lucide-react";
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
-const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB per file
 
 const formSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters").max(100),
@@ -41,7 +38,7 @@ const formSchema = z.object({
   date: z.date({
     required_error: "A date is required.",
   }),
-  file: z.any().refine((files) => files && files.length > 0, "Image is required."),
+  files: z.any().refine((files) => files && files.length > 0, "At least one image is required."),
 });
 
 interface UploadActivityFormProps {
@@ -55,9 +52,8 @@ export function UploadActivityForm({
 }: UploadActivityFormProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [cropFileSrc, setCropFileSrc] = useState<string | null>(null);
-  const [croppedFile, setCroppedFile] = useState<File | null>(null);
-  const [showCropper, setShowCropper] = useState(false);
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -69,51 +65,48 @@ export function UploadActivityForm({
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log("Form submitted with values:", values);
     setIsUploading(true);
     setProgress(0);
 
     try {
-      const file = croppedFile || (values.file[0] as File);
       const supabase = createClient();
+      const uploadedUrls: string[] = [];
 
-      const progressInterval = setInterval(() => {
-        setProgress((prev) => {
-          if (prev >= 90) return prev;
-          return prev + 10;
-        });
-      }, 500);
+      for (let i = 0; i < selectedFiles.length; i++) {
+        const file = selectedFiles[i];
+        
+        // Update progress per file
+        setProgress(Math.round((i / selectedFiles.length) * 100));
 
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${classId}-${Math.random().toString(36).substring(2)}.${fileExt}`;
-      const filePath = `activities/${fileName}`;
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${classId}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+        const filePath = `activities/${fileName}`;
 
-      // Upload to Supabase Storage
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from("parent_hub_gallery")
-        .upload(filePath, file, {
-          cacheControl: "3600",
-          upsert: false,
-        });
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from("parent_hub_gallery")
+          .upload(filePath, file, {
+            cacheControl: "3600",
+            upsert: false,
+          });
 
-      clearInterval(progressInterval);
+        if (uploadError) {
+          throw new Error(`Failed to upload ${file.name}: ${uploadError.message}`);
+        }
 
-      if (uploadError) {
-        throw new Error(uploadError.message);
+        const { data: publicUrlData } = supabase.storage
+          .from("parent_hub_gallery")
+          .getPublicUrl(filePath);
+
+        uploadedUrls.push(publicUrlData.publicUrl);
       }
 
-      setProgress(100);
+      setProgress(90);
 
-      const { data: publicUrlData } = supabase.storage
-        .from("parent_hub_gallery")
-        .getPublicUrl(filePath);
-
-      // Create DB Record
       const result = await createActivityRecord({
         class_id: classId,
         title: values.title,
         description: values.description,
-        image_url: publicUrlData.publicUrl,
+        image_url: uploadedUrls.join(','), // Store as comma-separated
         created_at: values.date.toISOString(),
       });
 
@@ -121,24 +114,31 @@ export function UploadActivityForm({
         throw new Error(result.error);
       }
 
+      setProgress(100);
       toast.success("Activity posted successfully");
       form.reset();
-      setCroppedFile(null);
+      setPreviewUrls([]);
+      setSelectedFiles([]);
       if (onSuccess) onSuccess();
     } catch (error: any) {
       toast.error(error.message || "Failed to post activity");
-      setProgress(0);
     } finally {
       setIsUploading(false);
+      setProgress(0);
     }
   }
 
+  const removeFile = (indexToRemove: number) => {
+    const newFiles = selectedFiles.filter((_, i) => i !== indexToRemove);
+    const newPreviews = previewUrls.filter((_, i) => i !== indexToRemove);
+    setSelectedFiles(newFiles);
+    setPreviewUrls(newPreviews);
+    form.setValue('files', newFiles.length > 0 ? newFiles : undefined as any);
+  };
+
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit, (errors) => {
-        console.error("Form validation errors:", errors);
-        toast.error("Please fill in all required fields correctly.");
-      })} className="space-y-6">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <FormField
           control={form.control}
           name="title"
@@ -183,11 +183,7 @@ export function UploadActivityForm({
                         !field.value && "text-muted-foreground"
                       )}
                     >
-                      {field.value ? (
-                        format(field.value, "PPP")
-                      ) : (
-                        <span>Pick a date</span>
-                      )}
+                      {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
                       <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                     </Button>
                   </FormControl>
@@ -197,9 +193,7 @@ export function UploadActivityForm({
                     mode="single"
                     selected={field.value}
                     onSelect={field.onChange}
-                    disabled={(date) =>
-                      date > new Date() || date < new Date("1900-01-01")
-                    }
+                    disabled={(date) => date > new Date() || date < new Date("1900-01-01")}
                     initialFocus
                   />
                 </PopoverContent>
@@ -211,50 +205,57 @@ export function UploadActivityForm({
 
         <FormField
           control={form.control}
-          name="file"
+          name="files"
           render={({ field: { value, onChange, ...field } }) => (
             <FormItem>
-              <FormLabel>Photo (Max 10MB)</FormLabel>
+              <FormLabel>
+                Photos (Max 10MB per file)
+                <span className="block text-xs font-normal text-blue-600 mt-1">
+                  Bisa upload lebih dari 1 foto
+                </span>
+              </FormLabel>
               <FormControl>
-                {croppedFile ? (
-                  <div className="relative mt-2">
-                    <img 
-                      src={URL.createObjectURL(croppedFile)} 
-                      alt="Cropped Preview" 
-                      className="h-40 w-full rounded-lg object-cover" 
-                    />
-                    <Button
-                      type="button"
-                      size="icon"
-                      variant="destructive"
-                      className="absolute top-2 right-2 h-7 w-7"
-                      onClick={() => { 
-                        setCroppedFile(null);
-                        form.setValue('file', undefined as any);
-                      }}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ) : (
+                <div className="space-y-4">
                   <Input
                     type="file"
+                    multiple
                     accept="image/jpeg, image/jpg, image/png, image/webp"
                     onChange={(e) => {
-                      const files = e.target.files;
-                      if (files && files.length > 0) {
-                        const file = files[0];
-                        const url = URL.createObjectURL(file);
-                        setCropFileSrc(url);
-                        setShowCropper(true);
-                        // Do not trigger onChange yet, wait for crop
-                        // We set original file to make validation pass, but we'll override it on submit
-                        onChange(files);
+                      const files = Array.from(e.target.files || []);
+                      if (files.length > 0) {
+                        const newFiles = [...selectedFiles, ...files];
+                        setSelectedFiles(newFiles);
+                        onChange(newFiles);
+                        
+                        const newPreviews = files.map(f => URL.createObjectURL(f));
+                        setPreviewUrls([...previewUrls, ...newPreviews]);
                       }
                     }}
                     {...field}
                   />
-                )}
+                  {previewUrls.length > 0 && (
+                    <div className="grid grid-cols-3 gap-2 mt-2">
+                      {previewUrls.map((url, i) => (
+                        <div key={i} className="relative group aspect-square">
+                          <img 
+                            src={url} 
+                            alt={`Preview ${i + 1}`} 
+                            className="h-full w-full rounded-lg object-cover border" 
+                          />
+                          <Button
+                            type="button"
+                            size="icon"
+                            variant="destructive"
+                            className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={() => removeFile(i)}
+                          >
+                            <X className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -285,23 +286,6 @@ export function UploadActivityForm({
           )}
         </Button>
       </form>
-      {cropFileSrc && (
-        <ImageCropper
-          imageSrc={cropFileSrc}
-          aspectRatio={4 / 3}
-          open={showCropper}
-          onCancel={() => {
-            setShowCropper(false);
-            setCropFileSrc(null);
-            // Optionally reset file input if they cancel, but we'll leave it
-          }}
-          onCropComplete={(croppedFile) => {
-            setCroppedFile(croppedFile);
-            setShowCropper(false);
-            setCropFileSrc(null);
-          }}
-        />
-      )}
     </Form>
   );
 }

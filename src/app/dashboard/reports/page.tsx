@@ -6,22 +6,33 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useFinancialReports } from '@/lib/hooks/use-reports'
 import { usePrograms } from '@/lib/hooks/use-programs'
 import { Skeleton } from '@/components/ui/skeleton'
-import { TrendingUp, TrendingDown, DollarSign, Check, ChevronsUpDown } from 'lucide-react'
+import { TrendingUp, TrendingDown, DollarSign, Check, ChevronsUpDown, ArrowUpRight, ArrowDownRight, Clock } from 'lucide-react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer } from 'recharts'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
+import { format } from 'date-fns'
 
 const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 const monthOptions = monthNames.map((name, idx) => ({ value: (idx + 1).toString(), label: name }))
+
+const categoryOptions = [
+  { value: "registration", label: "Uang Registrasi" },
+  { value: "books", label: "Uang Buku" },
+  { value: "tuition", label: "SPP Bulanan" },
+  { value: "other", label: "Lainnya" }
+]
 
 export default function ReportsPage() {
   const [selectedYear, setSelectedYear] = useState<string>(new Date().getFullYear().toString())
   const [selectedPrograms, setSelectedPrograms] = useState<string[]>([])
   const [selectedMonths, setSelectedMonths] = useState<string[]>([])
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([])
   const [openProgramFilter, setOpenProgramFilter] = useState(false)
   const [openMonthFilter, setOpenMonthFilter] = useState(false)
+  const [openCategoryFilter, setOpenCategoryFilter] = useState(false)
 
   const currentYear = new Date().getFullYear()
   const years = Array.from({ length: 5 }, (_, i) => currentYear - 2 + i)
@@ -30,7 +41,8 @@ export default function ReportsPage() {
   const { data: reportData, isLoading } = useFinancialReports({
     year: parseInt(selectedYear),
     programIds: selectedPrograms,
-    months: selectedMonths
+    months: selectedMonths,
+    categories: selectedCategories
   })
 
   const toggleProgram = (id: string) => {
@@ -45,25 +57,69 @@ export default function ReportsPage() {
     )
   }
 
-  const totalIncome = reportData?.reduce((sum, item) => sum + item.income, 0) || 0
-  const totalExpense = reportData?.reduce((sum, item) => sum + item.expense, 0) || 0
+  const toggleCategory = (id: string) => {
+    setSelectedCategories(current =>
+      current.includes(id) ? current.filter(c => c !== id) : [...current, id]
+    )
+  }
+
+  const resetFilters = () => {
+    setSelectedYear(currentYear.toString())
+    setSelectedPrograms([])
+    setSelectedMonths([])
+    setSelectedCategories([])
+  }
+
+  const monthlyData = reportData?.monthlyData || []
+  const recentTransactions = reportData?.recentTransactions || []
+
+  const totalIncome = monthlyData.reduce((sum, item) => sum + item.income, 0)
+  const totalExpense = monthlyData.reduce((sum, item) => sum + item.expense, 0)
   const totalNet = totalIncome - totalExpense
 
-  const chartData = reportData?.map(d => ({
+  const chartData = monthlyData.map(d => ({
     name: monthNames[d.month - 1],
     Pemasukan: d.income,
     Pengeluaran: d.expense
-  })) || []
+  }))
+
+  const hasActiveFilters = selectedPrograms.length > 0 || selectedMonths.length > 0 || selectedCategories.length > 0 || selectedYear !== currentYear.toString()
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Laporan Keuangan</h1>
           <p className="text-muted-foreground mt-1">Pantau arus kas masuk dan keluar secara real-time.</p>
         </div>
 
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 items-center">
+          {/* Category Filter */}
+          <Popover open={openCategoryFilter} onOpenChange={setOpenCategoryFilter}>
+            <PopoverTrigger asChild>
+              <Button variant="outline" role="combobox" aria-expanded={openCategoryFilter} className="w-[170px] justify-between">
+                {selectedCategories.length === 0 ? "Semua Kategori" : `${selectedCategories.length} Kategori`}
+                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[200px] p-0">
+              <Command>
+                <CommandInput placeholder="Cari kategori..." />
+                <CommandList>
+                  <CommandEmpty>Kategori tidak ditemukan.</CommandEmpty>
+                  <CommandGroup>
+                    {categoryOptions.map((c) => (
+                      <CommandItem key={c.value} value={c.label} onSelect={() => toggleCategory(c.value)}>
+                        <Check className={cn("mr-2 h-4 w-4", selectedCategories.includes(c.value) ? "opacity-100" : "opacity-0")} />
+                        {c.label}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
+
           {/* Month Filter */}
           <Popover open={openMonthFilter} onOpenChange={setOpenMonthFilter}>
             <PopoverTrigger asChild>
@@ -123,6 +179,13 @@ export default function ReportsPage() {
               {years.map(y => <SelectItem key={y} value={y.toString()}>{y}</SelectItem>)}
             </SelectContent>
           </Select>
+
+          {/* Reset Filters */}
+          {hasActiveFilters && (
+            <Button variant="ghost" onClick={resetFilters} className="text-muted-foreground hover:text-foreground">
+              Reset
+            </Button>
+          )}
         </div>
       </div>
 
@@ -133,7 +196,7 @@ export default function ReportsPage() {
             <Skeleton className="h-32 w-full" />
             <Skeleton className="h-32 w-full" />
           </div>
-          <Skeleton className="h-96 w-full" />
+          <Skeleton className="h-[400px] w-full" />
         </div>
       ) : (
         <>
@@ -174,27 +237,78 @@ export default function ReportsPage() {
             </Card>
           </div>
 
-          <Card className="pt-6">
-            <CardHeader>
-              <CardTitle>Grafik Arus Kas Bulanan</CardTitle>
-              <CardDescription>Perbandingan Pemasukan dan Pengeluaran Tahun {selectedYear}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="h-[400px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                    <XAxis dataKey="name" />
-                    <YAxis tickFormatter={(value) => `Rp ${(value / 1000000).toFixed(0)}M`} />
-                    <RechartsTooltip formatter={(value: number) => `Rp ${value.toLocaleString('id-ID')}`} />
-                    <Legend />
-                    <Bar dataKey="Pemasukan" fill="#16a34a" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="Pengeluaran" fill="#dc2626" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="grid gap-6 grid-cols-1">
+            <Card className="pt-6">
+              <CardHeader>
+                <CardTitle>Grafik Arus Kas Bulanan</CardTitle>
+                <CardDescription>Perbandingan Pemasukan dan Pengeluaran Tahun {selectedYear}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="h-[400px] w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                      <XAxis dataKey="name" />
+                      <YAxis tickFormatter={(value) => `Rp ${(value / 1000000).toFixed(0)}M`} />
+                      <RechartsTooltip formatter={(value: number) => `Rp ${value.toLocaleString('id-ID')}`} />
+                      <Legend />
+                      <Bar dataKey="Pemasukan" fill="#16a34a" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="Pengeluaran" fill="#dc2626" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Clock className="h-5 w-5 text-neutral-500" />
+                  Aktivitas Terbaru
+                </CardTitle>
+                <CardDescription>Transaksi pemasukan & pengeluaran terakhir</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {recentTransactions.length > 0 ? (
+                  <div className="space-y-6">
+                    {recentTransactions.map((tx) => (
+                      <div key={tx.id} className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className={cn(
+                            "flex h-10 w-10 items-center justify-center rounded-full",
+                            tx.type === 'income' ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600"
+                          )}>
+                            {tx.type === 'income' ? <ArrowDownRight className="h-5 w-5" /> : <ArrowUpRight className="h-5 w-5" />}
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium leading-none line-clamp-1">{tx.title}</p>
+                            <div className="flex items-center gap-2 mt-1">
+                              <p className="text-xs text-muted-foreground">
+                                {format(tx.date, "dd MMM yyyy")}
+                              </p>
+                              <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4">
+                                {tx.category}
+                              </Badge>
+                            </div>
+                          </div>
+                        </div>
+                        <div className={cn(
+                          "font-semibold text-sm whitespace-nowrap",
+                          tx.type === 'income' ? "text-green-600" : "text-red-600"
+                        )}>
+                          {tx.type === 'income' ? '+' : '-'}Rp {tx.amount.toLocaleString('id-ID')}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center text-muted-foreground py-8 text-sm">
+                    Belum ada transaksi tercatat.
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         </>
       )}
     </div>

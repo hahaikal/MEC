@@ -104,7 +104,7 @@ export default async function ClassWorkspacePage({
                   {activities.map((act) => (
                     <div key={act.id} className="flex gap-4 rounded-xl border p-4 hover:bg-neutral-50 transition">
                       <div className="h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg border">
-                        <img src={act.image_url} alt={act.title} className="h-full w-full object-cover" />
+                        <img src={act.image_url ? act.image_url.split(',')[0].trim() : ''} alt={act.title} className="h-full w-full object-cover" />
                       </div>
                       <div className="flex-1">
                         <h3 className="font-semibold text-neutral-900">

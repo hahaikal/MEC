@@ -25,23 +25,19 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import { useState } from 'react'
 import { StudentDetailDialog } from './StudentDetailDialog'
 
-// Sesuaikan tipe data dengan hasil query dari Supabase
 export type Student = {
   id: string
   name: string
-  // nis: string | null // Deprecated
   enrollments: any[]
   class_name: string | null
   phone_number: string | null
   enrollment_date: string | null
   created_at: string
 
-  // New Fields
   place_of_birth?: string | null
   date_of_birth?: string | null
   gender?: string | null
@@ -56,10 +52,35 @@ export type Student = {
   parent_phone?: string | null
   photo_url?: string | null
 
-  // Kept for type compatibility if needed, but marked optional/deprecated
   nis?: string | null
   status?: string | null
+
+  registration_sort?: number;
+  book_fee_sort?: number;
+  januari_sort?: number;
+  februari_sort?: number;
+  maret_sort?: number;
+  april_sort?: number;
+  mei_sort?: number;
+  juni_sort?: number;
+  juli_sort?: number;
+  agustus_sort?: number;
+  september_sort?: number;
+  oktober_sort?: number;
+  november_sort?: number;
+  desember_sort?: number;
 }
+
+const SortableHeader = ({ column, title }: { column: any, title: string }) => (
+  <Button
+    variant="ghost"
+    className="px-0 w-20 justify-center h-8 text-xs font-medium"
+    onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+  >
+    {title}
+    <ArrowUpDown className="ml-1 h-3 w-3" />
+  </Button>
+)
 
 export const columns: ColumnDef<Student>[] = [
   {
@@ -190,86 +211,86 @@ export const columns: ColumnDef<Student>[] = [
     },
   },
   {
-    id: 'registration',
-    header: () => <div className="w-20 text-center text-xs font-medium">Reg</div>,
+    accessorKey: 'registration_sort',
+    header: ({ column }) => <SortableHeader column={column} title="Reg" />,
     size: 80,
     cell: ({ row }) => <PaymentStatusCell student={row.original} isRegistration={true} month={-1} />,
   },
   {
-    id: 'book_fee',
-    header: () => <div className="w-20 text-center text-xs font-medium">Book</div>,
+    accessorKey: 'book_fee_sort',
+    header: ({ column }) => <SortableHeader column={column} title="Book" />,
     size: 80,
     cell: ({ row }) => <PaymentStatusCell student={row.original} isBookFee={true} month={-2} />,
   },
   {
-    id: 'januari',
-    header: () => <div className="w-20 text-center text-xs font-medium">Jan</div>,
+    accessorKey: 'januari_sort',
+    header: ({ column }) => <SortableHeader column={column} title="Jan" />,
     size: 80,
     cell: ({ row }) => <PaymentStatusCell student={row.original} month={0} />,
   },
   {
-    id: 'februari',
-    header: () => <div className="w-20 text-center text-xs font-medium">Feb</div>,
+    accessorKey: 'februari_sort',
+    header: ({ column }) => <SortableHeader column={column} title="Feb" />,
     size: 80,
     cell: ({ row }) => <PaymentStatusCell student={row.original} month={1} />,
   },
   {
-    id: 'maret',
-    header: () => <div className="w-20 text-center text-xs font-medium">Mar</div>,
+    accessorKey: 'maret_sort',
+    header: ({ column }) => <SortableHeader column={column} title="Mar" />,
     size: 80,
     cell: ({ row }) => <PaymentStatusCell student={row.original} month={2} />,
   },
   {
-    id: 'april',
-    header: () => <div className="w-20 text-center text-xs font-medium">Apr</div>,
+    accessorKey: 'april_sort',
+    header: ({ column }) => <SortableHeader column={column} title="Apr" />,
     size: 80,
     cell: ({ row }) => <PaymentStatusCell student={row.original} month={3} />,
   },
   {
-    id: 'mei',
-    header: () => <div className="w-20 text-center text-xs font-medium">Mei</div>,
+    accessorKey: 'mei_sort',
+    header: ({ column }) => <SortableHeader column={column} title="Mei" />,
     size: 80,
     cell: ({ row }) => <PaymentStatusCell student={row.original} month={4} />,
   },
   {
-    id: 'juni',
-    header: () => <div className="w-20 text-center text-xs font-medium">Jun</div>,
+    accessorKey: 'juni_sort',
+    header: ({ column }) => <SortableHeader column={column} title="Jun" />,
     size: 80,
     cell: ({ row }) => <PaymentStatusCell student={row.original} month={5} />,
   },
   {
-    id: 'juli',
-    header: () => <div className="w-20 text-center text-xs font-medium">Jul</div>,
+    accessorKey: 'juli_sort',
+    header: ({ column }) => <SortableHeader column={column} title="Jul" />,
     size: 80,
     cell: ({ row }) => <PaymentStatusCell student={row.original} month={6} />,
   },
   {
-    id: 'agustus',
-    header: () => <div className="w-20 text-center text-xs font-medium">Ags</div>,
+    accessorKey: 'agustus_sort',
+    header: ({ column }) => <SortableHeader column={column} title="Ags" />,
     size: 80,
     cell: ({ row }) => <PaymentStatusCell student={row.original} month={7} />,
   },
   {
-    id: 'september',
-    header: () => <div className="w-20 text-center text-xs font-medium">Sep</div>,
+    accessorKey: 'september_sort',
+    header: ({ column }) => <SortableHeader column={column} title="Sep" />,
     size: 80,
     cell: ({ row }) => <PaymentStatusCell student={row.original} month={8} />,
   },
   {
-    id: 'oktober',
-    header: () => <div className="w-20 text-center text-xs font-medium">Okt</div>,
+    accessorKey: 'oktober_sort',
+    header: ({ column }) => <SortableHeader column={column} title="Okt" />,
     size: 80,
     cell: ({ row }) => <PaymentStatusCell student={row.original} month={9} />,
   },
   {
-    id: 'november',
-    header: () => <div className="w-20 text-center text-xs font-medium">Nov</div>,
+    accessorKey: 'november_sort',
+    header: ({ column }) => <SortableHeader column={column} title="Nov" />,
     size: 80,
     cell: ({ row }) => <PaymentStatusCell student={row.original} month={10} />,
   },
   {
-    id: 'desember',
-    header: () => <div className="w-20 text-center text-xs font-medium">Des</div>,
+    accessorKey: 'desember_sort',
+    header: ({ column }) => <SortableHeader column={column} title="Des" />,
     size: 80,
     cell: ({ row }) => <PaymentStatusCell student={row.original} month={11} />,
   },

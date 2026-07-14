@@ -56,7 +56,7 @@ export default function StudentsPage() {
 
     // 2. Filter by Class
     const matchesClass = selectedClasses.length === 0 ||
-      (student.class_name && selectedClasses.includes(student.class_name));
+      (student.enrollments && student.enrollments.some((e: any) => selectedClasses.includes(e.class_name)));
 
     // 3. Filter by Program
     const matchesProgram = selectedPrograms.length === 0 ||
