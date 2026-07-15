@@ -33,7 +33,7 @@ export function Experts({ teachers }: ExpertsProps) {
             Our Experts
           </span>
           <h2 id="experts-title" className="mt-4 font-display text-3xl font-bold text-foreground md:text-4xl">
-            <span className="text-primary">Experienced</span> &amp; Loving Teachers
+            <span className="text-primary">Experienced </span> &amp; Loving Teachers
           </h2>
         </div>
 

@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { GalleryGrid } from "../../../../../../parent-hub/gallery-grid";
-import { TeacherHero } from "../../../../../../parent-hub/teacher-hero";
+import { GalleryGrid } from "@/components/parent-hub/gallery-grid";
+import { TeacherHero } from "@/components/parent-hub/teacher-hero";
 import { usePrograms, useProgramTeachers } from "@/lib/hooks/use-programs";
 import { useProgramActivities } from "@/lib/hooks/use-activities";
 import { use } from "react";

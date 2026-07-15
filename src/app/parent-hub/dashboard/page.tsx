@@ -2,10 +2,10 @@
 
 import { useActiveGalleryItems } from "@/lib/hooks/use-gallery";
 import { useAllClassActivities } from "@/lib/hooks/use-activities";
-import { GreetingBanner } from "../../../../parent-hub/greeting-banner";
-import { ScheduleCalendar } from "../../../../parent-hub/schedule-calendar";
-import { EventColumns } from "../../../../parent-hub/event-columns";
-import { GalleryGrid } from "../../../../parent-hub/gallery-grid";
+import { GreetingBanner } from "@/components/parent-hub/greeting-banner";
+import { ScheduleCalendar } from "@/components/parent-hub/schedule-calendar";
+import { EventColumns } from "@/components/parent-hub/event-columns";
+import { GalleryGrid } from "@/components/parent-hub/gallery-grid";
 import { Calendar, Tag } from "lucide-react";
 import Image from "next/image";
 
