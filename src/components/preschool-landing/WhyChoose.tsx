@@ -28,7 +28,7 @@ export function WhyChoose({ phone = "+62 812-7425-6077" }: { phone?: string }) {
         >
           <div className="blob-frame-alt bg-primary-soft p-3">
             <img
-              src="/images/placeholder-2.png"
+              src="/images/preschool2.jpeg"
               alt="MEC Preschool teacher reading a storybook to children"
               width={900}
               height={900}

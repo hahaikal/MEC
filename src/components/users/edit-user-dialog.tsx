@@ -173,7 +173,7 @@ export function EditUserDialog({ user }: { user: any }) {
           <div className="space-y-2">
             <Label>Roles</Label>
             <div className="grid grid-cols-2 gap-2 mt-2">
-              {['Teacher', 'Principal', 'Head of Department', 'Director', 'Admin', 'Manager', 'Staff'].map((roleItem) => (
+              {['Teacher', 'Principal', 'Head of Department', 'Admin', 'Manager', 'Staff'].map((roleItem) => (
                 <div key={roleItem} className="flex items-center space-x-2">
                   <Checkbox 
                     id={`role-${roleItem}`} 

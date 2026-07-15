@@ -131,7 +131,7 @@ export function useFinancialReports(filters: ReportFilters) {
 
       const recentTransactions = [...formattedPayments, ...formattedExpenses]
         .sort((a, b) => b.date.getTime() - a.date.getTime())
-        .slice(0, 10);
+        .slice(0, 20);
 
       return {
         monthlyData: filteredMonthlyData,

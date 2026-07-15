@@ -7,7 +7,7 @@ export async function getUsers() {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('users')
-    .select('id, email, full_name, department, phone_number, profile_picture_url, is_active, bio, roles, staff_id, date_of_birth, payday, created_at, updated_at')
+    .select('id, email, full_name, department, phone_number, profile_picture_url, is_active, bio, roles, staff_id, date_of_birth, payday, allowed_menus, created_at, updated_at')
     .order('created_at', { ascending: false })
 
   if (error) {
@@ -19,7 +19,7 @@ export async function getUsers() {
 
 import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 
-export async function updateUser(id: string, updates: { full_name?: string, roles?: string[], is_active?: boolean, bio?: string, profile_picture_url?: string, staff_id?: string, date_of_birth?: string | null, payday?: number | null }) {
+export async function updateUser(id: string, updates: { full_name?: string, roles?: string[], is_active?: boolean, bio?: string, profile_picture_url?: string, staff_id?: string, date_of_birth?: string | null, payday?: number | null, allowed_menus?: string[] | null }) {
   const supabase = await createClient()
 
   // 1. Update public.users

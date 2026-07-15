@@ -11,7 +11,6 @@ import {
   Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { WHATSAPP_URL } from "./constants";
 
 export function Navbar({ phone = "+62 812-7425-6077" }: { phone?: string }) {
   const cleanPhone = phone.replace(/\D/g, "");
@@ -45,7 +44,7 @@ export function Navbar({ phone = "+62 812-7425-6077" }: { phone?: string }) {
             </span>
           </a>
 
-          <nav className="hidden xl:flex items-center gap-8">
+          <nav className="hidden lg:flex items-center gap-6 xl:gap-8 flex-1 justify-center">
             {links.map((l) => (
               <a
                 key={l.href}
@@ -57,13 +56,7 @@ export function Navbar({ phone = "+62 812-7425-6077" }: { phone?: string }) {
             ))}
           </nav>
 
-          <div className="hidden md:flex items-center gap-3">
-            <a href={dynamicWhatsappUrl} target="_blank" rel="noopener noreferrer">
-              <Button variant="ghost" className="rounded-full gap-2">
-                <MessageCircle className="h-4 w-4" />
-                WhatsApp
-              </Button>
-            </a>
+          <div className="hidden md:flex items-center gap-3 ml-auto mr-4 lg:mr-0">
             <Link href="/preschool">
               <Button variant="outline" className="rounded-full gap-2 border-primary text-primary hover:bg-primary/10 shadow-sm">
                 <Sparkles className="h-4 w-4" />
@@ -79,7 +72,7 @@ export function Navbar({ phone = "+62 812-7425-6077" }: { phone?: string }) {
           </div>
 
           <button
-            className="xl:hidden grid h-10 w-10 place-items-center rounded-xl bg-muted text-foreground"
+            className="lg:hidden grid h-10 w-10 place-items-center rounded-xl bg-muted text-foreground"
             onClick={() => setOpen(!open)}
             aria-label="Toggle menu"
           >
@@ -88,7 +81,7 @@ export function Navbar({ phone = "+62 812-7425-6077" }: { phone?: string }) {
         </div>
 
         {open && (
-          <div className="xl:hidden pb-4 flex flex-col gap-2">
+          <div className="lg:hidden pb-4 flex flex-col gap-2">
             {links.map((l) => (
               <a
                 key={l.href}
@@ -99,12 +92,7 @@ export function Navbar({ phone = "+62 812-7425-6077" }: { phone?: string }) {
                 {l.label}
               </a>
             ))}
-            <div className="md:hidden flex flex-col gap-2">
-              <a href={dynamicWhatsappUrl} target="_blank" rel="noopener noreferrer">
-                <Button variant="outline" className="w-full rounded-full gap-2 mt-2">
-                  <MessageCircle className="h-4 w-4" /> WhatsApp
-                </Button>
-              </a>
+            <div className="md:hidden flex flex-col gap-2 mt-2">
               <Link href="/preschool">
                 <Button variant="outline" className="w-full rounded-full gap-2 border-primary text-primary">
                   <Sparkles className="h-4 w-4" /> MEC Preschool

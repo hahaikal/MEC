@@ -19,9 +19,14 @@ const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep
 const monthOptions = monthNames.map((name, idx) => ({ value: (idx + 1).toString(), label: name }))
 
 const categoryOptions = [
-  { value: "registration", label: "Uang Registrasi" },
-  { value: "books", label: "Uang Buku" },
-  { value: "tuition", label: "SPP Bulanan" },
+  { value: "registration", label: "Uang Registrasi (Pemasukan)" },
+  { value: "books", label: "Uang Buku (Pemasukan)" },
+  { value: "tuition", label: "SPP Bulanan (Pemasukan)" },
+  { value: "operational", label: "Operasional (Pengeluaran)" },
+  { value: "salary", label: "Gaji (Pengeluaran)" },
+  { value: "asset", label: "Aset (Pengeluaran)" },
+  { value: "maintenance", label: "Maintenance (Pengeluaran)" },
+  { value: "marketing", label: "Marketing (Pengeluaran)" },
   { value: "other", label: "Lainnya" }
 ]
 

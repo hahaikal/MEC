@@ -42,6 +42,7 @@ export function Sidebar() {
   const supabase = createClient()
   const [isOpen, setIsOpen] = useState(false)
   const [userRoles, setUserRoles] = useState<string[]>([])
+  const [allowedMenus, setAllowedMenus] = useState<string[] | null>(null)
 
   useEffect(() => {
     async function getUser() {
@@ -49,7 +50,8 @@ export function Sidebar() {
       if (user) {
         const { data } = await supabase.from('users').select('*').eq('id', user.id).single()
         if (data) {
-          setUserRoles(data.roles || (data.role ? [data.role] : []))
+          setUserRoles(data.roles || [])
+          setAllowedMenus(data.allowed_menus || null)
         }
       }
     }
@@ -92,12 +94,21 @@ export function Sidebar() {
           {/* Navigation */}
           <nav className="flex-1 space-y-2 overflow-y-auto scrollbar-hide">
             {navItems.map((item) => {
-              const isAdminOrDirector = userRoles.some(r => ['admin', 'director', 'manager'].includes(r.toLowerCase()));
+              const isDirector = userRoles.some(r => r.toLowerCase() === 'director');
               
-              if (!isAdminOrDirector) {
-                const allowedRoutes = ['/dashboard', '/dashboard/attendance', '/dashboard/teacher-workspace'];
-                if (!allowedRoutes.includes(item.href)) return null;
-                if (item.href === '/dashboard/teacher-workspace' && userRoles.some(r => r.toLowerCase() === 'parent')) return null;
+              if (!isDirector) {
+                if (allowedMenus !== null) {
+                  // Gunakan allowed_menus dari database
+                  if (!allowedMenus.includes(item.href)) return null;
+                } else {
+                  // Fallback ke sistem lama jika allowed_menus belum di-set
+                  const isAdminOrManager = userRoles.some(r => ['admin', 'manager'].includes(r.toLowerCase()));
+                  if (!isAdminOrManager) {
+                    const allowedRoutes = ['/dashboard', '/dashboard/attendance', '/dashboard/teacher-workspace'];
+                    if (!allowedRoutes.includes(item.href)) return null;
+                    if (item.href === '/dashboard/teacher-workspace' && userRoles.some(r => r.toLowerCase() === 'parent')) return null;
+                  }
+                }
               }
               
               const Icon = item.icon

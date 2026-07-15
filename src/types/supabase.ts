@@ -97,6 +97,7 @@ export type Database = {
           profile_picture_url: string | null
           bio: string | null
           is_active: boolean
+          allowed_menus: string[] | null
           created_at: string
           updated_at: string
         }
@@ -110,6 +111,7 @@ export type Database = {
           profile_picture_url?: string | null
           bio?: string | null
           is_active?: boolean
+          allowed_menus?: string[] | null
           created_at?: string
           updated_at?: string
         }
@@ -123,6 +125,7 @@ export type Database = {
           profile_picture_url?: string | null
           bio?: string | null
           is_active?: boolean
+          allowed_menus?: string[] | null
           created_at?: string
           updated_at?: string
         }

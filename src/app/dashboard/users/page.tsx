@@ -13,11 +13,12 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { UserPlus, Ban, Loader2, CheckCircle2 } from 'lucide-react'
 import { EditUserDialog } from '@/components/users/edit-user-dialog'
 import { ChangePasswordDialog } from '@/components/users/change-password-dialog'
+import { EditUserAccessDialog } from '@/components/users/edit-user-access-dialog'
 import { toast } from 'sonner'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 
 export default function UsersPage() {
-  const { users, isLoading, createUser, isCreating, updateUser, deleteUser } = useInternalUsers()
+  const { users, isLoading, createUser, isCreating, updateUser, deleteUser, currentUserRoles } = useInternalUsers()
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [formData, setFormData] = useState({
     email: '',
@@ -33,7 +34,14 @@ export default function UsersPage() {
   }
 
   const executeSubmit = () => {
-    createUser(formData, {
+    let defaultMenus: string[] = []
+    if (formData.roles.some(r => ['Admin', 'Manager'].includes(r))) {
+      defaultMenus = ['/dashboard', '/dashboard/students', '/dashboard/attendance', '/dashboard/expenses', '/dashboard/reports', '/dashboard/classes', '/dashboard/users', '/dashboard/parent-hub-manager', '/dashboard/teacher-workspace', '/dashboard/settings']
+    } else {
+      defaultMenus = ['/dashboard', '/dashboard/attendance', '/dashboard/teacher-workspace', '/dashboard/settings']
+    }
+
+    createUser({ ...formData, allowed_menus: defaultMenus }, {
       onSuccess: () => {
         setIsDialogOpen(false)
         setFormData({ email: '', password: '', full_name: '', roles: ['Staff'] })
@@ -108,7 +116,7 @@ export default function UsersPage() {
               <div className="space-y-2">
                 <Label>Roles</Label>
                 <div className="grid grid-cols-2 gap-2 mt-2">
-                  {['Teacher', 'Principal', 'Head of Department', 'Director', 'Admin', 'Manager', 'Staff'].map((roleItem) => (
+                  {['Teacher', 'Principal', 'Head of Department', 'Admin', 'Manager', 'Staff'].map((roleItem) => (
                     <div key={roleItem} className="flex items-center space-x-2">
                       <Checkbox 
                         id={`new-role-${roleItem}`} 
@@ -200,6 +208,9 @@ export default function UsersPage() {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-2">
+                      {currentUserRoles?.some(r => r.toLowerCase() === 'director') && (
+                        <EditUserAccessDialog user={user} />
+                      )}
                       <ChangePasswordDialog user={user} />
                       <EditUserDialog user={user} />
                       <Button

@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getUsers, updateUser, deleteUser, changeUserPassword } from '@/actions/users'
 import { toast } from '@/lib/hooks/use-toast'
+import { createClient } from '@/lib/supabase/client'
 
 export function useInternalUsers() {
   const queryClient = useQueryClient()
@@ -14,13 +15,25 @@ export function useInternalUsers() {
     }
   })
 
+  const supabase = createClient()
+  const { data: currentUserData } = useQuery({
+    queryKey: ['current-user-roles'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return []
+      const { data } = await supabase.from('users').select('roles').eq('id', user.id).single()
+      if (data) return data.roles || []
+      return []
+    }
+  })
+
   const createUserMutation = useMutation({
     mutationFn: async (newUser: any) => {
-      const { email, password, full_name, roles } = newUser
+      const { email, password, full_name, roles, allowed_menus } = newUser
       const res = await fetch('/api/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, full_name, roles })
+        body: JSON.stringify({ email, password, full_name, roles, allowed_menus })
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
@@ -89,6 +102,7 @@ export function useInternalUsers() {
     deleteUser: deleteUserMutation.mutate,
     isDeleting: deleteUserMutation.isPending,
     changePassword: changePasswordMutation.mutate,
-    isChangingPassword: changePasswordMutation.isPending
+    isChangingPassword: changePasswordMutation.isPending,
+    currentUserRoles: currentUserData || []
   }
 }

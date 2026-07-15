@@ -66,7 +66,7 @@ export function Hero({ phone = "+62 812-7425-6077" }: { phone?: string }) {
         >
           <div className="blob-frame relative bg-accent">
             <img
-              src="https://images.unsplash.com/photo-1519340333755-56e9c1d04579?w=800&h=800&fit=crop"
+              src="/images/preschool1.png"
               alt="MEC Preschool student smiling while holding a book"
               width={800}
               height={800}

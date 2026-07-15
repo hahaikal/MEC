@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ParentHubSidebar } from "@/components/parent-hub/sidebar";
-import { BlobBackground } from "@/components/parent-hub/blob-bg";
+import { ParentHubSidebar } from "../../../../parent-hub/sidebar";
+import { BlobBackground } from "../../../../parent-hub/blob-bg";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();

@@ -45,7 +45,7 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json()
-    const { email, password, full_name, roles } = body
+    const { email, password, full_name, roles, allowed_menus } = body
 
     if (!email || !password || !roles || roles.length === 0) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
@@ -58,7 +58,8 @@ export async function POST(request: Request) {
       email_confirm: true,
       user_metadata: {
         full_name,
-        roles
+        roles,
+        allowed_menus
       }
     })
 
@@ -73,7 +74,7 @@ export async function POST(request: Request) {
     // Force insert into public.users if trigger hasn't fired yet
     const { error: dbError } = await supabaseAdmin
       .from('users')
-      .update({ roles, full_name })
+      .update({ roles, full_name, allowed_menus })
       .eq('id', authData.user.id)
 
     if (dbError) {
@@ -81,7 +82,8 @@ export async function POST(request: Request) {
          id: authData.user.id,
          email,
          full_name,
-         roles
+         roles,
+         allowed_menus
        }).select().single()
     }
 

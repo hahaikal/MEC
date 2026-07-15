@@ -1,6 +1,6 @@
 "use client";
 
-import { GalleryGrid } from "@/components/parent-hub/gallery-grid";
+import { GalleryGrid } from "../../../../../parent-hub/gallery-grid";
 import { usePreschoolActivities } from "@/lib/hooks/use-gallery";
 import { PRESCHOOL_SCHEDULE } from "@/lib/parent-hub-data";
 import { usePreschoolTeachers } from "@/lib/hooks/use-teachers";
