@@ -28,7 +28,7 @@ export function FooterSection({
               </span>
             </a>
             <p className="mt-4 text-sm leading-relaxed opacity-80">
-              My English Course Preschool is the place where your little one learns English in the most fun way.
+              MEC Preschool is the place where your little one learns English in the most fun way.
             </p>
             <div className="mt-5 flex gap-3">
               {[
@@ -61,7 +61,7 @@ export function FooterSection({
           <nav aria-label="Programs">
             <h3 className="font-display text-lg font-bold text-accent">Programs</h3>
             <ul className="mt-4 space-y-2.5 text-sm opacity-90">
-              <li><a href="#classes" className="hover:text-accent">Nursery (1–2 yrs)</a></li>
+              <li><a href="#classes" className="hover:text-accent">Nursery (2-3 yrs)</a></li>
               <li><a href="#classes" className="hover:text-accent">Preschool (3–4 yrs)</a></li>
               <li><a href="#classes" className="hover:text-accent">Kindergarten (5–6 yrs)</a></li>
             </ul>

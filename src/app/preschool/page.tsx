@@ -25,7 +25,7 @@ export default async function PreschoolLandingPage() {
   const settings = await getSystemSettings() || {};
   const phone = settings.schoolPhone || "+62 812-7425-6077";
   const email = settings.schoolEmail || "myenglishcoursebaganbatu@gmail.com";
-  const address = settings.schoolAddress || "Jl. Pendidikan No. 123, Jakarta Selatan";
+  const address = "Jl. Lancang Kuning Bagan Batu, Kec. Bagan Sinembah, Rokan Hilir";
 
   return (
     <div className="preschool-theme bg-background text-foreground min-h-screen">

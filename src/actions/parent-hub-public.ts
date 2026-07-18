@@ -51,13 +51,55 @@ export async function getPublicProgramTeachers(programId: string) {
         id: ct.users.id,
         name: ct.users.full_name || 'Teacher',
         role: ct.users.roles?.[0] || 'Teacher',
+        roles: ct.users.roles || [],
         image: ct.users.profile_picture_url || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop',
         bio: ct.users.bio || ''
       })
     }
   })
 
-  return Array.from(uniqueTeachers.values())
+  // Also explicitly fetch Principal and Head of Department to make sure they appear at the top
+  const { data: leaders } = await supabase
+    .from('users')
+    .select('id, full_name, roles, profile_picture_url, bio')
+    .filter('is_active', 'eq', true)
+    .or('roles.cs.{"Principal"},roles.cs.{"Head of Department"}')
+  
+  if (leaders) {
+    leaders.forEach((l: any) => {
+      if (!uniqueTeachers.has(l.id)) {
+        uniqueTeachers.set(l.id, {
+          id: l.id,
+          name: l.full_name || 'Teacher',
+          role: l.roles?.[0] || 'Teacher',
+          roles: l.roles || [],
+          image: l.profile_picture_url || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop',
+          bio: l.bio || ''
+        })
+      } else {
+         // Update existing with roles array just in case
+         const existing = uniqueTeachers.get(l.id)
+         existing.roles = l.roles || []
+      }
+    })
+  }
+
+  const result = Array.from(uniqueTeachers.values())
+  // Sort: Principal first, then HOD, then others
+  result.sort((a, b) => {
+    const aIsPrincipal = a.roles?.includes('Principal')
+    const bIsPrincipal = b.roles?.includes('Principal')
+    const aIsHOD = a.roles?.includes('Head of Department')
+    const bIsHOD = b.roles?.includes('Head of Department')
+    
+    if (aIsPrincipal && !bIsPrincipal) return -1
+    if (!aIsPrincipal && bIsPrincipal) return 1
+    if (aIsHOD && !bIsHOD) return -1
+    if (!aIsHOD && bIsHOD) return 1
+    return a.name.localeCompare(b.name)
+  })
+
+  return result
 }
 
 export async function getPublicActiveClasses() {
@@ -233,19 +275,58 @@ export async function getPublicPreschoolTeachers() {
           name: ct.users.full_name || 'Teacher',
           image: ct.users.profile_picture_url || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop',
           classes: [cleanClassName],
-          role: `Guru kelas ${cleanClassName}`
+          role: `${cleanClassName} Teacher`,
+          roles: ct.users.roles || []
         })
       } else {
         const teacher = uniqueTeachers.get(ct.users.id)
         if (cleanClassName && !teacher.classes.includes(cleanClassName)) {
           teacher.classes.push(cleanClassName)
-          teacher.role = `Guru kelas ${teacher.classes.join(' & ')}`
+          teacher.role = `${teacher.classes.join(' & ')} Teacher`
         }
       }
     }
   })
 
-  return Array.from(uniqueTeachers.values())
+  // Also explicitly fetch Principal
+  const { data: principals } = await supabase
+    .from('users')
+    .select('id, full_name, roles, profile_picture_url')
+    .filter('is_active', 'eq', true)
+    .contains('roles', ['Principal'])
+    
+  if (principals) {
+    principals.forEach((p: any) => {
+      if (!uniqueTeachers.has(p.id)) {
+        uniqueTeachers.set(p.id, {
+          id: p.id,
+          name: p.full_name || 'Principal',
+          image: p.profile_picture_url || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop',
+          classes: [],
+          role: 'Principal',
+          roles: p.roles || []
+        })
+      } else {
+         const existing = uniqueTeachers.get(p.id)
+         existing.roles = p.roles || []
+         if (!existing.role.includes('Principal')) {
+             existing.role = `Principal & ${existing.role}`
+         }
+      }
+    })
+  }
+
+  const result = Array.from(uniqueTeachers.values())
+  // Sort: Principal first, then others
+  result.sort((a, b) => {
+    const aIsPrincipal = a.roles?.includes('Principal')
+    const bIsPrincipal = b.roles?.includes('Principal')
+    if (aIsPrincipal && !bIsPrincipal) return -1
+    if (!aIsPrincipal && bIsPrincipal) return 1
+    return a.name.localeCompare(b.name)
+  })
+
+  return result
 }
 
 export async function getPublicClassDocuments(classId?: string, documentType?: string) {

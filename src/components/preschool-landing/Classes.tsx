@@ -7,7 +7,7 @@ import { Star4, Cloud } from "./Doodles";
 const classes = [
   {
     title: "Nursery",
-    age: "1–2 years",
+    age: "2-3 years",
     desc: "Your little one's first sensory and motor stimulation in a warm, loving environment.",
     img: "/images/preschool3.jpeg",
     alt: "Toddlers playing with colorful blocks in MEC Nursery class",

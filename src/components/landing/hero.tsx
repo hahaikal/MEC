@@ -56,8 +56,8 @@ export function Hero({ phone = "+62 812-7425-6077" }: { phone?: string }) {
 
             <div className="mt-10 grid grid-cols-3 gap-4 max-w-md">
               {[
-                { v: "300+", l: "Active Students" },
-                { v: "10+", l: "Certified Tutors" },
+                { v: "100%", l: "Fun Learning" },
+                { v: "A+", l: "Quality Tutors" },
                 { v: "98%", l: "Parent Satisfaction" },
               ].map((s) => (
                 <div key={s.l}>
