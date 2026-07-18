@@ -189,6 +189,12 @@ export function StudentDetailDialog({
                            </span>
                         </div>
                         <div className="flex flex-col">
+                           <span className="text-xs text-muted-foreground">Join Since (Bulan & Tahun)</span>
+                           <span className="text-sm font-medium">
+                             {student.joined_since || "-"}
+                           </span>
+                        </div>
+                        <div className="flex flex-col">
                            <span className="text-xs text-muted-foreground">Tanggal Bergabung</span>
                            <span className="text-sm font-medium">
                              {student.enrollment_date ? format(new Date(student.enrollment_date), "dd MMMM yyyy", { locale: id }) : "-"}

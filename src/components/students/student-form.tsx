@@ -86,6 +86,7 @@ export function StudentForm({ initialData, onSuccess }: StudentFormProps) {
       religion: initialData.religion || '',
       school_origin: initialData.school_origin || '',
       joined_since_class: initialData.joined_since_class || '',
+      joined_since: initialData.joined_since || '',
       enrollment_date: initialData.enrollment_date || '',
       enrollments: initialData.enrollments && initialData.enrollments.length > 0 
         ? initialData.enrollments.map((enr: any) => ({
@@ -103,6 +104,7 @@ export function StudentForm({ initialData, onSuccess }: StudentFormProps) {
       phone_number: '',
       school_origin: '',
       joined_since_class: '',
+      joined_since: '',
       father_name: '',
       mother_name: '',
       father_occupation: '',
@@ -339,6 +341,20 @@ export function StudentForm({ initialData, onSuccess }: StudentFormProps) {
                   <FormLabel>Masuk Sejak Kelas?</FormLabel>
                   <FormControl>
                     <Input placeholder="Ex: Basic 1" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="joined_since"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Join Since (Bulan & Tahun)</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Ex: Juli 2024" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

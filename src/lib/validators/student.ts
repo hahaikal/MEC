@@ -16,6 +16,7 @@ export const studentSchema = z.object({
   school_origin: z.string().optional(),
   enrollment_date: z.string().optional(), // Tanggal masuk/daftar
   joined_since_class: z.string().optional(), // Masuk sejak kelas
+  joined_since: z.string().optional(), // Join since (month/year)
   
   enrollments: z.array(z.object({
     class_id: z.string().min(1, 'Kelas wajib dipilih'),
