@@ -77,6 +77,7 @@ export function EditUserDialog({ user }: { user: any }) {
           id: user.id, 
           updates: { 
             full_name: formData.full_name, 
+            email: formData.email,
             roles: formData.roles,
             bio: formData.bio,
             staff_id: formData.staff_id,
@@ -165,10 +166,10 @@ export function EditUserDialog({ user }: { user: any }) {
             <Input
               type="email"
               value={formData.email}
-              disabled
-              className="bg-slate-50 text-slate-500"
+              onChange={(e) => setFormData({...formData, email: e.target.value})}
+              required
             />
-            <p className="text-xs text-muted-foreground">Email tidak dapat diubah setelah dibuat.</p>
+            <p className="text-xs text-muted-foreground">Perhatian: Mengubah email akan memengaruhi akses login pengguna.</p>
           </div>
           <div className="space-y-2">
             <Label>Roles</Label>

@@ -19,7 +19,7 @@ export async function getUsers() {
 
 import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 
-export async function updateUser(id: string, updates: { full_name?: string, roles?: string[], is_active?: boolean, bio?: string, profile_picture_url?: string, staff_id?: string, date_of_birth?: string | null, payday?: number | null, allowed_menus?: string[] | null }) {
+export async function updateUser(id: string, updates: { email?: string, full_name?: string, roles?: string[], is_active?: boolean, bio?: string, profile_picture_url?: string, staff_id?: string, date_of_birth?: string | null, payday?: number | null, allowed_menus?: string[] | null }) {
   const supabase = await createClient()
 
   // 1. Update public.users
@@ -33,22 +33,29 @@ export async function updateUser(id: string, updates: { full_name?: string, role
     return { error: error.message }
   }
 
-  // 2. If roles changed, sync to Auth User Metadata using Service Role
-  if (updates.roles && process.env.SUPABASE_SERVICE_ROLE_KEY) {
+  // 2. If roles or email changed, sync to Auth User Metadata using Service Role
+  if ((updates.roles || updates.email) && process.env.SUPABASE_SERVICE_ROLE_KEY) {
      const supabaseAdmin = createSupabaseClient(
        process.env.NEXT_PUBLIC_SUPABASE_URL!,
        process.env.SUPABASE_SERVICE_ROLE_KEY
      )
 
-     const { error: authError } = await supabaseAdmin.auth.admin.updateUserById(id, {
-       user_metadata: { roles: updates.roles }
-     })
+     const authUpdates: any = {}
+     if (updates.roles) authUpdates.user_metadata = { roles: updates.roles }
+     if (updates.email) {
+       authUpdates.email = updates.email
+       authUpdates.email_confirm = true
+     }
+
+     const { error: authError } = await supabaseAdmin.auth.admin.updateUserById(id, authUpdates)
 
      if (authError) {
-       console.error("Failed to sync roles to auth.users metadata:", authError.message)
+       console.error("Failed to sync auth.users:", authError.message)
+       // Note: if email update fails (e.g. email exists), it might cause mismatch, 
+       // but we'll log it for now.
      }
-  } else if (updates.roles) {
-     console.warn("SUPABASE_SERVICE_ROLE_KEY is not set. Cannot sync roles to auth.users metadata.")
+  } else if (updates.roles || updates.email) {
+     console.warn("SUPABASE_SERVICE_ROLE_KEY is not set. Cannot sync to auth.users.")
   }
 
   revalidatePath('/dashboard/users')

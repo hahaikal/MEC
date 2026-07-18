@@ -16,8 +16,8 @@ export function StudentStats({ students }: StudentStatsProps) {
   // Loading State (Skeleton)
   if (isLoading) {
     return (
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {[1, 2, 3, 4].map((i) => (
+      <div className="grid gap-4 md:grid-cols-3">
+        {[1, 2, 3].map((i) => (
           <Card key={i}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <div className="h-4 w-24 bg-slate-100 rounded animate-pulse" />
@@ -36,7 +36,7 @@ export function StudentStats({ students }: StudentStatsProps) {
   const currentMonthName = new Date().toLocaleString('id-ID', { month: 'long' });
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+    <div className="grid gap-4 md:grid-cols-3">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">Total Siswa Aktif</CardTitle>
@@ -59,25 +59,6 @@ export function StudentStats({ students }: StudentStatsProps) {
           <div className="text-2xl font-bold text-destructive">{stats?.outstandingCount || 0}</div>
           <p className="text-xs text-muted-foreground">
              Belum bayar SPP {stats?.targetMonthName || currentMonthName}
-          </p>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Penerimaan Bulan Ini ({currentMonthName})</CardTitle>
-          <Banknote className="h-4 w-4 text-green-600" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">
-            {new Intl.NumberFormat("id-ID", {
-              style: "currency",
-              currency: "IDR",
-              maximumFractionDigits: 0,
-            }).format(stats?.totalIncome || 0)}
-          </div>
-          <p className="text-xs text-muted-foreground">
-            Total masuk dari semua kategori
           </p>
         </CardContent>
       </Card>
