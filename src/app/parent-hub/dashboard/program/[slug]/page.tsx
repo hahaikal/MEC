@@ -5,8 +5,9 @@ import { GalleryGrid } from "@/components/parent-hub/gallery-grid";
 import { TeacherHero } from "@/components/parent-hub/teacher-hero";
 import { usePrograms, useProgramTeachers } from "@/lib/hooks/use-programs";
 import { useProgramActivities } from "@/lib/hooks/use-activities";
-import { use } from "react";
+import { use, useEffect, useState } from "react";
 import Image from "next/image";
+import { ShieldAlert } from "lucide-react";
 
 const PROGRAM_DESCRIPTIONS: Record<string, string> = {
   "Calistung": "A foundational program designed to spark your child's early literacy and numeracy skills. Through fun and engaging activities, we build a strong basis in reading, writing, and counting to prepare them for their future academic journey.",
@@ -26,6 +27,37 @@ export default function ProgramPage({
   const program = programs.find((p: any) => p.id === slug);
   const { data: programTeachers = [], isLoading: isTeachersLoading } = useProgramTeachers(slug);
   const { data: activities, isLoading } = useProgramActivities(slug);
+
+  // Access control: check if student is enrolled in this program
+  const [hasAccess, setHasAccess] = useState(true);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const raw = sessionStorage.getItem("parent-hub-session");
+    if (!raw) return;
+    try {
+      const session = JSON.parse(raw);
+      if (session.type === 'staff') {
+        setHasAccess(true);
+        return;
+      }
+      // Student: check enrollment
+      const enrolledProgramIds = (session.enrollments || []).map((e: any) => e.program_id);
+      setHasAccess(enrolledProgramIds.includes(slug));
+    } catch { setHasAccess(true); }
+  }, [slug]);
+
+  if (!hasAccess) {
+    return (
+      <div className="rounded-3xl bg-white p-10 text-center shadow">
+        <ShieldAlert className="mx-auto h-12 w-12 text-amber-500 mb-4" />
+        <h2 className="text-xl font-bold text-neutral-900">Akses Terbatas</h2>
+        <p className="mt-2 text-neutral-600">Kamu tidak terdaftar di program ini.</p>
+        <Link href="/parent-hub/dashboard" className="mt-4 inline-block text-[color:var(--mec-blue)] underline font-medium">
+          Kembali ke Dashboard
+        </Link>
+      </div>
+    );
+  }
 
   if (isProgramsLoading) {
     return (

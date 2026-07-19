@@ -25,13 +25,15 @@ import { useEffect } from 'react'
 
 const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard', href: '/dashboard' },
+  { icon: ImageIcon, label: 'Portal Parent Hub', href: '/parent-hub/staff-entry' },
   { icon: Users, label: 'Students', href: '/dashboard/students' },
   { icon: ClipboardList, label: 'Absensi & Kehadiran', href: '/dashboard/attendance' },
   { icon: Receipt, label: 'Expenses', href: '/dashboard/expenses' },
   { icon: BarChart3, label: 'Reports', href: '/dashboard/reports' },
   { icon: Users, label: 'Manajemen Kelas', href: '/dashboard/classes', adminOnly: true },
   { icon: Users, label: 'Manajemen Staff', href: '/dashboard/users', adminOnly: true },
-  { icon: ImageIcon, label: 'Parent Hub', href: '/dashboard/parent-hub-manager', adminOnly: true },
+  { icon: ImageIcon, label: 'Parent Hub Manager', href: '/dashboard/parent-hub-manager', adminOnly: true },
+  { icon: ClipboardList, label: 'Parent Hub Logins', href: '/dashboard/parent-hub-logins', adminOnly: true },
   { icon: BookOpen, label: 'Teacher Workspace', href: '/dashboard/teacher-workspace' },
   { icon: Settings, label: 'Settings', href: '/dashboard/settings' },
 ]
@@ -97,16 +99,27 @@ export function Sidebar() {
               const isDirector = userRoles.some(r => r.toLowerCase() === 'director');
               
               if (!isDirector) {
-                if (allowedMenus !== null) {
-                  // Gunakan allowed_menus dari database
-                  if (!allowedMenus.includes(item.href)) return null;
-                } else {
-                  // Fallback ke sistem lama jika allowed_menus belum di-set
-                  const isAdminOrManager = userRoles.some(r => ['admin', 'manager'].includes(r.toLowerCase()));
-                  if (!isAdminOrManager) {
-                    const allowedRoutes = ['/dashboard', '/dashboard/attendance', '/dashboard/teacher-workspace'];
-                    if (!allowedRoutes.includes(item.href)) return null;
-                    if (item.href === '/dashboard/teacher-workspace' && userRoles.some(r => r.toLowerCase() === 'parent')) return null;
+                // Sembunyikan Parent Hub Logins jika bukan admin/director
+                const isLoginsPage = item.href === '/dashboard/parent-hub-logins';
+                const isAdmin = userRoles.some(r => r.toLowerCase() === 'admin');
+                if (isLoginsPage && !isAdmin) return null;
+
+                // Selalu izinkan akses ke Buka Parent Hub untuk semua staff
+                const isStaffEntry = item.href === '/parent-hub/staff-entry';
+                const forceAllow = isStaffEntry || (isAdmin && isLoginsPage);
+
+                if (!forceAllow) {
+                  if (allowedMenus !== null) {
+                    // Gunakan allowed_menus dari database
+                    if (!allowedMenus.includes(item.href)) return null;
+                  } else {
+                    // Fallback ke sistem lama jika allowed_menus belum di-set
+                    const isAdminOrManager = userRoles.some(r => ['admin', 'manager'].includes(r.toLowerCase()));
+                    if (!isAdminOrManager) {
+                      const allowedRoutes = ['/dashboard', '/dashboard/attendance', '/dashboard/teacher-workspace'];
+                      if (!allowedRoutes.includes(item.href)) return null;
+                      if (item.href === '/dashboard/teacher-workspace' && userRoles.some(r => r.toLowerCase() === 'parent')) return null;
+                    }
                   }
                 }
               }

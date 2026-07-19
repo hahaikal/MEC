@@ -6,8 +6,8 @@ import { TeacherHero } from "@/components/parent-hub/teacher-hero";
 import { useClassActivities } from "@/lib/hooks/use-activities";
 import { useClassDocuments } from "@/lib/hooks/use-documents";
 import { useClass } from "@/lib/hooks/use-classes";
-import { use } from "react";
-import { FileText, Download } from "lucide-react";
+import { use, useEffect, useState } from "react";
+import { FileText, Download, ShieldAlert } from "lucide-react";
 import { format } from "date-fns";
 
 export default function ClassPage({
@@ -22,6 +22,36 @@ export default function ClassPage({
   // Only query documents if we know it's a preschool
   const isPreschool = cls?.programs?.name?.toLowerCase().includes("preschool") || cls?.programs?.name?.toLowerCase().includes("kindergarten");
   const { data: documents, isLoading: isDocumentsLoading } = useClassDocuments(classId, 'MAGAZINE');
+
+  // Access control: check if student is enrolled in this class
+  const [hasAccess, setHasAccess] = useState(true);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const raw = sessionStorage.getItem("parent-hub-session");
+    if (!raw) return;
+    try {
+      const session = JSON.parse(raw);
+      if (session.type === 'staff') {
+        setHasAccess(true);
+        return;
+      }
+      const enrolledClassIds = (session.enrollments || []).map((e: any) => e.class_id);
+      setHasAccess(enrolledClassIds.includes(classId));
+    } catch { setHasAccess(true); }
+  }, [classId]);
+
+  if (!hasAccess) {
+    return (
+      <div className="rounded-3xl bg-white p-10 text-center shadow">
+        <ShieldAlert className="mx-auto h-12 w-12 text-amber-500 mb-4" />
+        <h2 className="text-xl font-bold text-neutral-900">Akses Terbatas</h2>
+        <p className="mt-2 text-neutral-600">Kamu tidak terdaftar di kelas ini.</p>
+        <Link href="/parent-hub/dashboard" className="mt-4 inline-block text-[color:var(--mec-blue)] underline font-medium">
+          Kembali ke Dashboard
+        </Link>
+      </div>
+    );
+  }
 
   if (isClassLoading) {
     return (
