@@ -46,6 +46,8 @@ interface DataTableProps<TData, TValue> {
   data: TData[];
   searchElement?: React.ReactNode;
   filterElements?: React.ReactNode;
+  yearFilterElement?: React.ReactNode;
+  year?: number;
 }
 
 // Helper to determine row color based on student data completeness
@@ -85,6 +87,8 @@ export function DataTable<TData, TValue>({
   data,
   searchElement,
   filterElements,
+  yearFilterElement,
+  year,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -126,18 +130,28 @@ export function DataTable<TData, TValue>({
       columnVisibility,
       rowSelection,
     },
+    meta: {
+      selectedYear: year,
+    },
   });
 
   return (
     <div className="w-full h-full flex flex-col space-y-4">
       {/* Table Toolbar */}
       <div className="flex flex-col py-2 px-1 gap-3">
-        {/* Row 1: Search Element */}
-        {searchElement && (
-          <div className="w-full">
-            {searchElement}
-          </div>
-        )}
+        {/* Row 1: Search Element and Year Filter */}
+        <div className="flex flex-col sm:flex-row w-full items-center gap-3">
+          {searchElement && (
+            <div className="w-full sm:w-auto">
+              {searchElement}
+            </div>
+          )}
+          {yearFilterElement && (
+            <div className="w-full sm:w-[120px]">
+              {yearFilterElement}
+            </div>
+          )}
+        </div>
         
         {/* Row 2: Filters and Columns */}
         <div className="flex flex-wrap items-center justify-between gap-2 w-full">

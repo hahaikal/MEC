@@ -50,6 +50,7 @@ const quickPaymentSchema = z.object({
   discount_amount: z.coerce.number().min(0).default(0),
   notes: z.string().optional(),
   book_fee_amount: z.coerce.number().min(0).default(0),
+  tuition_amount: z.coerce.number().min(0).optional(),
 })
 
 type QuickPaymentFormValues = z.infer<typeof quickPaymentSchema>
@@ -95,6 +96,7 @@ export function QuickPaymentForm({ student, month, year, isRegistration = false,
     defaultValues: {
       discount_amount: existingPayment?.discount_amount || 0,
       book_fee_amount: existingPayment?.amount || 0,
+      tuition_amount: existingPayment?.amount || 0,
       payment_date: existingPayment ? new Date(existingPayment.payment_date) : (() => {
         const now = new Date();
         if (isRegistration || isBookFee) return now;
@@ -123,15 +125,20 @@ export function QuickPaymentForm({ student, month, year, isRegistration = false,
   const monthName = isRegistration ? 'Registration' : (isBookFee ? 'Book Fee' : format(new Date(year, month, 1), 'MMMM yyyy', { locale: idLocale }))
 
   // Kalkulasi Total
-  const discount = form.watch("discount_amount") || 0;
-  const watchedBookFee = form.watch("book_fee_amount") || 0;
-  
-  // Calculate total base fee from selected classes
   const selectedEnrollments = student.enrollments?.filter(e => selectedClassIds.includes(e.class_id)) || [];
-  const selectedBaseFee = selectedEnrollments.reduce((sum, e) => sum + (e.base_fee || 0), 0);
+  const classesToPay = isRegistration || isBookFee ? [{ class_id: null, base_fee: 0 }] : selectedEnrollments;
+
+  const watchedDiscount = form.watch('discount_amount') || 0
+  const watchedBookFee = form.watch('book_fee_amount') || 0
+  const watchedTuitionAmount = form.watch('tuition_amount') || 0
   
-  const baseFee = isRegistration ? 300000 : (isBookFee ? watchedBookFee : selectedBaseFee);
-  const finalAmount = Math.max(0, baseFee - discount);
+  const baseFee = isRegistration
+    ? 300000
+    : isBookFee 
+      ? watchedBookFee
+      : (existingPayment ? watchedTuitionAmount : classesToPay.reduce((sum: number, enr: any) => sum + Number(enr.base_fee || 0), 0))
+
+  const finalAmount = Math.max(0, baseFee - watchedDiscount);
 
   function onSubmit(data: QuickPaymentFormValues) {
     if (!isRegistration && !isBookFee && selectedClassIds.length === 0) {
@@ -149,8 +156,8 @@ export function QuickPaymentForm({ student, month, year, isRegistration = false,
       
       paymentsToUpdate.forEach((p, index) => {
         const paymentData = {
-          // Preserve the original amount of each payment record to avoid overwriting with the total amount
-          amount: p.amount,
+          // Allow overriding the amount when editing
+          amount: isRegistration ? p.amount : (isBookFee ? (data.book_fee_amount || p.amount) : (data.tuition_amount || p.amount)),
           discount_amount: index === 0 ? data.discount_amount : 0,
           payment_date: format(data.payment_date, 'yyyy-MM-dd'),
           payment_method: data.payment_method,
@@ -268,15 +275,36 @@ export function QuickPaymentForm({ student, month, year, isRegistration = false,
                </div>
              )}
 
-             <div className="flex justify-between border-t pt-2 mt-2">
+             <div className="flex justify-between border-t pt-2 mt-2 items-center">
                 <span className="text-muted-foreground">Nominal{isRegistration ? ' Registrasi' : isBookFee ? ' Uang Buku' : ' (SPP)'}:</span>
-                <span className="font-medium">
-                  {new Intl.NumberFormat('id-ID', {
-                    style: 'currency',
-                    currency: 'IDR',
-                    maximumFractionDigits: 0
-                  }).format(baseFee)}
-                </span>
+                {!isRegistration && !isBookFee && existingPayment ? (
+                  <div className="w-1/3">
+                    <FormField
+                      control={form.control}
+                      name="tuition_amount"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              className="h-8 text-right font-medium"
+                              {...field}
+                              onChange={e => field.onChange(Number(e.target.value))}
+                            />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                ) : (
+                  <span className="font-medium">
+                    {new Intl.NumberFormat('id-ID', {
+                      style: 'currency',
+                      currency: 'IDR',
+                      maximumFractionDigits: 0
+                    }).format(baseFee)}
+                  </span>
+                )}
              </div>
           </div>
 

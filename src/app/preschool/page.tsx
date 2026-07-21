@@ -1,6 +1,7 @@
 import { Navbar } from "@/components/preschool-landing/Navbar";
 import { Hero } from "@/components/preschool-landing/Hero";
 import { WhyChoose } from "@/components/preschool-landing/WhyChoose";
+import { CoreValues } from "@/components/preschool-landing/CoreValues";
 import { Classes } from "@/components/preschool-landing/Classes";
 import { Gallery } from "@/components/preschool-landing/Gallery";
 import { Experts } from "@/components/preschool-landing/Experts";
@@ -33,6 +34,7 @@ export default async function PreschoolLandingPage() {
       <main>
         <Hero phone={phone} />
         <WhyChoose phone={phone} />
+        <CoreValues />
         <Classes phone={phone} />
         <Gallery />
         <Experts teachers={teachers} />

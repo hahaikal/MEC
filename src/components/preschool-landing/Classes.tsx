@@ -16,7 +16,7 @@ const classes = [
     badge: "bg-accent text-accent-foreground",
   },
   {
-    title: "Preschool",
+    title: "Pre-Kindergarten",
     age: "3–4 years",
     desc: "Learn first English vocabulary through daily songs, arts, and creative play.",
     img: "/images/preschool5.jpeg",

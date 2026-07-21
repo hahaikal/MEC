@@ -50,5 +50,6 @@ export async function updatePayment(id: string, data: any) {
   }
 
   revalidatePath('/dashboard/payments')
+  revalidatePath('/dashboard/students')
   return { success: true }
 }

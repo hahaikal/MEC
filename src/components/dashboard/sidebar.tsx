@@ -35,7 +35,7 @@ const navItems = [
   { icon: ImageIcon, label: 'Parent Hub Manager', href: '/dashboard/parent-hub-manager', adminOnly: true },
   { icon: ClipboardList, label: 'Parent Hub Logins', href: '/dashboard/parent-hub-logins', adminOnly: true },
   { icon: BookOpen, label: 'Teacher Workspace', href: '/dashboard/teacher-workspace' },
-  { icon: Settings, label: 'Settings', href: '/dashboard/settings' },
+  { icon: Settings, label: 'Settings', href: '/dashboard/settings', adminOnly: true },
 ]
 
 export function Sidebar() {
@@ -97,16 +97,15 @@ export function Sidebar() {
           <nav className="flex-1 space-y-2 overflow-y-auto scrollbar-hide">
             {navItems.map((item) => {
               const isDirector = userRoles.some(r => r.toLowerCase() === 'director');
+              const isAdmin = userRoles.some(r => r.toLowerCase() === 'admin');
               
               if (!isDirector) {
-                // Sembunyikan Parent Hub Logins jika bukan admin/director
-                const isLoginsPage = item.href === '/dashboard/parent-hub-logins';
-                const isAdmin = userRoles.some(r => r.toLowerCase() === 'admin');
-                if (isLoginsPage && !isAdmin) return null;
+                // Jika item khusus admin, sembunyikan dari non-admin
+                if (item.adminOnly && !isAdmin) return null;
 
                 // Selalu izinkan akses ke Buka Parent Hub untuk semua staff
                 const isStaffEntry = item.href === '/parent-hub/staff-entry';
-                const forceAllow = isStaffEntry || (isAdmin && isLoginsPage);
+                const forceAllow = isStaffEntry;
 
                 if (!forceAllow) {
                   if (allowedMenus !== null) {

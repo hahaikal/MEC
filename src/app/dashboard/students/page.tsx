@@ -42,10 +42,17 @@ export default function StudentsPage() {
   const [openClassFilter, setOpenClassFilter] = useState(false)
   const [openProgramFilter, setOpenProgramFilter] = useState(false)
   const [statusFilter, setStatusFilter] = useState('ACTIVE') // 'ACTIVE', 'INACTIVE', or 'ALL'
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
   
   const { data: students, isLoading, isError } = useStudents()
   const { data: classes, isLoading: isLoadingClasses } = useClassList()
   const { data: programs, isLoading: isLoadingPrograms } = usePrograms()
+
+  // Filter available classes based on selected programs
+  const selectedProgramIds = programs?.filter(p => selectedPrograms.includes(p.name)).map(p => p.id) || []
+  const availableClasses = classes?.filter(c => 
+    selectedProgramIds.length === 0 || selectedProgramIds.includes(c.program_id)
+  ) || []
 
   // Filter client-side
   const filteredStudents = students?.filter(student => {
@@ -118,6 +125,7 @@ export default function StudentsPage() {
             <DataTable 
               columns={columns} 
               data={filteredStudents} 
+              year={selectedYear}
               searchElement={
                 <div className="relative w-full sm:w-[300px]">
                   <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -127,6 +135,20 @@ export default function StudentsPage() {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
+                </div>
+              }
+              yearFilterElement={
+                <div className="w-full sm:w-[120px]">
+                  <Select value={selectedYear.toString()} onValueChange={(val) => setSelectedYear(parseInt(val))}>
+                    <SelectTrigger className="h-9">
+                      <SelectValue placeholder="Tahun" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - 1 + i).map(year => (
+                        <SelectItem key={year} value={year.toString()}>{year}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               }
               filterElements={
@@ -154,7 +176,7 @@ export default function StudentsPage() {
                           <CommandList>
                             <CommandEmpty>Kelas tidak ditemukan.</CommandEmpty>
                             <CommandGroup>
-                              {classes && [...classes].sort((a, b) => a.name.localeCompare(b.name)).map((c) => (
+                              {availableClasses && [...availableClasses].sort((a, b) => a.name.localeCompare(b.name)).map((c) => (
                                 <CommandItem
                                   key={c.id}
                                   value={c.name}

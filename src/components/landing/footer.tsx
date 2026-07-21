@@ -53,7 +53,7 @@ export function Footer({ phone = "+62 812-7425-6077", email = "myenglishcourseba
                 { Icon: Instagram, href: "https://instagram.com/myenglishcoursebaganbatu", label: "Instagram" },
                 { Icon: Tiktok, href: "https://tiktok.com/@myenglishcoursebaganbatu", label: "Tiktok" },
                 { Icon: MessageCircle, href: dynamicWhatsappUrl, label: "WhatsApp" },
-                { Icon: Facebook, href: "https://facebook.com/myenglishcoursebaganbatu", label: "Facebook" },
+                { Icon: Facebook, href: "https://facebook.com/myenglishcoursebb", label: "Facebook" },
               ].map(({ Icon, href, label }) => (
                 <a
                   key={label}

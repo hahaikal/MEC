@@ -1,6 +1,18 @@
 import { MapPin, Phone, Mail, Facebook, Instagram, Youtube } from "lucide-react";
 import { ScallopEdge, Star4 } from "./Doodles";
 
+const TikTokIcon = (props: React.ComponentProps<"svg">) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    stroke="none"
+    {...props}
+  >
+    <path d="M12.53.02C13.84 0 15.14.01 16.44.06c.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93v8.12c0 4.32-3.4 7.9-7.7 8.01-4.43.12-8.31-3.32-8.52-7.72-.22-4.57 3.32-8.52 7.89-8.57v4.13c-2.3.06-4.22 2.05-4.13 4.36.09 2.2 1.95 3.99 4.15 4.02 2.18.02 4.02-1.74 4.02-3.92V.02h-3.8z" />
+  </svg>
+);
+
 export function FooterSection({ 
   phone = "+62 812-7425-6077",
   email = "hello@mecpreschool.id",
@@ -28,17 +40,19 @@ export function FooterSection({
               </span>
             </a>
             <p className="mt-4 text-sm leading-relaxed opacity-80">
-              MEC Preschool is the place where your little one learns English in the most fun way.
+              MEC Preschool is a premium preschool with strong English exposure, an international approach alongside Kurikulum Merdeka, and a focus on independence, confidence, character, holistic development, and preparing children for a global future.
             </p>
             <div className="mt-5 flex gap-3">
               {[
-                { icon: Facebook, label: "Facebook" },
-                { icon: Instagram, label: "Instagram" },
-                { icon: Youtube, label: "YouTube" },
+                { icon: Facebook, href: "https://www.facebook.com/myenglishcoursebb/", label: "Facebook" },
+                { icon: Instagram, href: "https://www.instagram.com/myenglishcoursebaganbatu/", label: "Instagram" },
+                { icon: TikTokIcon, href: "https://tiktok.com/@myenglishcoursebaganbatu", label: "Tiktok" },
               ].map((s) => (
                 <a
                   key={s.label}
-                  href="#footer"
+                  href={s.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   aria-label={s.label}
                   className="flex size-9 items-center justify-center rounded-full bg-primary-foreground/10 transition-colors hover:bg-accent hover:text-accent-foreground"
                 >
@@ -62,7 +76,7 @@ export function FooterSection({
             <h3 className="font-display text-lg font-bold text-accent">Programs</h3>
             <ul className="mt-4 space-y-2.5 text-sm opacity-90">
               <li><a href="#classes" className="hover:text-accent">Nursery (2-3 yrs)</a></li>
-              <li><a href="#classes" className="hover:text-accent">Preschool (3–4 yrs)</a></li>
+              <li><a href="#classes" className="hover:text-accent">Pre-Kindergarten (3–4 yrs)</a></li>
               <li><a href="#classes" className="hover:text-accent">Kindergarten (5–6 yrs)</a></li>
             </ul>
           </nav>
