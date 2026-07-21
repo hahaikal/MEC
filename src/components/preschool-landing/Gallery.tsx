@@ -5,35 +5,35 @@ import { Star4, DotsGrid, Cloud } from "./Doodles";
 
 const photos = [
   {
-    src: "/images/placeholder-10.png",
+    src: "/images/preschool10.png",
     alt: "Two children reading a storybook together at MEC Preschool",
     frame: "bg-accent",
     rotate: "-rotate-3",
     span: "",
   },
   {
-    src: "/images/placeholder-11.png",
+    src: "/images/preschool6.jpeg",
     alt: "Student birthday celebration in MEC Preschool class",
     frame: "bg-primary",
     rotate: "rotate-2",
     span: "",
   },
   {
-    src: "/images/placeholder-12.png",
+    src: "/images/preschool9.jpeg",
     alt: "MEC student drawing with colored pencils in art class",
     frame: "bg-background",
     rotate: "",
     span: "sm:col-span-2 sm:row-span-2",
   },
   {
-    src: "/images/placeholder-16.png",
+    src: "/images/preschool7.jpeg",
     alt: "MEC Preschool children taking a group photo while hugging",
     frame: "bg-primary",
     rotate: "rotate-3",
     span: "",
   },
   {
-    src: "/images/1.jpeg",
+    src: "/images/preschool8.jpeg",
     alt: "MEC students playing superhero dress-up on costume day",
     frame: "bg-accent",
     rotate: "-rotate-2",
@@ -70,7 +70,7 @@ export function Gallery() {
               viewport={{ once: true, margin: "-60px" }}
               transition={{ duration: 0.5, delay: i * 0.1 }}
               whileHover={{ scale: 1.04, rotate: 0 }}
-              className={`${p.span} ${p.rotate} ${p.frame} rounded-2xl p-2 shadow-lg`}
+              className={`${p.span} ${p.rotate} ${p.frame} aspect-square rounded-2xl p-2 shadow-lg`}
             >
               <img
                 src={p.src}
