@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -23,8 +23,8 @@ import {
 import { Plus, Upload, X } from 'lucide-react'
 import { ImageCropper } from '@/components/ui/image-cropper'
 import { useCreateGalleryItem } from '@/lib/hooks/use-gallery'
+import { usePrograms } from '@/lib/hooks/use-programs'
 import { uploadGalleryImage } from '@/lib/upload-gallery-image'
-import { GALLERY_CATEGORIES } from '@/types/gallery'
 import { toast } from 'sonner'
 
 export function AddGalleryDialog() {
@@ -33,49 +33,82 @@ export function AddGalleryDialog() {
   const [description, setDescription] = useState('')
   const [category, setCategory] = useState('')
   const [eventDate, setEventDate] = useState('')
-  const [file, setFile] = useState<File | null>(null)
-  const [preview, setPreview] = useState<string | null>(null)
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([])
+  const [previewUrls, setPreviewUrls] = useState<string[]>([])
   const [uploading, setUploading] = useState(false)
   
-  const [cropFileSrc, setCropFileSrc] = useState<string | null>(null)
-  const [showCropper, setShowCropper] = useState(false)
-
+  const [pendingCropFiles, setPendingCropFiles] = useState<File[]>([])
+  const [currentCropUrl, setCurrentCropUrl] = useState<string | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
+  
+  const { data: programs = [] } = usePrograms()
   const createMutation = useCreateGalleryItem()
+
+  useEffect(() => {
+    if (pendingCropFiles.length > 0 && !currentCropUrl) {
+      setCurrentCropUrl(URL.createObjectURL(pendingCropFiles[0]))
+    }
+  }, [pendingCropFiles, currentCropUrl])
+
+  const handleCropComplete = (croppedFile: File) => {
+    const newFiles = [...selectedFiles, croppedFile]
+    setSelectedFiles(newFiles)
+    const newPreviews = [...previewUrls, URL.createObjectURL(croppedFile)]
+    setPreviewUrls(newPreviews)
+    
+    const remaining = pendingCropFiles.slice(1)
+    setPendingCropFiles(remaining)
+    setCurrentCropUrl(null)
+  }
+
+  const handleCropCancel = () => {
+    const remaining = pendingCropFiles.slice(1)
+    setPendingCropFiles(remaining)
+    setCurrentCropUrl(null)
+  }
 
   const resetForm = () => {
     setTitle('')
     setDescription('')
     setCategory('')
     setEventDate('')
-    setFile(null)
-    setPreview(null)
+    setSelectedFiles([])
+    setPreviewUrls([])
+    setPendingCropFiles([])
+    setCurrentCropUrl(null)
   }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const selected = e.target.files?.[0]
-    if (!selected) return
-    const url = URL.createObjectURL(selected)
-    setCropFileSrc(url)
-    setShowCropper(true)
-    // Clear input so same file can be selected again
-    if (fileRef.current) fileRef.current.value = ''
+    const files = Array.from(e.target.files || [])
+    if (files.length === 0) return
+    setPendingCropFiles(prev => [...prev, ...files])
+    if (e.target) e.target.value = ''
+  }
+
+  const removeFile = (index: number) => {
+    setSelectedFiles(prev => prev.filter((_, i) => i !== index))
+    setPreviewUrls(prev => prev.filter((_, i) => i !== index))
   }
 
   const handleSubmit = async () => {
-    if (!title || !category || !file) {
-      toast.error('Please fill in title, category, and select an image.')
+    if (!title || !category || selectedFiles.length === 0) {
+      toast.error('Please fill in title, category, and select at least one image.')
       return
     }
 
     setUploading(true)
     try {
-      const imageUrl = await uploadGalleryImage(file)
+      const urls: string[] = []
+      for (const f of selectedFiles) {
+        const url = await uploadGalleryImage(f)
+        urls.push(url)
+      }
+      const finalImageUrl = urls.join(',')
 
       const result = await createMutation.mutateAsync({
         title,
         description,
-        image_url: imageUrl,
+        image_url: finalImageUrl,
         category,
         event_date: category === 'event' && eventDate ? eventDate : null,
         is_active: true,
@@ -112,36 +145,53 @@ export function AddGalleryDialog() {
         <div className="space-y-4 py-4 px-1 max-h-[65vh] overflow-y-auto">
           {/* Image Upload */}
           <div>
-            <Label>Image *</Label>
-            {preview ? (
-              <div className="relative mt-2">
-                <img src={preview} alt="Preview" className="h-48 w-full rounded-lg object-cover" />
-                <Button
-                  size="icon"
-                  variant="destructive"
-                  className="absolute top-2 right-2 h-7 w-7"
-                  onClick={() => { setFile(null); setPreview(null) }}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-            ) : (
+            <Label>
+              Photos (Max 5MB per file) *
+              <span className="block text-xs font-normal text-blue-600 mt-1">
+                Bisa upload lebih dari 1 foto
+              </span>
+            </Label>
+            
+            <div className="space-y-4 mt-2">
               <div
-                className="mt-2 flex h-48 cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 hover:border-blue-400 hover:bg-blue-50 transition"
+                className="flex h-32 cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 hover:border-blue-400 hover:bg-blue-50 transition"
                 onClick={() => fileRef.current?.click()}
               >
                 <Upload className="h-8 w-8 text-slate-400" />
-                <p className="mt-2 text-sm text-slate-500">Click to upload image</p>
-                <p className="text-xs text-slate-400">PNG, JPG, WebP (max 5MB)</p>
+                <p className="mt-2 text-sm text-slate-500">Click to add photos</p>
               </div>
-            )}
-            <input
-              ref={fileRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleFileChange}
-            />
+              <input
+                ref={fileRef}
+                type="file"
+                multiple
+                accept="image/jpeg, image/jpg, image/png, image/webp"
+                className="hidden"
+                onChange={handleFileChange}
+              />
+              
+              {previewUrls.length > 0 && (
+                <div className="grid grid-cols-3 gap-2 mt-2">
+                  {previewUrls.map((url, i) => (
+                    <div key={i} className="relative group aspect-square">
+                      <img 
+                        src={url} 
+                        alt={`Preview ${i + 1}`} 
+                        className="h-full w-full rounded-lg object-cover border" 
+                      />
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant="destructive"
+                        className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={() => removeFile(i)}
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Title */}
@@ -162,9 +212,10 @@ export function AddGalleryDialog() {
             <Select value={category} onValueChange={setCategory}>
               <SelectTrigger><SelectValue placeholder="Select category" /></SelectTrigger>
               <SelectContent>
-                {GALLERY_CATEGORIES.map((c) => (
-                  <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+                {programs.map((p: any) => (
+                  <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
                 ))}
+                <SelectItem value="event">Special Events</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -191,21 +242,13 @@ export function AddGalleryDialog() {
           </Button>
         </DialogFooter>
       </DialogContent>
-      {cropFileSrc && (
+      {currentCropUrl && (
         <ImageCropper
-          imageSrc={cropFileSrc}
+          imageSrc={currentCropUrl}
           aspectRatio={4 / 3}
-          open={showCropper}
-          onCancel={() => {
-            setShowCropper(false)
-            setCropFileSrc(null)
-          }}
-          onCropComplete={(croppedFile) => {
-            setFile(croppedFile)
-            setPreview(URL.createObjectURL(croppedFile))
-            setShowCropper(false)
-            setCropFileSrc(null)
-          }}
+          open={!!currentCropUrl}
+          onCancel={handleCropCancel}
+          onCropComplete={handleCropComplete}
         />
       )}
     </Dialog>

@@ -15,7 +15,7 @@ import { useGalleryItems } from '@/lib/hooks/use-gallery'
 import { columns } from '@/components/gallery-manager/columns'
 import { AddGalleryDialog } from '@/components/gallery-manager/add-gallery-dialog'
 import { EditGalleryDialog } from '@/components/gallery-manager/edit-gallery-dialog'
-import { GALLERY_CATEGORIES } from '@/types/gallery'
+import { usePrograms } from '@/lib/hooks/use-programs'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -41,6 +41,7 @@ export default function ParentHubManagerPage() {
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [categoryFilter, setCategoryFilter] = useState<string>('all')
+  const { data: programs = [] } = usePrograms()
   const [editItem, setEditItem] = useState<any>(null)
   const [editOpen, setEditOpen] = useState(false)
 
@@ -126,9 +127,10 @@ export default function ParentHubManagerPage() {
           <SelectTrigger className="w-48"><SelectValue placeholder="All Categories" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Categories</SelectItem>
-            {GALLERY_CATEGORIES.map((c) => (
-              <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+            {programs.map((p: any) => (
+              <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
             ))}
+            <SelectItem value="event">Special Events</SelectItem>
           </SelectContent>
         </Select>
       </div>

@@ -23,7 +23,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import { useToggleGalleryItem, useDeleteGalleryItem } from '@/lib/hooks/use-gallery'
-import { GALLERY_CATEGORIES } from '@/types/gallery'
+import { usePrograms } from '@/lib/hooks/use-programs'
 import { toast } from 'sonner'
 
 type GalleryRow = {
@@ -75,9 +75,12 @@ export const columns: ColumnDef<GalleryRow>[] = [
   {
     accessorKey: 'category',
     header: 'Category',
-    cell: ({ row }) => {
-      const cat = GALLERY_CATEGORIES.find(c => c.value === row.getValue('category'))
-      return <Badge variant="secondary">{cat?.label || row.getValue('category')}</Badge>
+    cell: function CategoryCell({ row }) {
+      const { data: programs = [] } = usePrograms()
+      const val = row.getValue('category') as string
+      if (val === 'event') return <Badge variant="secondary">Special Events</Badge>
+      const p = programs.find((x: any) => x.id === val)
+      return <Badge variant="secondary">{p?.name || val}</Badge>
     },
   },
 

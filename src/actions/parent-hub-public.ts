@@ -211,25 +211,40 @@ export async function getPublicPreschoolActivities() {
   const classIds = classes.map((c: any) => c.id)
 
   // 2. Fetch class activities
-  const { data, error } = await supabase
+  const { data: classActivities, error: err1 } = await supabase
     .from('class_activities')
     .select('*')
     .in('class_id', classIds)
-    .order('created_at', { ascending: false })
 
-  if (error) throw error
+  if (err1) throw err1
 
-  // 3. Map to match GalleryItemData structure expected by GalleryGrid
-  return data.map((item: any) => ({
-    id: item.id,
-    title: item.title,
-    description: item.description,
-    image_url: item.image_url,
-    category: 'preschool',
-    is_active: true,
-    event_date: item.created_at,
-    created_at: item.created_at,
-  }))
+  // 3. Fetch gallery items for this program
+  const { data: galleryItems, error: err2 } = await supabase
+    .from('gallery_items')
+    .select('*')
+    .eq('category', programs.id)
+    .eq('is_active', true)
+
+  if (err2) throw err2
+
+  const combined = [
+    ...(classActivities ?? []),
+    ...(galleryItems ?? [])
+  ]
+
+  // 4. Map to match GalleryItemData structure expected by GalleryGrid
+  return combined
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    .map((item: any) => ({
+      id: item.id,
+      title: item.title,
+      description: item.description,
+      image_url: item.image_url,
+      category: 'preschool',
+      is_active: true,
+      event_date: item.created_at,
+      created_at: item.created_at,
+    }))
 }
 
 export async function getPublicPreschoolTeachers() {
