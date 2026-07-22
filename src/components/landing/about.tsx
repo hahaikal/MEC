@@ -61,7 +61,7 @@ export function About() {
                 {
                   icon: Users,
                   title: "Small, caring classes",
-                  desc: "Max 10 students per class so every voice gets heard.",
+                  desc: "Max 12 students per class so every voice gets heard.",
                 },
                 {
                   icon: ShieldCheck,
