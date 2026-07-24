@@ -44,7 +44,7 @@ export const columns: ColumnDef<GalleryRow>[] = [
     cell: ({ row }) => (
       <div className="h-16 w-24 overflow-hidden rounded-lg bg-slate-100">
         <img
-          src={row.getValue('image_url')}
+          src={(row.getValue('image_url') as string).split(',')[0]}
           alt={row.original.title}
           className="h-full w-full object-cover"
           loading="lazy"
@@ -64,8 +64,8 @@ export const columns: ColumnDef<GalleryRow>[] = [
       </Button>
     ),
     cell: ({ row }) => (
-      <div>
-        <p className="font-medium">{row.getValue('title')}</p>
+      <div className="max-w-[300px]">
+        <p className="font-medium truncate">{row.getValue('title')}</p>
         {row.original.description && (
           <p className="text-xs text-muted-foreground line-clamp-1">{row.original.description}</p>
         )}

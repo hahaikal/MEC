@@ -11,6 +11,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import {
   Select,
@@ -225,7 +226,7 @@ export function EditGalleryDialog({ item, open, onOpenChange }: EditGalleryDialo
           {/* Description */}
           <div>
             <Label htmlFor="edit-desc">Description</Label>
-            <Input id="edit-desc" value={description} onChange={(e) => setDescription(e.target.value)} />
+            <Textarea id="edit-desc" value={description} onChange={(e) => setDescription(e.target.value)} rows={4} />
           </div>
 
           {/* Category */}

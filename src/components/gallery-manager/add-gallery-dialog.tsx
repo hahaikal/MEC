@@ -12,6 +12,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import {
   Select,
@@ -203,7 +204,7 @@ export function AddGalleryDialog() {
           {/* Description */}
           <div>
             <Label htmlFor="desc">Description</Label>
-            <Input id="desc" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Brief description" />
+            <Textarea id="desc" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Brief description" rows={4} />
           </div>
 
           {/* Category */}
