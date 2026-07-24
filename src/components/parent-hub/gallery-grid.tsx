@@ -131,7 +131,7 @@ export function GalleryGrid({ items }: { items: GalleryItemData[] }) {
                     })}
                   </div>
                   
-                  {item.event_date && (
+                  {item.event_date && item.category === "event" && (
                     <div className="flex items-center gap-1.5 text-sm text-neutral-500 font-medium">
                       <Clock className="h-4 w-4" />
                       {new Date(item.event_date).toLocaleTimeString("en-US", {

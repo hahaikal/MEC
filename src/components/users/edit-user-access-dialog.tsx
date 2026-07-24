@@ -24,7 +24,8 @@ export const SYSTEM_MENUS = [
   { id: '/dashboard/reports', label: 'Reports' },
   { id: '/dashboard/classes', label: 'Manajemen Kelas' },
   { id: '/dashboard/users', label: 'Manajemen Staff' },
-  { id: '/dashboard/parent-hub-manager', label: 'Parent Hub' },
+  { id: '/dashboard/parent-hub-manager', label: 'Parent Hub Manager' },
+  { id: '/dashboard/parent-hub-logins', label: 'Parent Hub Logins' },
   { id: '/dashboard/teacher-workspace', label: 'Teacher Workspace' },
   { id: '/dashboard/settings', label: 'Settings' }
 ]
