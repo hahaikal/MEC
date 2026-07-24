@@ -25,7 +25,7 @@ import { useEffect } from 'react'
 
 const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard', href: '/dashboard' },
-  { icon: ImageIcon, label: 'Portal Parent Hub', href: '/parent-hub/staff-entry' },
+  { icon: ImageIcon, label: 'Portal Parent Hub', href: '/parent-hub/staff-entry', external: true },
   { icon: Users, label: 'Students', href: '/dashboard/students' },
   { icon: ClipboardList, label: 'Absensi & Kehadiran', href: '/dashboard/attendance' },
   { icon: Receipt, label: 'Expenses', href: '/dashboard/expenses' },
@@ -129,6 +129,8 @@ export function Sidebar() {
                 <Link
                   key={item.href}
                   href={item.href}
+                  target={item.external ? "_blank" : undefined}
+                  rel={item.external ? "noopener noreferrer" : undefined}
                   onClick={() => setIsOpen(false)}
                   className={cn(
                     'flex items-center gap-3 px-4 py-3 rounded-lg transition-colors duration-200',

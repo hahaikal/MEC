@@ -233,3 +233,53 @@ aside.overflow-hidden *::-webkit-scrollbar {
   border-radius: 46% 46% 40% 40% / 30% 30% 12% 12%;
   overflow: hidden;
 }
+
+@keyframes mec-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-14px); }
+}
+@keyframes mec-float-sm {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-8px) rotate(6deg); }
+}
+@keyframes mec-drift {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  50% { transform: translate(10px, -12px) rotate(8deg); }
+}
+@keyframes mec-blink {
+  0%, 92%, 100% { transform: scaleY(1); }
+  94%, 98% { transform: scaleY(0.05); }
+}
+@keyframes mec-wave {
+  0%, 100% { transform: rotate(-8deg); }
+  50% { transform: rotate(20deg); }
+}
+@keyframes mec-spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+@keyframes mec-pop-in {
+  0% { opacity: 0; transform: scale(0.6) translateY(20px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@utility mec-anim-float { animation: mec-float 3.5s ease-in-out infinite; }
+@utility mec-anim-float-sm { animation: mec-float-sm 4s ease-in-out infinite; }
+@utility mec-anim-drift { animation: mec-drift 7s ease-in-out infinite; }
+@utility mec-anim-blink { animation: mec-blink 4.5s ease-in-out infinite; transform-origin: center; }
+@utility mec-anim-wave { animation: mec-wave 2.4s ease-in-out infinite; transform-origin: bottom center; }
+@utility mec-anim-spin-slow { animation: mec-spin-slow 14s linear infinite; }
+@utility mec-anim-pop { animation: mec-pop-in 0.7s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .mec-anim-float,
+  .mec-anim-float-sm,
+  .mec-anim-drift,
+  .mec-anim-blink,
+  .mec-anim-wave,
+  .mec-anim-spin-slow,
+  .mec-anim-pop {
+    animation: none !important;
+  }
+}
+
