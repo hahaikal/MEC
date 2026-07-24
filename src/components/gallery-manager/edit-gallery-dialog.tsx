@@ -85,7 +85,13 @@ export function EditGalleryDialog({ item, open, onOpenChange }: EditGalleryDialo
       setTitle(item.title)
       setDescription(item.description || '')
       setCategory(item.category)
-      setEventDate(item.event_date || '')
+      setEventDate(item.event_date ? (
+        (() => {
+          const d = new Date(item.event_date);
+          const pad = (n: number) => n.toString().padStart(2, '0');
+          return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+        })()
+      ) : '')
       setExistingUrls(item.image_url ? item.image_url.split(',').map(s => s.trim()).filter(Boolean) : [])
       setNewFiles([])
       setNewPreviews([])
@@ -131,7 +137,7 @@ export function EditGalleryDialog({ item, open, onOpenChange }: EditGalleryDialo
           title, 
           description, 
           category,
-          event_date: category === 'event' && eventDate ? eventDate : null,
+          event_date: eventDate ? new Date(eventDate).toISOString() : null,
           image_url: finalImageUrl,
         },
       })
@@ -243,19 +249,16 @@ export function EditGalleryDialog({ item, open, onOpenChange }: EditGalleryDialo
             </Select>
           </div>
 
-          {/* Event Date (Conditional) */}
-          {category === 'event' && (
-            <div>
-              <Label htmlFor="edit-event_date">Event Date *</Label>
-              <Input
-                id="edit-event_date"
-                type="date"
-                value={eventDate}
-                onChange={(e) => setEventDate(e.target.value)}
-                required
-              />
-            </div>
-          )}
+          {/* Event Date */}
+          <div>
+            <Label htmlFor="edit-event_date">Date & Time</Label>
+            <Input
+              id="edit-event_date"
+              type="datetime-local"
+              value={eventDate}
+              onChange={(e) => setEventDate(e.target.value)}
+            />
+          </div>
         </div>
 
         <DialogFooter>

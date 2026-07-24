@@ -200,7 +200,7 @@ export default function LoginPage() {
                 Parent Hub
               </h1>
               <p className="mt-1 text-center text-sm text-white/80">
-                Masukkan PIN 6 digit (tanggal lahir siswa)
+                Masukkan PIN 6 digit
               </p>
 
               <div className="mt-8 flex justify-between gap-2" onPaste={onPaste}>
@@ -220,10 +220,6 @@ export default function LoginPage() {
                 ))}
               </div>
 
-              <p className="mt-3 text-center text-xs text-white/60">
-                Format: DD MM YY (contoh: 03 02 15 untuk 3 Februari 2015)
-              </p>
-
               <button
                 type="submit"
                 disabled={loading}
@@ -238,7 +234,7 @@ export default function LoginPage() {
                 Pilih Profil
               </h1>
               <p className="mt-1 text-center text-sm text-white/80">
-                Beberapa siswa ditemukan, pilih profil yang sesuai
+                Silahkan pilih profil yang sesuai
               </p>
 
               <div className="mt-6 space-y-3 max-h-[50vh] overflow-y-auto">

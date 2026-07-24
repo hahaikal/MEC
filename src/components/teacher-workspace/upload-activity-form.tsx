@@ -29,6 +29,7 @@ import {
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { CalendarIcon } from "lucide-react";
+import { ImageCropper } from "@/components/ui/image-cropper";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB per file
 
@@ -54,6 +55,9 @@ export function UploadActivityForm({
   const [progress, setProgress] = useState(0);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [filesToCrop, setFilesToCrop] = useState<{file: File, url: string}[]>([]);
+
+  const currentFileToCrop = filesToCrop[0];
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -223,12 +227,12 @@ export function UploadActivityForm({
                     onChange={(e) => {
                       const files = Array.from(e.target.files || []);
                       if (files.length > 0) {
-                        const newFiles = [...selectedFiles, ...files];
-                        setSelectedFiles(newFiles);
-                        onChange(newFiles);
-                        
-                        const newPreviews = files.map(f => URL.createObjectURL(f));
-                        setPreviewUrls([...previewUrls, ...newPreviews]);
+                        const newFilesToCrop = files.map(file => ({
+                          file,
+                          url: URL.createObjectURL(file)
+                        }));
+                        setFilesToCrop(prev => [...prev, ...newFilesToCrop]);
+                        e.target.value = '';
                       }
                     }}
                     {...field}
@@ -286,6 +290,27 @@ export function UploadActivityForm({
           )}
         </Button>
       </form>
+
+      {currentFileToCrop && (
+        <ImageCropper
+          open={!!currentFileToCrop}
+          imageSrc={currentFileToCrop.url}
+          aspectRatio={16 / 9}
+          onCropComplete={(croppedFile) => {
+            const newSelected = [...selectedFiles, croppedFile];
+            setSelectedFiles(newSelected);
+            form.setValue('files', newSelected);
+            
+            const newPreview = URL.createObjectURL(croppedFile);
+            setPreviewUrls([...previewUrls, newPreview]);
+            
+            setFilesToCrop(prev => prev.slice(1));
+          }}
+          onCancel={() => {
+            setFilesToCrop(prev => prev.slice(1));
+          }}
+        />
+      )}
     </Form>
   );
 }

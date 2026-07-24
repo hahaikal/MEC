@@ -111,7 +111,7 @@ export function AddGalleryDialog() {
         description,
         image_url: finalImageUrl,
         category,
-        event_date: category === 'event' && eventDate ? eventDate : null,
+        event_date: eventDate ? new Date(eventDate).toISOString() : null,
         is_active: true,
       })
 
@@ -221,19 +221,16 @@ export function AddGalleryDialog() {
             </Select>
           </div>
 
-          {/* Event Date (Conditional) */}
-          {category === 'event' && (
-            <div>
-              <Label htmlFor="event_date">Event Date *</Label>
-              <Input
-                id="event_date"
-                type="date"
-                value={eventDate}
-                onChange={(e) => setEventDate(e.target.value)}
-                required
-              />
-            </div>
-          )}
+          {/* Event Date */}
+          <div>
+            <Label htmlFor="event_date">Date & Time</Label>
+            <Input
+              id="event_date"
+              type="datetime-local"
+              value={eventDate}
+              onChange={(e) => setEventDate(e.target.value)}
+            />
+          </div>
         </div>
 
         <DialogFooter>

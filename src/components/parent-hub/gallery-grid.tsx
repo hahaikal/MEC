@@ -17,7 +17,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import { Tag, Calendar } from "lucide-react";
+import { Tag, Calendar, Clock } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 export interface GalleryItemData {
@@ -123,10 +123,28 @@ export function GalleryGrid({ items }: { items: GalleryItemData[] }) {
 
               {/* Right Side: Content */}
               <div className="flex flex-col p-6 sm:p-8 flex-1 justify-center min-w-0">
-                <div className="mb-2 text-sm text-neutral-500 font-medium">
-                  {new Date(item.event_date || item.created_at).toLocaleDateString("en-US", {
-                    month: "short", day: "numeric", year: "numeric"
-                  })}
+                <div className="mb-2 flex items-center gap-4 flex-wrap">
+                  <div className="flex items-center gap-1.5 text-sm text-neutral-500 font-medium">
+                    <Calendar className="h-4 w-4" />
+                    {new Date(item.event_date || item.created_at).toLocaleDateString("en-US", {
+                      month: "short", day: "numeric", year: "numeric"
+                    })}
+                  </div>
+                  
+                  {item.event_date && (
+                    <div className="flex items-center gap-1.5 text-sm text-neutral-500 font-medium">
+                      <Clock className="h-4 w-4" />
+                      {new Date(item.event_date).toLocaleTimeString("en-US", {
+                        hour: "numeric", minute: "2-digit"
+                      })}
+                    </div>
+                  )}
+                  
+                  {badgeText && badgeText !== "GALLERY" && (
+                    <span className="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-semibold text-[color:var(--mec-blue)]">
+                      {badgeText}
+                    </span>
+                  )}
                 </div>
                 
                 <h3 className="text-2xl font-bold text-neutral-900 mb-2 line-clamp-1 group-hover:text-mec-blue transition-colors">
