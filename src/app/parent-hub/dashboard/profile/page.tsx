@@ -4,8 +4,10 @@ import { useState, useEffect } from "react";
 import { User, CheckCircle, AlertCircle, FileText, CalendarDays, MapPin, Phone, Users, Calendar } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { format } from "date-fns";
+import { useLanguage } from "@/lib/contexts/LanguageContext";
 
 export default function StudentProfilePage() {
+  const { t } = useLanguage();
   const [session, setSession] = useState<any>(null);
   const [studentData, setStudentData] = useState<any>(null);
   const [attendance, setAttendance] = useState({ present: 0, absent: 0, total: 0, percentage: 0 });
@@ -62,25 +64,25 @@ export default function StudentProfilePage() {
   }, [session]);
 
   if (isLoading) {
-    return <div className="flex justify-center p-12 text-neutral-500">Loading profile data...</div>;
+    return <div className="flex justify-center p-12 text-neutral-500">{t("profile.loading")}</div>;
   }
 
   if (session?.type === 'staff') {
     return (
       <div className="flex h-64 flex-col items-center justify-center rounded-3xl bg-white p-12 text-center shadow-card">
         <Users className="mb-4 h-12 w-12 text-neutral-300" />
-        <h2 className="font-display text-xl font-bold text-[#111111]">Staff Account</h2>
-        <p className="text-neutral-500">This profile page is designated for student and parent accounts.</p>
+        <h2 className="font-display text-xl font-bold text-[#111111]">{t("profile.staffAccount")}</h2>
+        <p className="text-neutral-500">{t("profile.staffNotice")}</p>
       </div>
     );
   }
 
   if (!studentData) {
-    return <div className="p-12 text-center text-neutral-500">Student data not found.</div>;
+    return <div className="p-12 text-center text-neutral-500">{t("profile.notFound")}</div>;
   }
 
-  const programName = session.enrollments?.[0]?.program_name || "Enrolled Program";
-  const className = session.enrollments?.[0]?.class_name || "Assigned Class";
+  const programName = session.enrollments?.[0]?.program_name || t("profile.enrolledProgram");
+  const className = session.enrollments?.[0]?.class_name || t("profile.assignedClass");
 
   const currentInvoices = payments.slice(0, 3); // latest 3 payments
 
@@ -106,7 +108,7 @@ export default function StudentProfilePage() {
           </div>
           <div className="flex-1 text-center md:text-left">
             <div className="inline-flex items-center gap-2 rounded-full bg-mec-yellow px-3 py-1 text-xs font-bold uppercase tracking-widest text-mec-ink mb-3">
-              <User className="h-3 w-3" /> Student Profile
+              <User className="h-3 w-3" /> {t("nav.studentProfile")}
             </div>
             <h1 className="font-display text-3xl font-extrabold text-[#111111] md:text-4xl">
               {studentData.name}
@@ -126,18 +128,18 @@ export default function StudentProfilePage() {
 
       {/* Biodata Section */}
       <section className="rounded-3xl bg-white p-6 shadow-card md:p-8">
-        <h2 className="font-display text-xl font-bold text-[#111111] mb-6">Student Information</h2>
+        <h2 className="font-display text-xl font-bold text-[#111111] mb-6">{t("profile.studentInfo")}</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6">
           <div className="space-y-4">
             <div>
               <div className="text-xs font-bold uppercase tracking-wider text-neutral-500 mb-1 flex items-center gap-1.5">
-                <User className="h-3 w-3" /> Full Name
+                <User className="h-3 w-3" /> {t("profile.fullName")}
               </div>
               <div className="font-medium text-[#111111]">{studentData.name}</div>
             </div>
             <div>
               <div className="text-xs font-bold uppercase tracking-wider text-neutral-500 mb-1 flex items-center gap-1.5">
-                <Calendar className="h-3 w-3" /> Date of Birth
+                <Calendar className="h-3 w-3" /> {t("profile.dob")}
               </div>
               <div className="font-medium text-[#111111]">
                 {studentData.date_of_birth ? format(new Date(studentData.date_of_birth), 'MMMM d, yyyy') : '-'}
@@ -145,7 +147,7 @@ export default function StudentProfilePage() {
             </div>
             <div>
               <div className="text-xs font-bold uppercase tracking-wider text-neutral-500 mb-1 flex items-center gap-1.5">
-                <User className="h-3 w-3" /> Gender
+                <User className="h-3 w-3" /> {t("profile.gender")}
               </div>
               <div className="font-medium text-[#111111] capitalize">{studentData.gender || '-'}</div>
             </div>
@@ -153,7 +155,7 @@ export default function StudentProfilePage() {
           <div className="space-y-4">
             <div>
               <div className="text-xs font-bold uppercase tracking-wider text-neutral-500 mb-1 flex items-center gap-1.5">
-                <Users className="h-3 w-3" /> Parent's Name
+                <Users className="h-3 w-3" /> {t("profile.parentsName")}
               </div>
               <div className="font-medium text-[#111111]">
                 {studentData.father_name ? `${studentData.father_name} (Father)` : studentData.mother_name ? `${studentData.mother_name} (Mother)` : '-'}
@@ -161,13 +163,13 @@ export default function StudentProfilePage() {
             </div>
             <div>
               <div className="text-xs font-bold uppercase tracking-wider text-neutral-500 mb-1 flex items-center gap-1.5">
-                <Phone className="h-3 w-3" /> Parent Phone
+                <Phone className="h-3 w-3" /> {t("profile.parentPhone")}
               </div>
               <div className="font-medium text-[#111111]">{studentData.parent_phone || studentData.phone_number || '-'}</div>
             </div>
             <div>
               <div className="text-xs font-bold uppercase tracking-wider text-neutral-500 mb-1 flex items-center gap-1.5">
-                <MapPin className="h-3 w-3" /> Address
+                <MapPin className="h-3 w-3" /> {t("profile.address")}
               </div>
               <div className="font-medium text-[#111111]">{studentData.address || '-'}</div>
             </div>
@@ -178,7 +180,7 @@ export default function StudentProfilePage() {
       <div className="grid gap-6 md:grid-cols-3">
         {/* Attendance Summary */}
         <section className="col-span-1 rounded-3xl bg-white p-6 shadow-card md:p-8">
-          <h2 className="font-display text-xl font-bold text-[#111111] mb-6">Attendance Summary</h2>
+          <h2 className="font-display text-xl font-bold text-[#111111] mb-6">{t("dashboard.attendanceSummary")}</h2>
           <div className="flex flex-col items-center justify-center">
             {/* Circular Progress */}
             <div className="relative flex h-40 w-40 items-center justify-center">
@@ -205,18 +207,18 @@ export default function StudentProfilePage() {
               </svg>
               <div className="absolute text-center">
                 <span className="block font-display text-3xl font-bold text-[#111111]">{attendance.percentage}%</span>
-                <span className="text-xs font-medium text-neutral-500">Present</span>
+                <span className="text-xs font-medium text-neutral-500">{t("dashboard.present")}</span>
               </div>
             </div>
             
             <div className="mt-8 grid w-full grid-cols-2 gap-4">
               <div className="rounded-2xl bg-green-50 p-4 text-center">
                 <span className="block text-2xl font-bold text-green-600">{attendance.present}</span>
-                <span className="text-xs font-medium text-green-700 uppercase tracking-wider">Attended</span>
+                <span className="text-xs font-medium text-green-700 uppercase tracking-wider">{t("dashboard.attended")}</span>
               </div>
               <div className="rounded-2xl bg-red-50 p-4 text-center">
                 <span className="block text-2xl font-bold text-[#E11D2A]">{attendance.absent}</span>
-                <span className="text-xs font-medium text-red-700 uppercase tracking-wider">Absent</span>
+                <span className="text-xs font-medium text-red-700 uppercase tracking-wider">{t("dashboard.absent")}</span>
               </div>
             </div>
           </div>
@@ -226,10 +228,10 @@ export default function StudentProfilePage() {
         <section className="col-span-1 md:col-span-2 space-y-6">
           {/* Invoices / Recent */}
           <div className="rounded-3xl bg-white p-6 shadow-card md:p-8">
-            <h2 className="font-display text-xl font-bold text-[#111111] mb-6">Current / Recent Payments</h2>
+            <h2 className="font-display text-xl font-bold text-[#111111] mb-6">{t("dashboard.currentInvoices")}</h2>
             <div className="space-y-4">
               {currentInvoices.length === 0 ? (
-                <div className="text-sm text-neutral-500 text-center py-4">No recent payments found.</div>
+                <div className="text-sm text-neutral-500 text-center py-4">{t("dashboard.noRecentPayments")}</div>
               ) : (
                 currentInvoices.map((inv) => (
                   <div key={inv.id} className="flex flex-col gap-4 rounded-2xl border border-neutral-100 bg-[#F2F2F2]/50 p-4 transition-colors hover:bg-[#F2F2F2] sm:flex-row sm:items-center sm:justify-between">
@@ -239,7 +241,7 @@ export default function StudentProfilePage() {
                       </div>
                       <div>
                         <h4 className="font-bold text-[#111111]">{inv.category || 'Tuition Fee'}</h4>
-                        <p className="text-sm font-medium text-neutral-500">{inv.invoice_number || 'No Invoice'} &bull; {inv.payment_date ? format(new Date(inv.payment_date), 'MMM d, yyyy') : '-'}</p>
+                        <p className="text-sm font-medium text-neutral-500">{inv.invoice_number || t("profile.noInvoice")} &bull; {inv.payment_date ? format(new Date(inv.payment_date), 'MMM d, yyyy') : '-'}</p>
                       </div>
                     </div>
                     <div className="flex items-center justify-between sm:flex-col sm:items-end sm:gap-1">
@@ -247,7 +249,7 @@ export default function StudentProfilePage() {
                       <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider ${
                         inv.payment_status === 'Paid' ? 'bg-green-100 text-green-700' : 'bg-mec-yellow text-mec-ink'
                       }`}>
-                        {inv.payment_status || 'Pending'}
+                        {inv.payment_status || t("profile.pending")}
                       </span>
                     </div>
                   </div>
@@ -258,9 +260,9 @@ export default function StudentProfilePage() {
 
           {/* Payment History */}
           <div className="rounded-3xl bg-white p-6 shadow-card md:p-8">
-            <h2 className="font-display text-xl font-bold text-[#111111] mb-6">Payment History</h2>
+            <h2 className="font-display text-xl font-bold text-[#111111] mb-6">{t("dashboard.paymentHistory")}</h2>
             {payments.length === 0 ? (
-               <div className="text-sm text-neutral-500 text-center py-4">No payment history found.</div>
+               <div className="text-sm text-neutral-500 text-center py-4">{t("dashboard.noPaymentHistory")}</div>
             ) : (
               <div className="relative border-l-2 border-neutral-100 ml-4 space-y-8">
                 {payments.map((pay) => (
@@ -271,7 +273,7 @@ export default function StudentProfilePage() {
                     <div className="flex flex-col gap-1 sm:flex-row sm:justify-between">
                       <div>
                         <h4 className="font-bold text-[#111111]">{pay.category || 'Tuition Fee'}</h4>
-                        <p className="text-sm text-neutral-500">{pay.invoice_number || 'Payment'} &bull; {pay.payment_method}</p>
+                        <p className="text-sm text-neutral-500">{pay.invoice_number || t("profile.payment")} &bull; {pay.payment_method}</p>
                       </div>
                       <div className="text-left sm:text-right">
                         <span className="block font-bold text-green-600">{formatCurrency(pay.amount)}</span>

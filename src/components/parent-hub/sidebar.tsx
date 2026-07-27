@@ -6,6 +6,8 @@ import { usePathname } from "next/navigation";
 import { ChevronDown, GraduationCap, BookOpen, Baby, LogOut, Menu, X, User, Image as ImageIcon, MessageSquare, HelpCircle } from "lucide-react";
 import { useActiveClasses } from "@/lib/hooks/use-classes";
 import { usePrograms } from "@/lib/hooks/use-programs";
+import { useLanguage } from "@/lib/contexts/LanguageContext";
+import { LanguageSwitcher } from "@/components/parent-hub/language-switcher";
 
 interface SessionData {
   type: 'student' | 'staff';
@@ -27,6 +29,7 @@ export function ParentHubSidebar({ onLogout, session }: { onLogout: () => void; 
   const [isOpen, setIsOpen] = useState(false);
   const { data: programs = [], isLoading: isProgramsLoading } = usePrograms();
   const { data: dynamicClasses = [], isLoading } = useActiveClasses();
+  const { t } = useLanguage();
 
   const isStaff = session?.type === 'staff';
   const displayName = isStaff ? (session?.userName || 'Staff') : (session?.studentName || 'Student');
@@ -104,10 +107,10 @@ export function ParentHubSidebar({ onLogout, session }: { onLogout: () => void; 
             {isStaff ? (
               <span className="inline-flex items-center gap-1">
                 <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
-                Staff Access
+                {t("nav.staffAccess")}
               </span>
             ) : (
-              displayClass || 'Student'
+              displayClass || t("nav.student")
             )}
           </p>
         </div>
@@ -121,7 +124,7 @@ export function ParentHubSidebar({ onLogout, session }: { onLogout: () => void; 
             isActive("/parent-hub/dashboard") ? linkActive : linkIdle
           }`}
         >
-          <BookOpen className="h-4 w-4" /> Dashboard
+          <BookOpen className="h-4 w-4" /> {t("nav.dashboard")}
         </Link>
 
         {/* Programs */}
@@ -132,16 +135,16 @@ export function ParentHubSidebar({ onLogout, session }: { onLogout: () => void; 
               className={`${linkBase} w-full justify-between ${linkIdle}`}
             >
               <span className="flex items-center gap-3">
-                <BookOpen className="h-4 w-4" /> Programs
+                <BookOpen className="h-4 w-4" /> {t("nav.programs")}
               </span>
               <ChevronDown className={`h-4 w-4 transition ${openProgram ? "rotate-180" : ""}`} />
             </button>
             {openProgram && (
               <div className="ml-3 space-y-1 border-l-2 border-[color:var(--mec-grey)] pl-3">
                 {isProgramsLoading ? (
-                  <div className="py-2 text-xs text-neutral-500 text-center">Loading programs...</div>
+                  <div className="py-2 text-xs text-neutral-500 text-center">{t("nav.loadingPrograms")}</div>
                 ) : filteredPrograms.length === 0 ? (
-                  <div className="py-2 text-xs text-neutral-500 text-center">No programs available</div>
+                  <div className="py-2 text-xs text-neutral-500 text-center">{t("nav.noPrograms")}</div>
                 ) : (
                   filteredPrograms.map((p: any) => (
                     <Link
@@ -168,16 +171,16 @@ export function ParentHubSidebar({ onLogout, session }: { onLogout: () => void; 
               className={`${linkBase} w-full justify-between ${linkIdle}`}
             >
               <span className="flex items-center gap-3">
-                <GraduationCap className="h-4 w-4" /> Classes
+                <GraduationCap className="h-4 w-4" /> {t("nav.classes")}
               </span>
               <ChevronDown className={`h-4 w-4 transition ${openClass ? "rotate-180" : ""}`} />
             </button>
             {openClass && (
               <div className="ml-3 max-h-64 overflow-y-auto space-y-1 border-l-2 border-[color:var(--mec-grey)] pl-3 pr-1">
                 {isLoading ? (
-                  <div className="py-2 text-xs text-neutral-500 text-center">Loading classes...</div>
+                  <div className="py-2 text-xs text-neutral-500 text-center">{t("nav.loadingClasses")}</div>
                 ) : filteredClasses.length === 0 ? (
-                  <div className="py-2 text-xs text-neutral-500 text-center">No classes available</div>
+                  <div className="py-2 text-xs text-neutral-500 text-center">{t("nav.noClasses")}</div>
                 ) : (
                   filteredClasses.map((c: any) => (
                     <Link
@@ -204,7 +207,7 @@ export function ParentHubSidebar({ onLogout, session }: { onLogout: () => void; 
               isActive("/parent-hub/dashboard/preschool") ? linkActive : linkIdle
             }`}
           >
-            <Baby className="h-4 w-4" /> MEC Preschool
+            <Baby className="h-4 w-4" /> {t("nav.preschool")}
           </Link>
         )}
 
@@ -215,7 +218,7 @@ export function ParentHubSidebar({ onLogout, session }: { onLogout: () => void; 
             isActive("/parent-hub/dashboard/profile") ? linkActive : linkIdle
           }`}
         >
-          <User className="h-4 w-4" /> Student Profile
+          <User className="h-4 w-4" /> {t("nav.studentProfile")}
         </Link>
 
         {/* Gallery & Media */}
@@ -225,7 +228,7 @@ export function ParentHubSidebar({ onLogout, session }: { onLogout: () => void; 
             isActive("/parent-hub/dashboard/gallery") ? linkActive : linkIdle
           }`}
         >
-          <ImageIcon className="h-4 w-4" /> Gallery & Media
+          <ImageIcon className="h-4 w-4" /> {t("nav.gallery")}
         </Link>
 
         {/* Communication */}
@@ -235,7 +238,7 @@ export function ParentHubSidebar({ onLogout, session }: { onLogout: () => void; 
             isActive("/parent-hub/dashboard/communication") ? linkActive : linkIdle
           }`}
         >
-          <MessageSquare className="h-4 w-4" /> Communication
+          <MessageSquare className="h-4 w-4" /> {t("nav.communication")}
         </Link>
 
         {/* Resources */}
@@ -245,15 +248,20 @@ export function ParentHubSidebar({ onLogout, session }: { onLogout: () => void; 
             isActive("/parent-hub/dashboard/resources") ? linkActive : linkIdle
           }`}
         >
-          <HelpCircle className="h-4 w-4" /> Resources
+          <HelpCircle className="h-4 w-4" /> {t("nav.resources")}
         </Link>
+        
+        {/* Language Switcher */}
+        <div className="pt-2 px-2">
+          <LanguageSwitcher />
+        </div>
       </nav>
 
       <button
         onClick={onLogout}
         className="mt-6 flex w-full items-center justify-center gap-2 rounded-2xl border border-neutral-200 px-4 py-2.5 text-sm font-medium text-neutral-700 transition hover:bg-red-50 hover:text-red-600 hover:border-red-200"
       >
-        <LogOut className="h-4 w-4" /> Logout
+        <LogOut className="h-4 w-4" /> {t("nav.logout")}
       </button>
     </aside>
     </>

@@ -1,13 +1,15 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Pin, Megaphone, Send, Users, CheckCircle2, ChevronLeft, MessageSquare } from "lucide-react";
+import { Pin, Send, Users, ChevronLeft, MessageSquare } from "lucide-react";
 import { useActiveGalleryItems } from "@/lib/hooks/use-gallery";
 import { useActiveClasses } from "@/lib/hooks/use-classes";
 import { createClient } from "@/lib/supabase/client";
 import { format } from "date-fns";
+import { useLanguage } from "@/lib/contexts/LanguageContext";
 
 export default function CommunicationPage() {
+  const { t } = useLanguage();
   const [session, setSession] = useState<any>(null);
   const [selectedClassId, setSelectedClassId] = useState<string | null>(null);
   const [messages, setMessages] = useState<any[]>([]);
@@ -75,7 +77,6 @@ export default function CommunicationPage() {
           { event: 'INSERT', schema: 'public', table: 'chat_messages', filter: `class_id=eq.${selectedClassId}` }, 
           (payload) => {
             setMessages((prev) => {
-              // Avoid duplicates if we already added it optimistically (though we don't do optimistic yet)
               if (prev.find(m => m.id === payload.new.id)) return prev;
               return [...prev, payload.new];
             });
@@ -119,17 +120,17 @@ export default function CommunicationPage() {
       {/* Top Section: Announcements */}
       <section className="shrink-0">
         <div className="mb-4">
-          <h1 className="font-display text-2xl font-extrabold text-[#111111]">Notice Board</h1>
-          <p className="text-sm text-neutral-600">Important upcoming events and announcements.</p>
+          <h1 className="font-display text-2xl font-extrabold text-[#111111]">{t("comm.noticeBoard")}</h1>
+          <p className="text-sm text-neutral-600">{t("comm.noticeSubtitle")}</p>
         </div>
 
-        <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
+        <div className="flex gap-4 overflow-x-auto pb-4 [&::-webkit-scrollbar]:h-2.5 [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-neutral-200/50 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-mec-blue/70 hover:[&::-webkit-scrollbar-thumb]:bg-mec-blue transition-colors">
           {announcements.length === 0 ? (
-             <div className="text-sm text-neutral-500 italic">No special events scheduled.</div>
+             <div className="text-sm text-neutral-500 italic">{t("comm.noEvents")}</div>
           ) : announcements.map((ann: any) => (
             <div 
               key={ann.id} 
-              className={`relative flex w-80 shrink-0 flex-col gap-2 rounded-2xl p-5 transition-transform hover:-translate-y-1 bg-mec-yellow/10 ring-1 ring-mec-yellow/50 h-full`}
+              className="relative flex w-80 shrink-0 flex-col gap-2 rounded-2xl p-5 transition-transform hover:-translate-y-1 bg-mec-yellow/10 ring-1 ring-mec-yellow/50 min-h-[140px] h-full"
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="flex items-center gap-2">
@@ -140,7 +141,7 @@ export default function CommunicationPage() {
                 </div>
               </div>
               <h3 className="font-display font-bold text-[#111111] leading-tight line-clamp-2">{ann.title}</h3>
-              <p className="text-sm text-neutral-600 line-clamp-2">{ann.description || "School event"}</p>
+              <p className="text-sm text-neutral-600 line-clamp-2">{ann.description || t("comm.schoolEvent")}</p>
             </div>
           ))}
         </div>
@@ -151,7 +152,7 @@ export default function CommunicationPage() {
         {!selectedClassId && filteredClasses.length > 1 ? (
           // Class Selection View
           <div className="flex flex-1 flex-col p-8 bg-[#F2F2F2]/30">
-            <h2 className="font-display text-2xl font-bold text-[#111111] mb-6">Select a Class to Join Chat</h2>
+            <h2 className="font-display text-2xl font-bold text-[#111111] mb-6">{t("comm.selectClass")}</h2>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {filteredClasses.map((c: any) => (
                 <button
@@ -186,7 +187,7 @@ export default function CommunicationPage() {
                 <div>
                   <h2 className="font-display text-lg font-bold text-[#111111]">{selectedClass?.name || 'Class Chat'}</h2>
                   <p className="text-xs font-medium text-green-600 flex items-center gap-1">
-                    <span className="h-2 w-2 rounded-full bg-green-500" /> Active Chat
+                    <span className="h-2 w-2 rounded-full bg-green-500" /> {t("comm.activeChat")}
                   </p>
                 </div>
               </div>
@@ -196,8 +197,8 @@ export default function CommunicationPage() {
               {messages.length === 0 ? (
                 <div className="flex h-full flex-col items-center justify-center text-center text-neutral-400">
                   <MessageSquare className="h-12 w-12 mb-4 opacity-20" />
-                  <p>No messages yet.</p>
-                  <p className="text-sm">Be the first to send a message!</p>
+                  <p>{t("comm.noMessages")}</p>
+                  <p className="text-sm">{t("comm.beFirst")}</p>
                 </div>
               ) : (
                 messages.map((msg) => {
@@ -210,7 +211,7 @@ export default function CommunicationPage() {
                         <span className="text-xs font-bold text-neutral-500">{msg.sender_name}</span>
                         {msg.sender_type === 'staff' && (
                           <span className="rounded bg-mec-blue/10 px-1.5 py-0.5 text-[10px] font-bold uppercase text-mec-blue">
-                            Teacher
+                            {t("comm.teacher")}
                           </span>
                         )}
                         <span className="text-[10px] text-neutral-400">{format(new Date(msg.created_at), 'hh:mm a')}</span>
@@ -242,7 +243,7 @@ export default function CommunicationPage() {
                   type="text" 
                   value={messageText}
                   onChange={(e) => setMessageText(e.target.value)}
-                  placeholder="Type your message here..."
+                  placeholder={t("comm.typeMessage")}
                   className="flex-1 bg-transparent py-2 text-sm text-[#111111] outline-none placeholder:text-neutral-500"
                 />
                 <button 
@@ -257,7 +258,7 @@ export default function CommunicationPage() {
           </>
         ) : (
           <div className="flex flex-1 items-center justify-center text-neutral-400">
-             You are not enrolled in any classes yet.
+             {t("comm.notEnrolled")}
           </div>
         )}
       </section>

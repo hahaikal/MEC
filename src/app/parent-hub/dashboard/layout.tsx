@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { ParentHubSidebar } from "@/components/parent-hub/sidebar";
 import { BlobBackground } from "@/components/parent-hub/blob-bg";
+import { LanguageProvider } from "@/lib/contexts/LanguageContext";
 
 const ONE_DAY = 24 * 60 * 60 * 1000;
 
@@ -126,14 +127,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }
 
   return (
-    <div className="relative min-h-screen bg-[color:var(--mec-grey)]">
-      <BlobBackground />
-      <div className="mx-auto flex max-w-7xl gap-6 px-4 py-6 lg:px-8">
-        <main className="min-w-0 flex-1 space-y-6">
-          {children}
-        </main>
-        <ParentHubSidebar onLogout={logout} session={session} />
+    <LanguageProvider>
+      <div className="relative min-h-screen bg-[color:var(--mec-grey)]">
+        <BlobBackground />
+
+        <div className="mx-auto flex max-w-7xl gap-6 px-4 py-16 lg:px-8 lg:py-6">
+          <main className="min-w-0 flex-1 space-y-6 mt-4 lg:mt-0">
+            {children}
+          </main>
+          <ParentHubSidebar onLogout={logout} session={session} />
+        </div>
       </div>
-    </div>
+    </LanguageProvider>
   );
 }
