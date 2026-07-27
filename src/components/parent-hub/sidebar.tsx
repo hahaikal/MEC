@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ChevronDown, GraduationCap, BookOpen, Baby, LogOut, Menu, X, User } from "lucide-react";
+import { ChevronDown, GraduationCap, BookOpen, Baby, LogOut, Menu, X, User, Image as ImageIcon, MessageSquare, HelpCircle } from "lucide-react";
 import { useActiveClasses } from "@/lib/hooks/use-classes";
 import { usePrograms } from "@/lib/hooks/use-programs";
 
@@ -207,6 +207,46 @@ export function ParentHubSidebar({ onLogout, session }: { onLogout: () => void; 
             <Baby className="h-4 w-4" /> MEC Preschool
           </Link>
         )}
+
+        {/* Student Profile */}
+        <Link
+          href="/parent-hub/dashboard/profile"
+          className={`${linkBase} ${
+            isActive("/parent-hub/dashboard/profile") ? linkActive : linkIdle
+          }`}
+        >
+          <User className="h-4 w-4" /> Student Profile
+        </Link>
+
+        {/* Gallery & Media */}
+        <Link
+          href="/parent-hub/dashboard/gallery"
+          className={`${linkBase} ${
+            isActive("/parent-hub/dashboard/gallery") ? linkActive : linkIdle
+          }`}
+        >
+          <ImageIcon className="h-4 w-4" /> Gallery & Media
+        </Link>
+
+        {/* Communication */}
+        <Link
+          href="/parent-hub/dashboard/communication"
+          className={`${linkBase} ${
+            isActive("/parent-hub/dashboard/communication") ? linkActive : linkIdle
+          }`}
+        >
+          <MessageSquare className="h-4 w-4" /> Communication
+        </Link>
+
+        {/* Resources */}
+        <Link
+          href="/parent-hub/dashboard/resources"
+          className={`${linkBase} ${
+            isActive("/parent-hub/dashboard/resources") ? linkActive : linkIdle
+          }`}
+        >
+          <HelpCircle className="h-4 w-4" /> Resources
+        </Link>
       </nav>
 
       <button
