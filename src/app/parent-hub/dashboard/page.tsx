@@ -17,19 +17,23 @@ import { useRouter } from "next/navigation";
 export default function DashboardHome() {
   const { data: allItems, isLoading } = useActiveGalleryItems("event");
   const items = allItems ?? [];
-  const { data: recentActivities, isLoading: isLoadingActivities } = useAllClassActivities(6);
+  const { data: recentActivitiesData, isLoading: isLoadingActivities } = useAllClassActivities(50);
   const { t } = useLanguage();
   const router = useRouter();
 
   const [showArrearsWarning, setShowArrearsWarning] = useState(false);
+  const [session, setSession] = useState<any>(null);
+  const [filteredActivities, setFilteredActivities] = useState<any[]>([]);
 
   useEffect(() => {
     const raw = sessionStorage.getItem("parent-hub-session");
     if (!raw) return;
 
     try {
-      const session = JSON.parse(raw);
-      if (session.type === 'student' && session.studentId) {
+      const parsed = JSON.parse(raw);
+      setSession(parsed);
+
+      if (parsed.type === 'student' && parsed.studentId) {
         const hasWarned = sessionStorage.getItem('arrears-warned');
         if (hasWarned !== 'true') {
           const checkArrears = async () => {
@@ -37,7 +41,7 @@ export default function DashboardHome() {
             const { data } = await supabase
               .from('payments')
               .select('id')
-              .eq('student_id', session.studentId)
+              .eq('student_id', parsed.studentId)
               .eq('payment_status', 'Pending')
               .limit(1);
 
@@ -51,6 +55,27 @@ export default function DashboardHome() {
       }
     } catch {}
   }, []);
+
+  useEffect(() => {
+    if (!recentActivitiesData) return;
+    if (!session) {
+      setFilteredActivities(recentActivitiesData.slice(0, 6));
+      return;
+    }
+
+    if (session.type === 'staff') {
+      setFilteredActivities(recentActivitiesData.slice(0, 6));
+    } else {
+      const enrolledProgramIds = session.enrollments?.map((e: any) => e.program_id) || [];
+      const filtered = recentActivitiesData.filter(act => {
+        if (act.category === 'event') return true; 
+        if (act.classes?.program_id) return enrolledProgramIds.includes(act.classes.program_id);
+        if (act.category && enrolledProgramIds.includes(act.category)) return true;
+        return false;
+      });
+      setFilteredActivities(filtered.slice(0, 6));
+    }
+  }, [recentActivitiesData, session]);
 
   return (
     <div className="space-y-8">
@@ -115,12 +140,12 @@ export default function DashboardHome() {
               <div key={i} className="h-[420px] animate-pulse rounded-3xl bg-white/60" />
             ))}
           </div>
-        ) : recentActivities?.length === 0 ? (
+        ) : filteredActivities.length === 0 ? (
           <div className="rounded-3xl bg-white p-8 text-center shadow-sm">
             <p className="text-neutral-500">{t("dashboard.noRecentActivities")}</p>
           </div>
         ) : (
-          <GalleryGrid items={recentActivities as any} />
+          <GalleryGrid items={filteredActivities as any} />
         )}
       </section>
     </div>

@@ -240,7 +240,7 @@ export default function StudentProfilePage() {
                         {inv.payment_status === 'Paid' ? <CheckCircle className="h-5 w-5" /> : <AlertCircle className="h-5 w-5" />}
                       </div>
                       <div>
-                        <h4 className="font-bold text-[#111111]">{inv.category || 'Tuition Fee'}</h4>
+                        <h4 className="font-bold text-[#111111]">{inv.notes || 'Tuition Fee'}</h4>
                         <p className="text-sm font-medium text-neutral-500">{inv.invoice_number || t("profile.noInvoice")} &bull; {inv.payment_date ? format(new Date(inv.payment_date), 'MMM d, yyyy') : '-'}</p>
                       </div>
                     </div>
@@ -272,7 +272,7 @@ export default function StudentProfilePage() {
                     </span>
                     <div className="flex flex-col gap-1 sm:flex-row sm:justify-between">
                       <div>
-                        <h4 className="font-bold text-[#111111]">{pay.category || 'Tuition Fee'}</h4>
+                        <h4 className="font-bold text-[#111111]">{pay.notes || 'Tuition Fee'}</h4>
                         <p className="text-sm text-neutral-500">{pay.invoice_number || t("profile.payment")} &bull; {pay.payment_method}</p>
                       </div>
                       <div className="text-left sm:text-right">

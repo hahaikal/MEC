@@ -64,7 +64,7 @@ export function useAllClassActivities(limit: number = 6) {
     queryFn: async () => {
       const { data: classesData, error: err1 } = await supabase
         .from('class_activities')
-        .select('*, classes(name, programs(name))')
+        .select('*, classes(name, program_id, programs(name))')
         .order('created_at', { ascending: false })
         .limit(limit)
 

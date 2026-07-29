@@ -1,4 +1,5 @@
 "use client";
+import { useState } from "react";
 
 import { GalleryGrid } from "@/components/parent-hub/gallery-grid";
 import { usePreschoolActivities } from "@/lib/hooks/use-gallery";
@@ -22,6 +23,11 @@ export default function PreschoolPage() {
   const { data: documents, isLoading: isDocumentsLoading } = usePreschoolMagazines();
   const { data: preschoolTeachers, isLoading: isTeachersLoading } = usePreschoolTeachers();
   const { data: preschoolClasses, isLoading: isClassesLoading } = usePreschoolClasses();
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 8;
+  const totalPages = Math.ceil((galleryItems?.length ?? 0) / pageSize);
+  const paginatedItems = (galleryItems ?? []).slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   return (
     <>
@@ -167,7 +173,30 @@ export default function PreschoolPage() {
             ))}
           </div>
         ) : (
-          <GalleryGrid items={galleryItems ?? []} />
+          <div className="space-y-6">
+            <GalleryGrid items={paginatedItems} />
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-4 mt-6">
+                <button
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="px-4 py-2 rounded-xl bg-white border border-neutral-200 text-neutral-700 font-medium hover:bg-neutral-50 disabled:opacity-50 transition"
+                >
+                  Previous
+                </button>
+                <span className="text-sm font-medium text-neutral-500">
+                  Page {currentPage} of {totalPages}
+                </span>
+                <button
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  className="px-4 py-2 rounded-xl bg-white border border-neutral-200 text-neutral-700 font-medium hover:bg-neutral-50 disabled:opacity-50 transition"
+                >
+                  Next
+                </button>
+              </div>
+            )}
+          </div>
         )}
       </section>
 

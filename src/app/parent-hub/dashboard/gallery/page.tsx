@@ -52,6 +52,16 @@ export default function GalleryMediaPage() {
   const [selectedItem, setSelectedItem] = useState<any>(null);
   const [selectedProgramId, setSelectedProgramId] = useState<string>("all");
   const [selectedClassId, setSelectedClassId] = useState<string>("all");
+  const [session, setSession] = useState<any>(null);
+
+  useEffect(() => {
+    const raw = sessionStorage.getItem("parent-hub-session");
+    if (raw) {
+      try {
+        setSession(JSON.parse(raw));
+      } catch {}
+    }
+  }, []);
 
   const isLoading = isEventsLoading || isActivitiesLoading;
 
@@ -101,16 +111,24 @@ export default function GalleryMediaPage() {
     });
   }
 
+  const isStaff = session?.type === 'staff';
+  const enrolledProgramIds = session?.enrollments?.map((e: any) => e.program_id) || [];
+
   // Filter the final items based on selection
   const mediaItems = rawMediaItems.filter((item) => {
-    // If it's a special event, maybe only show if no specific class is selected, 
-    // or let it always show if "all" is selected. We hide events if a specific program/class is selected
-    if (item.original.category === 'event') {
-      return selectedProgramId === "all" && selectedClassId === "all";
+    const isEvent = item.original.category === 'event';
+    const itemProgId = item.original.classes?.program_id || item.original.category;
+    const itemClassId = item.original.class_id;
+
+    // Student filter logic
+    if (!isStaff) {
+      if (!isEvent && !enrolledProgramIds.includes(itemProgId)) return false;
     }
 
-    const itemProgId = item.original.classes?.program_id;
-    const itemClassId = item.original.class_id;
+    // Interactive UI Filter logic (only for staff, but logic applies)
+    if (isEvent) {
+      return selectedProgramId === "all" && selectedClassId === "all";
+    }
 
     if (selectedProgramId !== "all" && itemProgId !== selectedProgramId) return false;
     if (selectedClassId !== "all" && itemClassId !== selectedClassId) return false;
@@ -128,35 +146,37 @@ export default function GalleryMediaPage() {
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="flex justify-end">
-        <div className="flex flex-wrap items-center gap-3 bg-white p-3 rounded-2xl shadow-sm border border-neutral-100">
-          <div className="flex items-center gap-2 px-2 text-neutral-500">
-            <Filter className="h-4 w-4" />
+      {/* Filters (Only for Staff) */}
+      {isStaff && (
+        <div className="flex justify-end">
+          <div className="flex flex-wrap items-center gap-3 bg-white p-3 rounded-2xl shadow-sm border border-neutral-100">
+            <div className="flex items-center gap-2 px-2 text-neutral-500">
+              <Filter className="h-4 w-4" />
+            </div>
+            <select 
+              value={selectedProgramId} 
+              onChange={(e) => setSelectedProgramId(e.target.value)}
+              className="bg-[#F2F2F2] border-none text-sm font-medium rounded-xl px-4 py-2 outline-none focus:ring-2 focus:ring-mec-blue/20"
+            >
+              <option value="all">{t("gallery.allPrograms")}</option>
+              {programs.map((p: any) => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
+            </select>
+            <select 
+              value={selectedClassId} 
+              onChange={(e) => setSelectedClassId(e.target.value)}
+              disabled={selectedProgramId === "all" && filteredDropdownClasses.length === 0}
+              className="bg-[#F2F2F2] border-none text-sm font-medium rounded-xl px-4 py-2 outline-none focus:ring-2 focus:ring-mec-blue/20 disabled:opacity-50"
+            >
+              <option value="all">{t("gallery.allClasses")}</option>
+              {filteredDropdownClasses.map((c: any) => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+            </select>
           </div>
-          <select 
-            value={selectedProgramId} 
-            onChange={(e) => setSelectedProgramId(e.target.value)}
-            className="bg-[#F2F2F2] border-none text-sm font-medium rounded-xl px-4 py-2 outline-none focus:ring-2 focus:ring-mec-blue/20"
-          >
-            <option value="all">{t("gallery.allPrograms")}</option>
-            {programs.map((p: any) => (
-              <option key={p.id} value={p.id}>{p.name}</option>
-            ))}
-          </select>
-          <select 
-            value={selectedClassId} 
-            onChange={(e) => setSelectedClassId(e.target.value)}
-            disabled={selectedProgramId === "all" && filteredDropdownClasses.length === 0}
-            className="bg-[#F2F2F2] border-none text-sm font-medium rounded-xl px-4 py-2 outline-none focus:ring-2 focus:ring-mec-blue/20 disabled:opacity-50"
-          >
-            <option value="all">{t("gallery.allClasses")}</option>
-            {filteredDropdownClasses.map((c: any) => (
-              <option key={c.id} value={c.id}>{c.name}</option>
-            ))}
-          </select>
         </div>
-      </div>
+      )}
 
       {isLoading ? (
         <div className="grid gap-8 lg:grid-cols-2">
