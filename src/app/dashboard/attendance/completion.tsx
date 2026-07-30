@@ -57,7 +57,7 @@ export function AttendanceCompletion() {
       if (classesError) throw classesError
 
       // 2. Get attendance logs based on mode
-      let logsQuery = supabase.from('attendance_logs').select('class_id, student_id, status')
+      let logsQuery = supabase.from('attendance_logs').select('class_id, student_id, status, date')
       
       if (viewMode === 'daily') {
         logsQuery = logsQuery.eq('date', selectedDate)
@@ -69,8 +69,27 @@ export function AttendanceCompletion() {
         logsQuery = logsQuery.gte('date', startDate).lte('date', endDate)
       }
 
-      const { data: logsData, error: logsError } = await logsQuery
-      if (logsError) throw logsError
+      let allLogsData: any[] = []
+      let from = 0
+      const limit = 1000
+      let fetchMore = true
+
+      while (fetchMore) {
+        const { data, error } = await logsQuery.range(from, from + limit - 1)
+        if (error) throw error
+        
+        if (data && data.length > 0) {
+          allLogsData = [...allLogsData, ...data]
+        }
+        
+        if (!data || data.length < limit) {
+          fetchMore = false
+        } else {
+          from += limit
+        }
+      }
+
+      const logsData = allLogsData
 
       const dayMap: Record<string, number> = {
         'Sunday': 0, 'Monday': 1, 'Tuesday': 2, 'Wednesday': 3,
@@ -96,11 +115,13 @@ export function AttendanceCompletion() {
           ).length || 0
 
           const logsForClass = logsData.filter((log) => log.class_id === cls.id)
-          const filledLogs = logsForClass.length
           
           let expectedLogs = 0;
+          let filledLogs = 0;
+          
           if (viewMode === 'daily') {
              expectedLogs = activeStudents;
+             filledLogs = logsForClass.length;
           } else {
              const allowedDays = (cls.schedule_days as string[]).map(d => dayMap[d])
              let upToDate = undefined;
@@ -111,7 +132,11 @@ export function AttendanceCompletion() {
                upToDate = 0;
              }
              const sessionsInMonth = upToDate === 0 ? 0 : getWeekdaysInMonth(parseInt(selectedMonth), parseInt(selectedYear), allowedDays, upToDate)
-             expectedLogs = activeStudents * sessionsInMonth;
+             expectedLogs = sessionsInMonth;
+             
+             // For monthly view, filled is the number of distinct days attendance was taken
+             const uniqueDates = new Set(logsForClass.map(log => log.date).filter(Boolean));
+             filledLogs = uniqueDates.size;
           }
           
           let percentage = 0

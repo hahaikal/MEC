@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { StudentDetailDialog } from '@/components/students/StudentDetailDialog'
+import { Minus } from 'lucide-react'
 
 const DAY_MAP: Record<string, number> = {
   'Sunday': 0, 'Monday': 1, 'Tuesday': 2, 'Wednesday': 3,
@@ -60,6 +61,7 @@ export function AttendanceMatrix({ classData, month, year }: AttendanceMatrixPro
       case 'LEAVE': return <Plane className="w-4 h-4 text-blue-500" />
       case 'ALPHA': return <X className="w-4 h-4 text-red-500" />
       case 'HOLIDAY': return <CalendarOff className="w-4 h-4 text-slate-400" />
+      case 'NOT_ENROLLED': return <Minus className="w-4 h-4 text-slate-400" />
       default: return <HelpCircle className="w-4 h-4 text-slate-300" />
     }
   }
@@ -237,6 +239,9 @@ export function AttendanceMatrix({ classData, month, year }: AttendanceMatrixPro
                           </Button>
                           <Button size="sm" variant="outline" className="justify-start gap-2 text-red-600 hover:text-red-700 hover:bg-red-50" onClick={() => handleStatusChange(student.id, date, 'ALPHA')}>
                             <X className="w-4 h-4" /> Alpha
+                          </Button>
+                          <Button size="sm" variant="outline" className="justify-start gap-2 text-slate-600 hover:text-slate-700 hover:bg-slate-50 col-span-2" onClick={() => handleStatusChange(student.id, date, 'NOT_ENROLLED')}>
+                            <Minus className="w-4 h-4" /> Belum Masuk / Tdk Aktif
                           </Button>
                         </div>
                       </PopoverContent>

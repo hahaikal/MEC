@@ -74,8 +74,8 @@ export default function AttendancePage() {
                         <SelectValue placeholder="Select Semester" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="1">Semester 1 (Jan - Jun)</SelectItem>
-                        <SelectItem value="2">Semester 2 (Jul - Des)</SelectItem>
+                        <SelectItem value="1">Semester 1 (Jul - Des)</SelectItem>
+                        <SelectItem value="2">Semester 2 (Jan - Jun)</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
