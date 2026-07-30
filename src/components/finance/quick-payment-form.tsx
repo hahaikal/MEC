@@ -50,6 +50,7 @@ const quickPaymentSchema = z.object({
   discount_amount: z.coerce.number().min(0).default(0),
   notes: z.string().optional(),
   book_fee_amount: z.coerce.number().min(0).default(0),
+  amount: z.coerce.number().min(0).optional(),
 })
 
 type QuickPaymentFormValues = z.infer<typeof quickPaymentSchema>
@@ -117,6 +118,7 @@ export function QuickPaymentForm({ student, month, year, isRegistration = false,
       })(),
       payment_method: existingPayment?.payment_method || 'cash',
       notes: existingPayment?.notes || '',
+      amount: existingPayment?.amount,
     },
   })
 
@@ -135,7 +137,8 @@ export function QuickPaymentForm({ student, month, year, isRegistration = false,
       ? watchedBookFee
       : (existingPayments && existingPayments.length > 0 ? existingPayments.reduce((sum: number, p: any) => sum + Number(p.amount || 0), 0) : classesToPay.reduce((sum: number, enr: any) => sum + Number(enr.base_fee || 0), 0))
 
-  const finalAmount = Math.max(0, baseFee - watchedDiscount);
+  const watchedAmount = form.watch('amount');
+  const finalAmount = existingPayment ? (watchedAmount !== undefined ? watchedAmount : baseFee) : Math.max(0, baseFee - watchedDiscount);
 
   function onSubmit(data: QuickPaymentFormValues) {
     if (!isRegistration && !isBookFee && selectedClassIds.length === 0) {
@@ -153,7 +156,7 @@ export function QuickPaymentForm({ student, month, year, isRegistration = false,
       
       paymentsToUpdate.forEach((p, index) => {
         const paymentData = {
-          amount: isRegistration ? p.amount : (isBookFee ? (data.book_fee_amount || p.amount) : p.amount),
+          amount: data.amount !== undefined ? data.amount : p.amount,
           discount_amount: index === 0 ? data.discount_amount : 0,
           payment_date: format(data.payment_date, 'yyyy-MM-dd'),
           payment_method: data.payment_method,
@@ -271,19 +274,40 @@ export function QuickPaymentForm({ student, month, year, isRegistration = false,
                </div>
              )}
 
-             <div className="flex justify-between border-t pt-2 mt-2 items-center">
+              <div className="flex justify-between border-t pt-2 mt-2 items-center">
                 <span className="text-muted-foreground">Nominal{isRegistration ? ' Registrasi' : isBookFee ? ' Uang Buku' : ' (SPP)'}:</span>
                 <span className="font-medium">
                   {new Intl.NumberFormat('id-ID', {
                     style: 'currency',
                     currency: 'IDR',
                     maximumFractionDigits: 0
-                  }).format(baseFee)}
+                  }).format(existingPayment ? (watchedAmount !== undefined ? watchedAmount : baseFee) : baseFee)}
                 </span>
              </div>
           </div>
 
-          {isBookFee && (
+          {existingPayment && (
+            <FormField
+              control={form.control}
+              name="amount"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Nominal Pembayaran (Rp)</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      placeholder="0"
+                      {...field}
+                      onChange={e => field.onChange(Number(e.target.value))}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
+
+          {!existingPayment && isBookFee && (
             <FormField
               control={form.control}
               name="book_fee_amount"
@@ -304,24 +328,26 @@ export function QuickPaymentForm({ student, month, year, isRegistration = false,
             />
           )}
 
-          <FormField
-            control={form.control}
-            name="discount_amount"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Diskon / Potongan (Rp)</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    placeholder="0"
-                    {...field}
-                    onChange={e => field.onChange(Number(e.target.value))}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          {!existingPayment && (
+            <FormField
+              control={form.control}
+              name="discount_amount"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Diskon / Potongan (Rp)</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      placeholder="0"
+                      {...field}
+                      onChange={e => field.onChange(Number(e.target.value))}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
 
           <div className="bg-primary/5 p-3 rounded-md border border-primary/20 flex justify-between items-center">
             <span className="font-semibold text-primary">Total Bayar:</span>

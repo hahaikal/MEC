@@ -159,3 +159,22 @@ export function useUpdatePayment() {
     },
   });
 }
+
+import { deletePayment } from '@/actions/payments';
+
+export function useDeletePayment() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const result = await deletePayment(id);
+      if (result.error) throw new Error(result.error);
+      return result;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['student-payments-yearly'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
+      queryClient.invalidateQueries({ queryKey: ['reports'] });
+    },
+  });
+}

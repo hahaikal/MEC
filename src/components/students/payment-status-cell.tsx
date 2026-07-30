@@ -8,7 +8,8 @@ import {
   CreditCard,
   Info,
   Loader2,
-  Edit
+  Edit,
+  Trash
 } from "lucide-react";
 import {
   Popover,
@@ -23,6 +24,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -30,7 +41,7 @@ import { cn } from "@/lib/utils";
 // import { PaymentEntryForm } from "@/components/finance/payment-entry-form";
 import { QuickPaymentForm } from "@/components/finance/quick-payment-form";
 import { useRouter } from "next/navigation";
-import { useStudentPaymentsYearly } from "@/lib/hooks/use-payments";
+import { useStudentPaymentsYearly, useDeletePayment } from "@/lib/hooks/use-payments";
 
 // Define strict types for the props
 interface Payment {
@@ -60,7 +71,11 @@ interface PaymentStatusCellProps {
 export function PaymentStatusCell({ student, month, year, isRegistration = false, isBookFee = false }: PaymentStatusCellProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const router = useRouter();
+  
+  const { mutate: deletePayment } = useDeletePayment();
 
   // Use provided month/year or default to current
   const currentDate = new Date();
@@ -169,7 +184,15 @@ export function PaymentStatusCell({ student, month, year, isRegistration = false
                   </>
                 )}
 
-                <div className="pt-2 border-t flex justify-end">
+                <div className="pt-2 border-t flex justify-end gap-2">
+                  <Button 
+                    variant="destructive" 
+                    size="sm" 
+                    className="h-8" 
+                    onClick={() => setIsDeleteDialogOpen(true)}
+                  >
+                    <Trash className="h-3 w-3 mr-1" /> Hapus
+                  </Button>
                   <Button variant="outline" size="sm" className="h-8" onClick={() => setIsEditDialogOpen(true)}>
                     <Edit className="h-3 w-3 mr-1" /> Edit
                   </Button>
@@ -178,6 +201,46 @@ export function PaymentStatusCell({ student, month, year, isRegistration = false
             </div>
           </PopoverContent>
         </Popover>
+
+        {/* Delete Confirmation Dialog */}
+        <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Hapus Data Pembayaran?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Tindakan ini tidak dapat dibatalkan. Ini akan menghapus riwayat pembayaran secara permanen dari server.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={isDeleting}>Batal</AlertDialogCancel>
+              <AlertDialogAction
+                className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+                disabled={isDeleting}
+                onClick={(e) => {
+                  e.preventDefault();
+                  setIsDeleting(true);
+                  paymentsForCell.forEach((p: any, idx: number) => {
+                    deletePayment(p.id, {
+                      onSuccess: () => {
+                        if (idx === paymentsForCell.length - 1) {
+                          setIsDeleting(false);
+                          setIsDeleteDialogOpen(false);
+                        }
+                      },
+                      onError: () => {
+                        setIsDeleting(false);
+                        setIsDeleteDialogOpen(false);
+                      }
+                    });
+                  });
+                }}
+              >
+                {isDeleting ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Trash className="h-4 w-4 mr-2" />}
+                Ya, Hapus
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
 
         {/* Edit Dialog */}
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>

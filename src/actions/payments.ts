@@ -53,3 +53,18 @@ export async function updatePayment(id: string, data: any) {
   revalidatePath('/dashboard/students')
   return { success: true }
 }
+
+export async function deletePayment(id: string) {
+  const supabase = await createClient()
+
+  const { error } = await supabase.from('payments').delete().eq('id', id)
+
+  if (error) {
+    console.error('Delete Payment Error:', error)
+    return { error: error.message }
+  }
+
+  revalidatePath('/dashboard/payments')
+  revalidatePath('/dashboard/students')
+  return { success: true }
+}

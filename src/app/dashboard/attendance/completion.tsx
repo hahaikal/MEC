@@ -26,10 +26,11 @@ const MONTHS = [
   { value: 12, label: 'Desember' }
 ]
 
-function getWeekdaysInMonth(month: number, year: number, weekdays: number[]) {
+function getWeekdaysInMonth(month: number, year: number, weekdays: number[], upToDate?: number) {
   let count = 0;
   const daysInMonth = new Date(year, month, 0).getDate();
-  for (let i = 1; i <= daysInMonth; i++) {
+  const limit = upToDate ? Math.min(upToDate, daysInMonth) : daysInMonth;
+  for (let i = 1; i <= limit; i++) {
     const d = new Date(year, month - 1, i).getDay();
     if (weekdays.includes(d)) count++;
   }
@@ -102,7 +103,14 @@ export function AttendanceCompletion() {
              expectedLogs = activeStudents;
           } else {
              const allowedDays = (cls.schedule_days as string[]).map(d => dayMap[d])
-             const sessionsInMonth = getWeekdaysInMonth(parseInt(selectedMonth), parseInt(selectedYear), allowedDays)
+             let upToDate = undefined;
+             const now = new Date();
+             if (now.getMonth() + 1 === parseInt(selectedMonth) && now.getFullYear() === parseInt(selectedYear)) {
+               upToDate = now.getDate();
+             } else if (new Date(parseInt(selectedYear), parseInt(selectedMonth) - 1, 1) > now) {
+               upToDate = 0;
+             }
+             const sessionsInMonth = upToDate === 0 ? 0 : getWeekdaysInMonth(parseInt(selectedMonth), parseInt(selectedYear), allowedDays, upToDate)
              expectedLogs = activeStudents * sessionsInMonth;
           }
           
