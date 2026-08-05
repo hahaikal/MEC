@@ -82,14 +82,7 @@ export function OperationalDashboard({ user }: { user: any }) {
     <div className="space-y-8 pb-10">
       <Greeting name={name} />
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <StatCard
-          label="Total Students"
-          value={statsData?.totalStudents || 0}
-          icon={Users}
-          tone="sky"
-          hint="Total seluruh siswa aktif"
-        />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <StatCard
           label="Total Classes"
           value={classes?.length || 0}
