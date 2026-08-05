@@ -32,7 +32,7 @@ export function useProgramActivities(programId?: string) {
       
       const { data: classesData, error: err1 } = await supabase
         .from('class_activities')
-        .select('*, classes!inner(program_id)')
+        .select('*, classes!inner(name, program_id, programs(name))')
         .eq('classes.program_id', programId)
 
       if (err1) throw err1

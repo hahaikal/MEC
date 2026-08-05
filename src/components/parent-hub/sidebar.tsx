@@ -231,14 +231,14 @@ export function ParentHubSidebar({ onLogout, session }: { onLogout: () => void; 
           <ImageIcon className="h-4 w-4" /> {t("nav.gallery")}
         </Link>
 
-        {/* Communication */}
+        {/* Chat */}
         <Link
-          href="/parent-hub/dashboard/communication"
+          href="/parent-hub/dashboard/chat"
           className={`${linkBase} ${
-            isActive("/parent-hub/dashboard/communication") ? linkActive : linkIdle
+            isActive("/parent-hub/dashboard/chat") ? linkActive : linkIdle
           }`}
         >
-          <MessageSquare className="h-4 w-4" /> {t("nav.communication")}
+          <MessageSquare className="h-4 w-4" /> {t("nav.chat")}
         </Link>
 
         {/* Resources */}

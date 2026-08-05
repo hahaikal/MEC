@@ -42,6 +42,8 @@ export default function StudentsPage() {
   const [openClassFilter, setOpenClassFilter] = useState(false)
   const [openProgramFilter, setOpenProgramFilter] = useState(false)
   const [statusFilter, setStatusFilter] = useState('ACTIVE') // 'ACTIVE', 'INACTIVE', or 'ALL'
+  const [selectedPaymentMonth, setSelectedPaymentMonth] = useState<string>('all')
+  const [paymentStatusFilter, setPaymentStatusFilter] = useState<string>('all') // 'all', 'paid', 'unpaid'
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
   
   const { data: students, isLoading, isError } = useStudents()
@@ -72,7 +74,22 @@ export default function StudentsPage() {
     // 4. Filter by Status
     const matchesStatus = statusFilter === 'ALL' || student.status === statusFilter;
 
-    return matchesSearch && matchesClass && matchesProgram && matchesStatus;
+    // 5. Filter by Payment Status
+    let matchesPayment = true;
+    if (selectedPaymentMonth !== 'all' && paymentStatusFilter !== 'all') {
+      const monthIdx = parseInt(selectedPaymentMonth);
+      const months = ['januari', 'februari', 'maret', 'april', 'mei', 'juni', 'juli', 'agustus', 'september', 'oktober', 'november', 'desember'];
+      const monthKey = `${months[monthIdx]}_sort` as keyof typeof student;
+      const statusValue = student[monthKey] as number;
+      
+      if (paymentStatusFilter === 'paid') {
+        matchesPayment = statusValue === 1;
+      } else if (paymentStatusFilter === 'unpaid') {
+        matchesPayment = statusValue === 0 || statusValue === -1;
+      }
+    }
+
+    return matchesSearch && matchesClass && matchesProgram && matchesStatus && matchesPayment;
   }) || []
 
   const toggleClass = (className: string) => {
@@ -257,8 +274,34 @@ export default function StudentsPage() {
                     </Select>
                   </div>
                   
+                  {/* Payment Filters Container */}
+                  <div className="flex w-full sm:w-auto gap-2">
+                    <Select value={selectedPaymentMonth} onValueChange={setSelectedPaymentMonth}>
+                      <SelectTrigger className="h-9 w-[130px]">
+                        <SelectValue placeholder="Bulan" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Bulan Apapun</SelectItem>
+                        {['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'].map((m, i) => (
+                          <SelectItem key={i} value={i.toString()}>{m}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+
+                    <Select value={paymentStatusFilter} onValueChange={setPaymentStatusFilter}>
+                      <SelectTrigger className="h-9 w-[130px]">
+                        <SelectValue placeholder="Status Bayar" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">Semua Status</SelectItem>
+                        <SelectItem value="paid">Lunas</SelectItem>
+                        <SelectItem value="unpaid">Menunggak</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
                   {/* Clear Filters Button */}
-                  {(selectedClasses.length > 0 || selectedPrograms.length > 0 || statusFilter !== 'ACTIVE' || searchQuery !== '') && (
+                  {(selectedClasses.length > 0 || selectedPrograms.length > 0 || statusFilter !== 'ACTIVE' || searchQuery !== '' || selectedPaymentMonth !== 'all' || paymentStatusFilter !== 'all') && (
                     <Button 
                       variant="ghost" 
                       size="sm" 
@@ -268,6 +311,8 @@ export default function StudentsPage() {
                         setSelectedPrograms([])
                         setStatusFilter('ACTIVE')
                         setSearchQuery('')
+                        setSelectedPaymentMonth('all')
+                        setPaymentStatusFilter('all')
                       }}
                     >
                       Reset Filter

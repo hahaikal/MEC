@@ -213,7 +213,7 @@ export async function getPublicPreschoolActivities() {
   // 2. Fetch class activities
   const { data: classActivities, error: err1 } = await supabase
     .from('class_activities')
-    .select('*')
+    .select('*, classes(name)')
     .in('class_id', classIds)
 
   if (err1) throw err1
@@ -244,6 +244,7 @@ export async function getPublicPreschoolActivities() {
       is_active: true,
       event_date: item.created_at,
       created_at: item.created_at,
+      classes: item.classes,
     }))
 }
 

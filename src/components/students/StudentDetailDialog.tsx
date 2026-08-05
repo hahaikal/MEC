@@ -17,7 +17,7 @@ import {
   Mail, 
   MapPin,
 } from "lucide-react";
-import { AvatarUpload } from "./avatar-upload";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useStudentPayments } from "@/lib/hooks/use-payments";
 
 interface StudentDetailDialogProps {
@@ -43,13 +43,22 @@ export function StudentDetailDialog({
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto bg-slate-50">
         <DialogHeader className="mb-4">
           <div className="flex flex-col md:flex-row items-center gap-6 p-6 bg-white rounded-xl shadow-sm border">
-             {/* Avatar Upload Area */}
-             <AvatarUpload
-               studentId={student.id}
-               studentName={student.name}
-               currentPhotoUrl={student.photo_url}
-               size="lg"
-             />
+             <Dialog>
+               <DialogTrigger asChild>
+                 <Avatar className="h-24 w-24 border-4 border-slate-100 shadow-md cursor-pointer hover:scale-105 transition-transform">
+                   <AvatarImage src={student.photo_url || undefined} className="object-cover" />
+                   <AvatarFallback className="bg-primary/10 text-primary text-2xl font-bold">
+                     {student.name ? student.name.substring(0, 2).toUpperCase() : '??'}
+                   </AvatarFallback>
+                 </Avatar>
+               </DialogTrigger>
+               {student.photo_url && (
+                 <DialogContent className="max-w-2xl bg-transparent border-none shadow-none p-0 flex justify-center">
+                   <DialogTitle className="sr-only">Foto Profil {student.name}</DialogTitle>
+                   <img src={student.photo_url} alt={student.name} className="max-w-full max-h-[85vh] rounded-lg object-contain" />
+                 </DialogContent>
+               )}
+             </Dialog>
 
              <div className="text-center md:text-left space-y-2">
                 <DialogTitle className="text-2xl font-bold tracking-tight text-slate-900">

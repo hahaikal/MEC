@@ -17,7 +17,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import { Tag, Calendar, Clock } from "lucide-react";
+import { Tag, Calendar, Clock, Download } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 export interface GalleryItemData {
@@ -119,6 +119,27 @@ export function GalleryGrid({ items }: { items: GalleryItemData[] }) {
                   className="object-cover transition duration-700 group-hover:scale-105"
                   loading="lazy"
                 />
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    fetch(firstImage)
+                      .then(res => res.blob())
+                      .then(blob => {
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.style.display = 'none';
+                        a.href = url;
+                        a.download = `photo-${item.id}.jpg`;
+                        document.body.appendChild(a);
+                        a.click();
+                        window.URL.revokeObjectURL(url);
+                      });
+                  }}
+                  className="absolute top-3 right-3 p-2 bg-black/40 hover:bg-black/60 text-white rounded-full opacity-0 group-hover:opacity-100 transition-all duration-200 z-10"
+                  title="Download Image"
+                >
+                  <Download className="h-4 w-4" />
+                </button>
               </div>
 
               {/* Right Side: Content */}
@@ -143,6 +164,11 @@ export function GalleryGrid({ items }: { items: GalleryItemData[] }) {
                   {badgeText && badgeText !== "GALLERY" && (
                     <span className="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-semibold text-[color:var(--mec-blue)]">
                       {badgeText}
+                    </span>
+                  )}
+                  {item.classes?.name && (
+                    <span className="inline-flex items-center rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-semibold text-amber-600 border border-amber-100">
+                      {item.classes.name.replace(/^Kelas\s+/i, '')}
                     </span>
                   )}
                 </div>
@@ -175,13 +201,34 @@ export function GalleryGrid({ items }: { items: GalleryItemData[] }) {
                       <CarouselContent>
                         {images.map((img, idx) => (
                           <CarouselItem key={idx}>
-                            <div className="relative aspect-square md:aspect-[4/3] w-full overflow-hidden rounded-2xl shadow-sm">
+                            <div className="relative aspect-square md:aspect-[4/3] w-full overflow-hidden rounded-2xl shadow-sm group">
                               <Image 
                                 src={img} 
                                 alt={`${selectedItem.title} - Image ${idx + 1}`} 
                                 fill
                                 className="object-cover"
                               />
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  fetch(img)
+                                    .then(res => res.blob())
+                                    .then(blob => {
+                                      const url = window.URL.createObjectURL(blob);
+                                      const a = document.createElement('a');
+                                      a.style.display = 'none';
+                                      a.href = url;
+                                      a.download = `photo-${selectedItem.id}-${idx}.jpg`;
+                                      document.body.appendChild(a);
+                                      a.click();
+                                      window.URL.revokeObjectURL(url);
+                                    });
+                                }}
+                                className="absolute top-4 right-4 p-2.5 bg-black/50 hover:bg-black/70 text-white rounded-full opacity-0 group-hover:opacity-100 transition-all duration-200 z-10 shadow-lg"
+                                title="Download Image"
+                              >
+                                <Download className="h-5 w-5" />
+                              </button>
                             </div>
                           </CarouselItem>
                         ))}
@@ -215,7 +262,7 @@ export function GalleryGrid({ items }: { items: GalleryItemData[] }) {
                         {selectedItem.classes?.name && (
                           <span className="flex items-center gap-1.5 text-xs font-semibold text-mec-blue bg-blue-50 px-3 py-1.5 rounded-full">
                             <Tag className="h-4 w-4" />
-                            {selectedItem.classes.name}
+                            {selectedItem.classes.name.replace(/^Kelas\s+/i, '')}
                           </span>
                         )}
                         {selectedItem.classes?.programs?.name && (

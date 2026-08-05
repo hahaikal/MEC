@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import { Camera, Loader2 } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { useQueryClient } from '@tanstack/react-query'
@@ -43,6 +43,10 @@ export function AvatarUpload({
   const [cropImageSrc, setCropImageSrc] = useState<string>('')
   
   const queryClient = useQueryClient()
+
+  useEffect(() => {
+    setPreviewUrl(currentPhotoUrl)
+  }, [currentPhotoUrl])
 
   const initials = studentName
     ? studentName.substring(0, 2).toUpperCase()

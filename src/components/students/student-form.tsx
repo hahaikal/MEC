@@ -9,6 +9,7 @@ import { AvatarUpload } from './avatar-upload'
 import { uploadStudentPhoto } from '@/lib/upload-student-photo'
 import { updateStudentPhoto } from '@/actions/students'
 import { useCreateStudent, useUpdateStudent } from '@/lib/hooks/use-mutations'
+import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Plus, Trash2 } from 'lucide-react'
@@ -58,11 +59,14 @@ function ClassOptions() {
 export function StudentForm({ initialData, onSuccess }: StudentFormProps) {
   const createStudent = useCreateStudent()
   const updateStudent = useUpdateStudent()
+  const queryClient = useQueryClient()
 
   const isEditing = !!initialData
   const isLoading = createStudent.isPending || updateStudent.isPending
   const [pendingPhotoFile, setPendingPhotoFile] = useState<File | null>(null)
   const [photoUrl, setPhotoUrl] = useState<string | null>(initialData?.photo_url || null)
+  const [isDeletingPhoto, setIsDeletingPhoto] = useState(false)
+  const [isPhotoRemoved, setIsPhotoRemoved] = useState(false)
   
   const [showConfirm, setShowConfirm] = useState(false)
   const [formDataToSubmit, setFormDataToSubmit] = useState<StudentFormValues | null>(null)
@@ -143,7 +147,16 @@ export function StudentForm({ initialData, onSuccess }: StudentFormProps) {
             toast.error('Gagal mengunggah foto profil.')
           }
         }
+        // If photo was removed
+        if (isPhotoRemoved && !pendingPhotoFile) {
+          try {
+            await updateStudentPhoto(initialData.id, null)
+          } catch (error) {
+             console.error('Error removing photo:', error)
+          }
+        }
         
+        queryClient.invalidateQueries({ queryKey: ['students'] })
         toast.success('Data siswa berhasil diperbarui!')
       } else {
         const result = await createStudent.mutateAsync(data)
@@ -160,6 +173,7 @@ export function StudentForm({ initialData, onSuccess }: StudentFormProps) {
           }
         }
         
+        queryClient.invalidateQueries({ queryKey: ['students'] })
         toast.success('Siswa baru berhasil ditambahkan!')
       }
       
@@ -181,6 +195,12 @@ export function StudentForm({ initialData, onSuccess }: StudentFormProps) {
     }
   }
 
+  const handleRemovePhoto = () => {
+    setPhotoUrl(null)
+    setPendingPhotoFile(null)
+    setIsPhotoRemoved(true)
+  }
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -190,7 +210,7 @@ export function StudentForm({ initialData, onSuccess }: StudentFormProps) {
           <h3 className="text-lg font-semibold border-b pb-2">Biodata Siswa</h3>
 
           {/* Avatar Upload */}
-          <div className="flex justify-center py-2">
+          <div className="flex flex-col items-center justify-center py-2 gap-4">
             <AvatarUpload
               studentId={isEditing ? initialData.id : null}
               studentName={form.watch('name') || 'Siswa'}
@@ -199,6 +219,19 @@ export function StudentForm({ initialData, onSuccess }: StudentFormProps) {
               onFileSelected={(file) => setPendingPhotoFile(file)}
               size="lg"
             />
+            {photoUrl && (
+              <Button 
+                type="button" 
+                variant="outline" 
+                size="sm" 
+                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                onClick={handleRemovePhoto}
+                disabled={isDeletingPhoto}
+              >
+                {isDeletingPhoto ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Trash2 className="h-4 w-4 mr-2" />}
+                Hapus Foto
+              </Button>
+            )}
           </div>
 
           <FormField

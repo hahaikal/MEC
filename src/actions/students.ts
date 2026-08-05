@@ -169,7 +169,7 @@ export async function deleteStudent(id: string) {
   return { success: true }
 }
 
-export async function updateStudentPhoto(id: string, photoUrl: string) {
+export async function updateStudentPhoto(id: string, photoUrl: string | null) {
   const supabase = await createClient()
 
   const { error } = await supabase
