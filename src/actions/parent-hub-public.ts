@@ -9,8 +9,8 @@ function getSupabase() {
     console.error("CRITICAL: SUPABASE_SERVICE_ROLE_KEY is missing in environment variables. Please add it to Vercel.");
   }
   return createSupabaseClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-    process.env.SUPABASE_SERVICE_ROLE_KEY || ''
+    process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
+    process.env.SUPABASE_SERVICE_ROLE_KEY || 'placeholder-key'
   )
 }
 
@@ -249,8 +249,8 @@ export async function getPublicPreschoolActivities() {
 }
 
 export async function getPublicPreschoolTeachers() {
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) return []
   const supabase = getSupabase()
-  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) return []
 
   // 1. Get classes that belong to MEC PRESCHOOL
   const { data: programs, error: progError } = await supabase
