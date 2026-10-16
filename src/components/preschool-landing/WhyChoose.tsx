@@ -11,7 +11,7 @@ const features = [
   { icon: Users, label: "Small & Personalized Classes" },
 ];
 
-export function WhyChoose({ phone = "+62 812-7425-6077" }: { phone?: string }) {
+export function WhyChoose({ phone = "+62 821-6118-710" }: { phone?: string }) {
   const cleanPhone = phone.replace(/\D/g, "");
   const waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent("Halo Admin MEC, saya ingin konsultasi mengenai program MEC Preschool")}`;
 
@@ -50,7 +50,7 @@ export function WhyChoose({ phone = "+62 812-7425-6077" }: { phone?: string }) {
             About Us
           </span>
           <h2 id="why-title" className="mt-4 font-display text-3xl font-bold text-foreground md:text-4xl">
-            Why Choose <span className="text-primary">MEC Preschool?</span>
+            Why Choose <span className="text-yellow-500">MEC Preschool?</span>
           </h2>
           <p className="mt-4 leading-relaxed text-muted-foreground">
             We believe every child is a star. With play-based learning methods and daily English exposure, your child grows smart, confident, and happy.
@@ -72,8 +72,7 @@ export function WhyChoose({ phone = "+62 812-7425-6077" }: { phone?: string }) {
 
           <div className="mt-8 flex flex-wrap items-center gap-6">
             <a
-              href={waUrl}
-              target="_blank"
+              href={"/preschool/aboutus"}
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 rounded-full bg-primary px-7 py-3.5 text-sm font-bold text-primary-foreground shadow-lg transition-transform hover:-translate-y-0.5"
             >
